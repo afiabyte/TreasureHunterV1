@@ -38,12 +38,10 @@ A high-performance tactical evasion simulation built in **Python 3.10+**, **Pyga
    - When any mission starts or restarts, the game activates a **3-second Tactical Reconnaissance Standby**.
    - During this window, all Hunter drones and dynamic barrier shifting are completely **frozen** so you can calmly inspect the grid, note Key/Exit/Hunter positions, and plan your escape vector.
    - If you want to deploy immediately without waiting, pressing any movement key (`WASD`/Arrows) or `SPACE` instantly begins the action!
-2. **Interactive Pause System (Sir Walkthrough & Demonstration Mode)**:
+2. **Interactive Pause System**:
    - Click the on-screen **`|| PAUSE`** button (top-right corner) or press **`P`**, **`SPACE`**, or **`ESC`**.
-   - **100% Unobstructed Grid View**: The center grid stays completely open so your teacher ("Sir") can inspect the board.
-   - **On-Grid Educational Callouts**: Displays live pointers for `[ 👤 OPERATIVE ]`, `[ 🚨 HUNTER (Gemini AI) ]`, `[ 🔑 CIPHER KEY ]`, `[ 🚪 EXTRACTION ]`, and `[ 🟢 GEMINI SAFE PATH (NO A*) ]`.
-   - **Left Dossier Card (Explain to Sir)**: Highlights core academic evaluation rubrics (`Gemini 2.5 Flash`, `budget=0`, `Strictly No A*`, `Daemon Threading`, `SQLite3`).
-   - **Right Dossier Card (Controls & Mechanics)**: Allows resuming, restarting, viewing controls, and tracking simulation parameters.
+   - **Clean In-Game Pause Modal**: Freezes gameplay with a sleek, translucent tactical menu allowing the player to resume, restart the sector, inspect controls, or return to the main menu.
+   - **Full Background Grid Visibility**: The maze and entity positions remain visible behind the menu so you can plan your next moves calmly.
 
 ---
 
