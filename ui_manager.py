@@ -90,7 +90,7 @@ class UIButton:
         return False
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Render button with tactical borders and state highlights."""
+        """Render button with tactical borders, drop shadow, and state highlights."""
         if self.is_selected:
             bg_color = (15, 60, 95)
             border_color = self.accent_color
@@ -104,10 +104,17 @@ class UIButton:
             border_color = COLOR_BTN_BORDER
             border_width = 1
 
+        # Drop shadow beneath button
+        pygame.draw.rect(surface, (6, 10, 16), self.rect.move(0, 2), border_radius=4)
+
         # Background fill
         pygame.draw.rect(surface, bg_color, self.rect, border_radius=4)
         # Border outline
         pygame.draw.rect(surface, border_color, self.rect, width=border_width, border_radius=4)
+
+        # Top inner specular bevel line
+        pygame.draw.line(surface, (min(255, bg_color[0] + 35), min(255, bg_color[1] + 40), min(255, bg_color[2] + 55)),
+                         (self.rect.left + 2, self.rect.top + 2), (self.rect.right - 3, self.rect.top + 2), 1)
 
         # Subtle corner tick marks for tactical look
         t_len = 5
@@ -116,6 +123,10 @@ class UIButton:
         pygame.draw.line(surface, self.accent_color, (x, y), (x, y + t_len), 2)
         pygame.draw.line(surface, self.accent_color, (x + w - 1, y + h - 1), (x + w - 1 - t_len, y + h - 1), 2)
         pygame.draw.line(surface, self.accent_color, (x + w - 1, y + h - 1), (x + w - 1, y + h - 1 - t_len), 2)
+
+        # If selected, add an active glowing indicator pip
+        if self.is_selected:
+            pygame.draw.circle(surface, self.accent_color, (self.rect.right - 7, self.rect.top + 7), 2)
 
         # Centered text
         text_color = COLOR_TEXT_PRIMARY if (self.is_hovered or self.is_selected) else COLOR_TEXT_SECONDARY
@@ -159,22 +170,28 @@ class TextInputBox:
             self.cursor_visible = not self.cursor_visible
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Draw text input field with tactical borders."""
+        """Draw text input field with tactical borders, drop shadow, and prompt."""
         border_color = COLOR_TEXT_ACCENT_CYAN if self.is_active else COLOR_BTN_BORDER
-        bg_color = (18, 25, 40) if self.is_active else (14, 20, 32)
+        bg_color = (18, 26, 42) if self.is_active else (14, 20, 32)
 
+        # Ambient drop shadow
+        pygame.draw.rect(surface, (6, 10, 16), self.rect.move(0, 2), border_radius=4)
         pygame.draw.rect(surface, bg_color, self.rect, border_radius=4)
         pygame.draw.rect(surface, border_color, self.rect, width=2 if self.is_active else 1, border_radius=4)
+
+        # Terminal prompt prefix indicator
+        prefix_surf = self.font.render(">", True, COLOR_TEXT_ACCENT_CYAN if self.is_active else COLOR_TEXT_MUTED)
+        surface.blit(prefix_surf, (self.rect.x + 10, self.rect.y + (self.rect.height - prefix_surf.get_height()) // 2))
 
         display_text = self.text if self.text else self.placeholder
         text_color = COLOR_TEXT_PRIMARY if self.text else COLOR_TEXT_MUTED
 
         text_surf = self.font.render(display_text, True, text_color)
-        surface.blit(text_surf, (self.rect.x + 12, self.rect.y + (self.rect.height - text_surf.get_height()) // 2))
+        surface.blit(text_surf, (self.rect.x + 24, self.rect.y + (self.rect.height - text_surf.get_height()) // 2))
 
         # Blinking cursor
         if self.is_active and self.cursor_visible:
-            cursor_x = self.rect.x + 12 + text_surf.get_width() + 2
+            cursor_x = self.rect.x + 24 + text_surf.get_width() + 2
             cursor_y = self.rect.y + 6
             cursor_h = self.rect.height - 12
             pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (cursor_x, cursor_y), (cursor_x, cursor_y + cursor_h), 2)
@@ -231,9 +248,9 @@ class UIManager:
                 btn.is_selected = True
             self.level_buttons.append(btn)
 
-        # Main Home Action Buttons
-        self.btn_how_to_play = UIButton(pygame.Rect(260, 410, 200, 44), "HOW TO PLAY", self.font_header)
-        self.btn_start_mission = UIButton(pygame.Rect(500, 410, 240, 44), "START MISSION", self.font_header,
+        # Main Home Action Buttons (Polished labels)
+        self.btn_how_to_play = UIButton(pygame.Rect(230, 415, 220, 46), "HOW TO PLAY", self.font_header)
+        self.btn_start_mission = UIButton(pygame.Rect(490, 415, 250, 46), ">> START MISSION <<", self.font_header,
                                           accent_color=COLOR_TEXT_ACCENT_GREEN)
 
         # In-Game Top-Right Quick Pause Button
@@ -303,54 +320,164 @@ class UIManager:
     # HOME SCREEN RENDERING
     # =========================================================================
     def draw_home_screen(self, surface: pygame.Surface, best_victory_steps: Optional[int]) -> None:
-        """Render the complete interactive Home Screen."""
+        """Render the complete interactive Home Screen with ultra-premium cybernetics."""
         surface.fill(COLOR_BG)
 
-        # Background decorative tactical grid lines
+        # 1. Background cybernetic coordinate grid
         for x in range(0, self.screen_width, 40):
-            pygame.draw.line(surface, (16, 22, 34), (x, 0), (x, self.screen_height), 1)
+            pygame.draw.line(surface, (18, 26, 40), (x, 0), (x, self.screen_height), 1)
         for y in range(0, self.screen_height, 40):
-            pygame.draw.line(surface, (16, 22, 34), (0, y), (self.screen_width, y), 1)
+            pygame.draw.line(surface, (18, 26, 40), (0, y), (self.screen_width, y), 1)
 
-        # Title Card
-        title_surf = self.font_title.render("TREASURE HUNTER // TACTICAL EVASION", True, COLOR_TEXT_ACCENT_CYAN)
-        sub_surf = self.font_body.render("NEURAL PURSUIT & FLANKING ENGINE // POWERED BY GEMINI 2.5 FLASH", True, COLOR_TEXT_SECONDARY)
-        surface.blit(title_surf, (self.screen_width // 2 - title_surf.get_width() // 2, 50))
-        surface.blit(sub_surf, (self.screen_width // 2 - sub_surf.get_width() // 2, 90))
+        # Ambient central atmospheric glow
+        glow_surf = pygame.Surface((720, 320), pygame.SRCALPHA)
+        glow_surf.fill((0, 110, 180, 16))
+        surface.blit(glow_surf, (120, 172))
 
-        # Divider line
-        pygame.draw.line(surface, COLOR_WALL_BORDER, (160, 125), (self.screen_width - 160, 125), 1)
+        # 2. UPGRADED TOP HEADER ("upur a likha cng kro")
+        # Academic & AI Simulation Category Badge
+        cat_badge = self.font_badge.render("// ADVANCED AGENTIC AI :: ACADEMIC RESEARCH PROJECT //", True, COLOR_TEXT_ACCENT_CYAN)
+        cat_rect = cat_badge.get_rect(center=(self.screen_width // 2, 24))
+        surface.blit(cat_badge, cat_rect)
 
-        # Best Victory Record Badge
-        record_text = f"ALL-TIME BEST VICTORY: {best_victory_steps} STEPS" if best_victory_steps is not None else "ALL-TIME BEST VICTORY: NO RECORD YET"
-        rec_surf = self.font_bold.render(record_text, True, COLOR_TEXT_ACCENT_AMBER)
-        rec_bg = pygame.Rect(self.screen_width // 2 - rec_surf.get_width() // 2 - 16, 140, rec_surf.get_width() + 32, 28)
-        pygame.draw.rect(surface, (25, 30, 20), rec_bg, border_radius=4)
-        pygame.draw.rect(surface, COLOR_TEXT_ACCENT_AMBER, rec_bg, width=1, border_radius=4)
-        surface.blit(rec_surf, (self.screen_width // 2 - rec_surf.get_width() // 2, 145))
+        # Grand Title with 3D drop-shadow
+        title_text = "TREASURE HUNTER // TACTICAL EVASION"
+        shadow_title = self.font_title.render(title_text, True, (0, 60, 100))
+        main_title = self.font_title.render(title_text, True, (0, 230, 255))
+        title_x = self.screen_width // 2 - main_title.get_width() // 2
+        surface.blit(shadow_title, (title_x + 2, 50))
+        surface.blit(main_title, (title_x, 48))
 
-        # Form Labels
-        lbl_name = self.font_bold.render("OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_name, (160, 208))
+        # High-Impact Subtitle (Academic Architecture)
+        sub_text = "AUTONOMOUS NEURAL MULTI-AGENT PURSUIT // ZERO A* PATHFINDING ARCHITECTURE"
+        sub_surf = self.font_bold.render(sub_text, True, (155, 180, 215))
+        surface.blit(sub_surf, (self.screen_width // 2 - sub_surf.get_width() // 2, 88))
+
+        # Cyber Divider Line with Pulsing Center Diamond
+        pygame.draw.line(surface, (38, 70, 110), (140, 114), (self.screen_width - 140, 114), 1)
+        p_cx = self.screen_width // 2
+        p_cy = 114
+        p_pts = [(p_cx, p_cy - 4), (p_cx + 5, p_cy), (p_cx, p_cy + 4), (p_cx - 5, p_cy)]
+        pygame.draw.polygon(surface, (0, 210, 255), p_pts)
+
+        # Upgraded All-Time Best Victory Record Badge
+        rec_val = f"{best_victory_steps} STEPS" if best_victory_steps is not None else "UNCLAIMED (NO RECORD YET)"
+        rec_text = f"[RECORD] ALL-TIME BEST VICTORY: {rec_val}"
+        rec_surf = self.font_bold.render(rec_text, True, COLOR_KEY_GOLD)
+        rw = rec_surf.get_width() + 32
+        rh = 30
+        rx = self.screen_width // 2 - rw // 2
+        ry = 126
+        rec_bg = pygame.Rect(rx, ry, rw, rh)
+        pygame.draw.rect(surface, (26, 22, 14), rec_bg, border_radius=4)
+        pygame.draw.rect(surface, COLOR_KEY_GOLD, rec_bg, width=1, border_radius=4)
+        # Specular glint
+        pygame.draw.circle(surface, (255, 250, 200), (rx + 10, ry + 10), 2)
+        surface.blit(rec_surf, (rx + 16, ry + 6))
+
+        # 3. PREMIUM GLASSMORPHIC COMMAND CONSOLE CHASSIS ("eta premium kro")
+        chassis_x = 120
+        chassis_y = 172
+        chassis_w = 720
+        chassis_h = 310
+        chassis_rect = pygame.Rect(chassis_x, chassis_y, chassis_w, chassis_h)
+
+        # Outer chassis drop-shadow
+        pygame.draw.rect(surface, (6, 10, 16), chassis_rect.move(0, 4), border_radius=8)
+
+        # Translucent glassmorphic deck fill
+        deck_glass = pygame.Surface((chassis_w, chassis_h), pygame.SRCALPHA)
+        deck_glass.fill((13, 19, 32, 235))
+        surface.blit(deck_glass, chassis_rect.topleft)
+
+        # Double-line cyber borders
+        pygame.draw.rect(surface, (36, 60, 95), chassis_rect, width=1, border_radius=8)
+        pygame.draw.rect(surface, (0, 180, 240, 110), chassis_rect.inflate(-4, -4), width=1, border_radius=6)
+
+        # 4 Tactical Corner L-Brackets with Glowing Tick Marks
+        t_sz = 14
+        # Top-Left
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y), (chassis_x + t_sz, chassis_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y), (chassis_x, chassis_y + t_sz), 2)
+        # Top-Right
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y), (chassis_x + chassis_w - 1 - t_sz, chassis_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y), (chassis_x + chassis_w - 1, chassis_y + t_sz), 2)
+        # Bottom-Left
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y + chassis_h - 1), (chassis_x + t_sz, chassis_y + chassis_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y + chassis_h - 1), (chassis_x, chassis_y + chassis_h - 1 - t_sz), 2)
+        # Bottom-Right
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1), (chassis_x + chassis_w - 1 - t_sz, chassis_y + chassis_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1), (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1 - t_sz), 2)
+
+        # Chassis Top Ribbon
+        ribbon_rect = pygame.Rect(chassis_x + 8, chassis_y + 8, chassis_w - 16, 24)
+        pygame.draw.rect(surface, (18, 27, 44), ribbon_rect, border_radius=4)
+        ribbon_txt = self.font_badge.render("// SECTOR DEPLOYMENT CONSOLE // MISSION CONFIGURATION", True, COLOR_TEXT_SECONDARY)
+        surface.blit(ribbon_txt, (ribbon_rect.x + 12, ribbon_rect.y + 4))
+        # Status LED
+        pygame.draw.circle(surface, COLOR_TEXT_ACCENT_GREEN, (ribbon_rect.right - 20, ribbon_rect.centery), 4)
+        led_txt = self.font_small.render("ONLINE", True, COLOR_TEXT_ACCENT_GREEN)
+        surface.blit(led_txt, (ribbon_rect.right - 68, ribbon_rect.y + 5))
+
+        # Animated Subtle Cyan Scanline traveling down the console
+        scan_offset = int((self.anim_time * 65.0) % (chassis_h - 40))
+        scan_y = chassis_y + 35 + scan_offset
+        scan_surf = pygame.Surface((chassis_w - 16, 2), pygame.SRCALPHA)
+        scan_surf.fill((0, 220, 255, 28))
+        surface.blit(scan_surf, (chassis_x + 8, scan_y))
+
+        # Form Section Labels
+        lbl_name = self.font_bold.render("[01] OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
+        surface.blit(lbl_name, (150, 208))
         self.input_player_name.draw(surface)
 
-        lbl_grid = self.font_bold.render("GRID DIMENSION:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_grid, (160, 262))
+        lbl_grid = self.font_bold.render("[02] ARENA GRID MATRIX:", True, COLOR_TEXT_PRIMARY)
+        surface.blit(lbl_grid, (150, 262))
         for btn in self.grid_buttons:
             btn.draw(surface)
 
-        lbl_lvl = self.font_bold.render("TACTICAL DIFFICULTY:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_lvl, (160, 318))
+        lbl_lvl = self.font_bold.render("[03] THREAT DIFFICULTY:", True, COLOR_TEXT_PRIMARY)
+        surface.blit(lbl_lvl, (150, 318))
         for btn in self.level_buttons:
             btn.draw(surface)
 
+        # Chassis Interior Dividing Rule
+        pygame.draw.line(surface, (28, 45, 70), (chassis_x + 20, 375), (chassis_x + chassis_w - 20, 375), 1)
+
         # Action Buttons
         self.btn_how_to_play.draw(surface)
+
+        # Primary Start Mission CTA with animated pulse ring
+        cta_pulse = 1.0 + 0.05 * math.sin(self.anim_time * 6.0)
+        cta_rect = self.btn_start_mission.rect
+        pygame.draw.rect(surface, (40, 240, 120), cta_rect.inflate(int(4 * cta_pulse), int(4 * cta_pulse)), width=1, border_radius=6)
         self.btn_start_mission.draw(surface)
 
-        # Footer telemetry note
-        footer = self.font_small.render("ARCHITECTURE: PYGAME + SQLITE3 + GOOGLE-GENAI SDK | ULTRA-LOW LATENCY THINKING_BUDGET=0", True, COLOR_TEXT_MUTED)
-        surface.blit(footer, (self.screen_width // 2 - footer.get_width() // 2, self.screen_height - 30))
+        # 4. UPGRADED BOTTOM STATUS DOCK ("niche likha gula cng kro")
+        dock_w = 880
+        dock_h = 58
+        dock_x = (self.screen_width - dock_w) // 2
+        dock_y = self.screen_height - dock_h - 18
+        dock_rect = pygame.Rect(dock_x, dock_y, dock_w, dock_h)
+
+        # Glass fill
+        dock_glass = pygame.Surface((dock_w, dock_h), pygame.SRCALPHA)
+        dock_glass.fill((12, 17, 28, 235))
+        surface.blit(dock_glass, dock_rect.topleft)
+
+        # Top illuminated neon border
+        pygame.draw.rect(surface, (35, 75, 120), dock_rect, width=1, border_radius=6)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (dock_x + 20, dock_y), (dock_x + dock_w - 20, dock_y), 2)
+
+        # Line 1: Technical Architecture Telemetry (Cleanly spaced)
+        tech_line = "[ AI: GEMINI 2.5 FLASH ]   |   [ LATENCY: 0 THINKING BUDGET ]   |   [ STRICTLY NO A* ]   |   [ FPS: 60 ]"
+        t_line_surf = self.font_bold.render(tech_line, True, COLOR_TEXT_ACCENT_GREEN)
+        surface.blit(t_line_surf, t_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 18)))
+
+        # Line 2: Academic Presentation Signature
+        sig_line = "ACADEMIC AI EVALUATION SUITE  •  SQLITE3 REPOSITORY CONNECTED  •  NON-BLOCKING DAEMON THREADS"
+        s_line_surf = self.font_small.render(sig_line, True, COLOR_TEXT_MUTED)
+        surface.blit(s_line_surf, s_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 40)))
 
     # =========================================================================
     # HOW TO PLAY SCREEN RENDERING
