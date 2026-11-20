@@ -277,13 +277,13 @@ class UIManager:
                                         accent_color=COLOR_TEXT_ACCENT_RED)
         self.btn_defeat_menu = UIButton(pygame.Rect(cx + 15, 440, 195, 42), "HOME MENU", self.font_header)
 
-        # Tactical Pause Overlay (Centered authentic game pause menu)
-        self.btn_pause_resume = UIButton(pygame.Rect(cx - 120, 265, 240, 40), "RESUME", self.font_header,
+        # Tactical Pause Overlay (Right margin dock leaves entire center grid 100% visible for explanation)
+        self.btn_pause_resume = UIButton(pygame.Rect(785, 82, 160, 34), "RESUME", self.font_header,
                                          accent_color=COLOR_TEXT_ACCENT_GREEN)
-        self.btn_pause_restart = UIButton(pygame.Rect(cx - 120, 315, 240, 40), "RESTART LEVEL", self.font_header,
+        self.btn_pause_restart = UIButton(pygame.Rect(785, 122, 160, 34), "RESTART", self.font_header,
                                           accent_color=COLOR_TEXT_ACCENT_CYAN)
-        self.btn_pause_help = UIButton(pygame.Rect(cx - 120, 365, 240, 38), "CONTROLS & HELP", self.font_body)
-        self.btn_pause_menu = UIButton(pygame.Rect(cx - 120, 413, 240, 38), "MAIN MENU", self.font_body,
+        self.btn_pause_help = UIButton(pygame.Rect(785, 162, 160, 32), "CONTROLS", self.font_body)
+        self.btn_pause_menu = UIButton(pygame.Rect(785, 198, 160, 32), "MAIN MENU", self.font_body,
                                        accent_color=COLOR_TEXT_ACCENT_RED)
 
     def update(self, dt: float) -> None:
@@ -503,7 +503,7 @@ class UIManager:
             "• INFILTRATION: You enter the sector at Start coordinate (0, 0).",
             "• KEY ACQUISITION: Locate and collect the Golden Cipher Key [K] on the grid.",
             "• EXTRACTION: Reach the Exit Portal [E] at (N-1, N-1) only AFTER securing the key.",
-            "• EVASION: Evade Gemini-controlled Hunter Drones [H]. One collision results in casualty."
+            "• EVASION: Evade hostile Hunter Drones [H]. One collision results in casualty."
         ]
         for line in lines1:
             txt = self.font_body.render(line, True, COLOR_TEXT_PRIMARY)
@@ -534,7 +534,7 @@ class UIManager:
         surface.blit(h3, (150, y))
         y += 30
         lines3 = [
-            "• GREEN BREADCRUMBS : Next 3 safe coordinates computed by Gemini 2.5 Flash, dodging",
+            "• GREEN BREADCRUMBS : Next 3 safe coordinates computed by tactical radar, dodging",
             "                      Hunter visual cones and exploiting blind spots behind them.",
             "• PULSING YELLOW ARROW : Dynamic directional beacon pointing to current objective.",
             "• DYNAMIC BARRIERS  : Obstacles shift dynamically every 2.5s (scaled by difficulty)."
@@ -1357,7 +1357,7 @@ class UIManager:
             adv_surf = self.font_small.render(adv_txt, True, COLOR_TEXT_SECONDARY)
             surface.blit(adv_surf, adv_surf.get_rect(center=(cx, cy - 45)))
         else:
-            tip_surf = self.font_small.render("Tip: Follow Gemini green breadcrumbs to exploit hunter blind spots.", True, COLOR_TEXT_SECONDARY)
+            tip_surf = self.font_small.render("Tip: Follow green tactical breadcrumbs to exploit hunter blind spots.", True, COLOR_TEXT_SECONDARY)
             surface.blit(tip_surf, tip_surf.get_rect(center=(cx, cy - 45)))
 
         # Draw Action Buttons
@@ -1391,68 +1391,70 @@ class UIManager:
         level_name: str = "Tactical"
     ) -> None:
         """
-        Render a clean, professional, authentic in-game pause menu.
-        Keeps the underlying game world visible with a soft translucent dim.
+        Render a clean, professional, authentic in-game pause dock.
+        Leaves the entire center grid 100% visible and bright with minimal dimming
+        so the player can inspect all entities and clearly explain the game to Sir.
         """
-        # 1. Soft atmospheric dim overlay (grid and entities remain visible behind)
+        # 1. Subtle atmospheric tint (leaves the maze, player, hunters, and walls 100% clear and bright)
         dim_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        dim_surf.fill((8, 12, 20, 160))
+        dim_surf.fill((4, 8, 16, 25))
         surface.blit(dim_surf, (0, 0))
 
-        cx = self.screen_width // 2
+        # 2. Sleek Tactical Top Status Banner (Centered at top margin, leaves entire grid clear)
+        top_w = 400
+        top_h = 32
+        top_x = self.screen_width // 2 - top_w // 2
+        top_y = 12
+        top_rect = pygame.Rect(top_x, top_y, top_w, top_h)
 
-        # 2. Centered Pause Modal Box
-        modal_w = 340
-        modal_h = 320
-        modal_x = cx - modal_w // 2
-        modal_y = 175
-        modal_rect = pygame.Rect(modal_x, modal_y, modal_w, modal_h)
+        top_glass = pygame.Surface((top_w, top_h), pygame.SRCALPHA)
+        top_glass.fill((10, 16, 28, 220))
+        surface.blit(top_glass, top_rect.topleft)
+        pygame.draw.rect(surface, (0, 180, 230), top_rect, width=1, border_radius=4)
 
-        # Drop shadow
-        pygame.draw.rect(surface, (5, 8, 14), modal_rect.move(0, 4), border_radius=8)
+        banner_title = self.font_bold.render("PAUSED // TACTICAL INSPECTION MODE", True, COLOR_TEXT_ACCENT_CYAN)
+        surface.blit(banner_title, banner_title.get_rect(center=(self.screen_width // 2, top_y + 16)))
 
-        # Translucent glassmorphic fill
-        glass_surf = pygame.Surface((modal_w, modal_h), pygame.SRCALPHA)
-        glass_surf.fill((14, 20, 32, 240))
-        surface.blit(glass_surf, modal_rect.topleft)
+        # 3. Right-Margin Control Dock (x=778 to 952 - leaves 100% of the game arena open)
+        dock_x = 778
+        dock_y = 48
+        dock_w = 174
+        dock_h = 256
+        dock_rect = pygame.Rect(dock_x, dock_y, dock_w, dock_h)
 
-        # Cybernetic borders
-        pygame.draw.rect(surface, (36, 60, 95), modal_rect, width=1, border_radius=8)
-        pygame.draw.rect(surface, (0, 180, 240), modal_rect.inflate(-4, -4), width=1, border_radius=6)
+        # Drop shadow & translucent glass fill
+        pygame.draw.rect(surface, (5, 8, 14), dock_rect.move(0, 3), border_radius=6)
+        dock_glass = pygame.Surface((dock_w, dock_h), pygame.SRCALPHA)
+        dock_glass.fill((12, 18, 30, 235))
+        surface.blit(dock_glass, dock_rect.topleft)
+        pygame.draw.rect(surface, (36, 60, 95), dock_rect, width=1, border_radius=6)
+        pygame.draw.rect(surface, (0, 180, 230), dock_rect.inflate(-4, -4), width=1, border_radius=4)
 
-        # Tactical Corner Tick Marks
-        t_sz = 10
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y), (modal_x + t_sz, modal_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y), (modal_x, modal_y + t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y), (modal_x + modal_w - 1 - t_sz, modal_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y), (modal_x + modal_w - 1 - t_sz, modal_y + t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y + modal_h - 1), (modal_x + t_sz, modal_y + modal_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y + modal_h - 1), (modal_x, modal_y + modal_h - 1 - t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y + modal_h - 1), (modal_x + modal_w - 1 - t_sz, modal_y + modal_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y + modal_h - 1), (modal_x + modal_w - 1, modal_y + modal_h - 1 - t_sz), 2)
+        # Header Title in dock
+        dock_title = self.font_badge.render("// PAUSE MENU", True, COLOR_TEXT_ACCENT_AMBER)
+        surface.blit(dock_title, (dock_x + 12, dock_y + 10))
+        pygame.draw.line(surface, (28, 48, 75), (dock_x + 10, dock_y + 26), (dock_x + dock_w - 10, dock_y + 26), 1)
 
-        # Header Title
-        title_surf = self.font_title.render("PAUSED", True, COLOR_TEXT_ACCENT_CYAN)
-        surface.blit(title_surf, title_surf.get_rect(center=(cx, modal_y + 32)))
-
-        # Sector & Objective summary line
-        sub_str = f"SECTOR: {level_name.upper()}   |   {'KEY SECURED' if has_key else 'FIND KEY'}"
-        sub_col = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_TEXT_SECONDARY
-        sub_surf = self.font_small.render(sub_str, True, sub_col)
-        surface.blit(sub_surf, sub_surf.get_rect(center=(cx, modal_y + 60)))
-
-        # Subtle divider
-        pygame.draw.line(surface, (28, 45, 70), (modal_x + 20, modal_y + 75), (modal_x + modal_w - 20, modal_y + 75), 1)
-
-        # 3. Action Buttons (Clean & Centered)
+        # Action Buttons (Cleanly docked inside right margin)
         self.btn_pause_resume.draw(surface)
         self.btn_pause_restart.draw(surface)
         self.btn_pause_help.draw(surface)
         self.btn_pause_menu.draw(surface)
 
-        # 4. Resume hint at bottom
-        hint_surf = self.font_small.render("[ Press P or SPACE to Resume ]", True, COLOR_TEXT_MUTED)
-        surface.blit(hint_surf, hint_surf.get_rect(center=(cx, modal_y + modal_h - 18)))
+        # Bottom info in dock
+        info_y = dock_y + 188
+        pygame.draw.line(surface, (28, 48, 75), (dock_x + 10, info_y), (dock_x + dock_w - 10, info_y), 1)
+        info_y += 6
+        sec_surf = self.font_small.render(f"LEVEL: {level_name.upper()}", True, COLOR_TEXT_SECONDARY)
+        surface.blit(sec_surf, (dock_x + 12, info_y))
+        info_y += 16
+        k_txt = "KEY: SECURED" if has_key else "KEY: REQUIRED"
+        k_col = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_KEY_GOLD
+        key_info = self.font_badge.render(k_txt, True, k_col)
+        surface.blit(key_info, (dock_x + 12, info_y))
+        info_y += 18
+        hint_surf = self.font_small.render("[P / SPACE to Resume]", True, COLOR_TEXT_MUTED)
+        surface.blit(hint_surf, (dock_x + 12, info_y))
 
     def draw_standby_banner(self, surface: pygame.Surface, seconds_remaining: float) -> None:
         """

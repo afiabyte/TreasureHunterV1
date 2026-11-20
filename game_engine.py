@@ -47,7 +47,7 @@ class GameEngine:
         """
         # Initialize Pygame core modules
         pygame.init()
-        pygame.display.set_caption("Treasure Hunter // Tactical Evasion [Gemini 2.5 Flash]")
+        pygame.display.set_caption("Treasure Hunter // Tactical Evasion")
 
         self.screen_width = screen_width
         self.screen_height = screen_height
