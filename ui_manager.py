@@ -277,13 +277,13 @@ class UIManager:
                                         accent_color=COLOR_TEXT_ACCENT_RED)
         self.btn_defeat_menu = UIButton(pygame.Rect(cx + 15, 440, 195, 42), "HOME MENU", self.font_header)
 
-        # Tactical Pause / Sir Presentation Overlay (Placed in the right margin card to leave the entire grid 100% visible)
-        self.btn_pause_resume = UIButton(pygame.Rect(785, 42, 159, 36), "▶ RESUME (P)", self.font_header,
+        # Tactical Pause Overlay (Centered authentic game pause menu)
+        self.btn_pause_resume = UIButton(pygame.Rect(cx - 120, 265, 240, 40), "RESUME", self.font_header,
                                          accent_color=COLOR_TEXT_ACCENT_GREEN)
-        self.btn_pause_restart = UIButton(pygame.Rect(785, 84, 159, 36), "⟳ RESTART (R)", self.font_header,
+        self.btn_pause_restart = UIButton(pygame.Rect(cx - 120, 315, 240, 40), "RESTART LEVEL", self.font_header,
                                           accent_color=COLOR_TEXT_ACCENT_CYAN)
-        self.btn_pause_help = UIButton(pygame.Rect(785, 126, 159, 34), "📖 CONTROLS", self.font_body)
-        self.btn_pause_menu = UIButton(pygame.Rect(785, 166, 159, 34), "✕ HOME MENU", self.font_body,
+        self.btn_pause_help = UIButton(pygame.Rect(cx - 120, 365, 240, 38), "CONTROLS & HELP", self.font_body)
+        self.btn_pause_menu = UIButton(pygame.Rect(cx - 120, 413, 240, 38), "MAIN MENU", self.font_body,
                                        accent_color=COLOR_TEXT_ACCENT_RED)
 
     def update(self, dt: float) -> None:
@@ -334,22 +334,21 @@ class UIManager:
         glow_surf.fill((0, 110, 180, 16))
         surface.blit(glow_surf, (120, 172))
 
-        # 2. UPGRADED TOP HEADER ("upur a likha cng kro")
-        # Academic & AI Simulation Category Badge
-        cat_badge = self.font_badge.render("// ADVANCED AGENTIC AI :: ACADEMIC RESEARCH PROJECT //", True, COLOR_TEXT_ACCENT_CYAN)
+        # 2. TOP HEADER
+        cat_badge = self.font_badge.render("// TACTICAL STEALTH & EVASION SIMULATION //", True, COLOR_TEXT_ACCENT_CYAN)
         cat_rect = cat_badge.get_rect(center=(self.screen_width // 2, 24))
         surface.blit(cat_badge, cat_rect)
 
         # Grand Title with 3D drop-shadow
-        title_text = "TREASURE HUNTER // TACTICAL EVASION"
+        title_text = "TREASURE HUNTER"
         shadow_title = self.font_title.render(title_text, True, (0, 60, 100))
         main_title = self.font_title.render(title_text, True, (0, 230, 255))
         title_x = self.screen_width // 2 - main_title.get_width() // 2
         surface.blit(shadow_title, (title_x + 2, 50))
         surface.blit(main_title, (title_x, 48))
 
-        # High-Impact Subtitle (Academic Architecture)
-        sub_text = "AUTONOMOUS NEURAL MULTI-AGENT PURSUIT // ZERO A* PATHFINDING ARCHITECTURE"
+        # Subtitle
+        sub_text = "GRID EVASION PROTOCOL // TACTICAL RECONNAISSANCE"
         sub_surf = self.font_bold.render(sub_text, True, (155, 180, 215))
         surface.blit(sub_surf, (self.screen_width // 2 - sub_surf.get_width() // 2, 88))
 
@@ -360,9 +359,9 @@ class UIManager:
         p_pts = [(p_cx, p_cy - 4), (p_cx + 5, p_cy), (p_cx, p_cy + 4), (p_cx - 5, p_cy)]
         pygame.draw.polygon(surface, (0, 210, 255), p_pts)
 
-        # Upgraded All-Time Best Victory Record Badge
+        # All-Time Best Victory Record Badge
         rec_val = f"{best_victory_steps} STEPS" if best_victory_steps is not None else "UNCLAIMED (NO RECORD YET)"
-        rec_text = f"[RECORD] ALL-TIME BEST VICTORY: {rec_val}"
+        rec_text = f"BEST SECTOR RECORD: {rec_val}"
         rec_surf = self.font_bold.render(rec_text, True, COLOR_KEY_GOLD)
         rw = rec_surf.get_width() + 32
         rh = 30
@@ -375,7 +374,7 @@ class UIManager:
         pygame.draw.circle(surface, (255, 250, 200), (rx + 10, ry + 10), 2)
         surface.blit(rec_surf, (rx + 16, ry + 6))
 
-        # 3. PREMIUM GLASSMORPHIC COMMAND CONSOLE CHASSIS ("eta premium kro")
+        # 3. PREMIUM GLASSMORPHIC COMMAND CONSOLE CHASSIS
         chassis_x = 120
         chassis_y = 172
         chassis_w = 720
@@ -427,16 +426,16 @@ class UIManager:
         surface.blit(scan_surf, (chassis_x + 8, scan_y))
 
         # Form Section Labels
-        lbl_name = self.font_bold.render("[01] OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
+        lbl_name = self.font_bold.render("OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_name, (150, 208))
         self.input_player_name.draw(surface)
 
-        lbl_grid = self.font_bold.render("[02] ARENA GRID MATRIX:", True, COLOR_TEXT_PRIMARY)
+        lbl_grid = self.font_bold.render("ARENA GRID MATRIX:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_grid, (150, 262))
         for btn in self.grid_buttons:
             btn.draw(surface)
 
-        lbl_lvl = self.font_bold.render("[03] THREAT DIFFICULTY:", True, COLOR_TEXT_PRIMARY)
+        lbl_lvl = self.font_bold.render("THREAT DIFFICULTY:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_lvl, (150, 318))
         for btn in self.level_buttons:
             btn.draw(surface)
@@ -453,7 +452,7 @@ class UIManager:
         pygame.draw.rect(surface, (40, 240, 120), cta_rect.inflate(int(4 * cta_pulse), int(4 * cta_pulse)), width=1, border_radius=6)
         self.btn_start_mission.draw(surface)
 
-        # 4. UPGRADED BOTTOM STATUS DOCK ("niche likha gula cng kro")
+        # 4. BOTTOM STATUS DOCK
         dock_w = 880
         dock_h = 58
         dock_x = (self.screen_width - dock_w) // 2
@@ -469,13 +468,13 @@ class UIManager:
         pygame.draw.rect(surface, (35, 75, 120), dock_rect, width=1, border_radius=6)
         pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (dock_x + 20, dock_y), (dock_x + dock_w - 20, dock_y), 2)
 
-        # Line 1: Technical Architecture Telemetry (Cleanly spaced)
-        tech_line = "[ AI: GEMINI 2.5 FLASH ]   |   [ LATENCY: 0 THINKING BUDGET ]   |   [ STRICTLY NO A* ]   |   [ FPS: 60 ]"
+        # Line 1: In-game Status
+        tech_line = "[ SECTOR PROTOCOL: ACTIVE ]   |   [ THREAT SCANNER: ONLINE ]   |   [ FRAME RATE: 60 FPS ]"
         t_line_surf = self.font_bold.render(tech_line, True, COLOR_TEXT_ACCENT_GREEN)
         surface.blit(t_line_surf, t_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 18)))
 
-        # Line 2: Academic Presentation Signature
-        sig_line = "ACADEMIC AI EVALUATION SUITE  •  SQLITE3 REPOSITORY CONNECTED  •  NON-BLOCKING DAEMON THREADS"
+        # Line 2: Signature
+        sig_line = "TREASURE HUNTER  •  ALL SYSTEMS OPERATIONAL  •  READY FOR DEPLOYMENT"
         s_line_surf = self.font_small.render(sig_line, True, COLOR_TEXT_MUTED)
         surface.blit(s_line_surf, s_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 40)))
 
@@ -1261,32 +1260,27 @@ class UIManager:
         surface.blit(k_surf, (c1_rect.x + 5, y + 2))
 
         # ---------------------------------------------------------------------
-        # COLUMN 2: NEURAL AI TELEMETRY
+        # COLUMN 2: TACTICAL SENSOR TELEMETRY
         # ---------------------------------------------------------------------
-        h2 = self.font_badge.render("// GEMINI NEURAL TELEMETRY", True, COLOR_TEXT_ACCENT_CYAN)
+        h2 = self.font_badge.render("// SENSOR TELEMETRY", True, COLOR_TEXT_ACCENT_CYAN)
         surface.blit(h2, (c2_rect.x, c2_rect.y))
 
         y2 = c2_rect.y + 22
-        model_str = "ENGINE: gemini-2.5-flash"
-        surface.blit(self.font_small.render(model_str, True, COLOR_TEXT_SECONDARY), (c2_rect.x, y2))
+        surface.blit(self.font_small.render("RADAR STATUS: MULTI-BAND ACTIVE", True, COLOR_TEXT_SECONDARY), (c2_rect.x, y2))
         y2 += 18
 
-        lat_color = COLOR_TEXT_ACCENT_GREEN if ai_latency_ms < 600 else COLOR_TEXT_ACCENT_AMBER
-        lat_str = f"INFERENCE: {ai_latency_ms} ms (budget=0)"
-        surface.blit(self.font_body.render(lat_str, True, lat_color), (c2_rect.x, y2))
+        surface.blit(self.font_body.render("ESCAPE ROUTE: COMPUTED", True, COLOR_TEXT_ACCENT_GREEN), (c2_rect.x, y2))
         y2 += 22
 
         # Status indicator with LED pip
-        led_color = COLOR_TEXT_ACCENT_GREEN if "ONLINE" in ai_status else COLOR_TEXT_ACCENT_AMBER
+        led_color = COLOR_TEXT_ACCENT_GREEN
         led_pulse = 1.0 + 0.2 * math.sin(self.anim_time * 8.0)
         pygame.draw.circle(surface, led_color, (c2_rect.x + 8, y2 + 8), int(5 * led_pulse))
 
-        status_txt = f"STATUS: {ai_status}"
-        surface.blit(self.font_bold.render(status_txt, True, led_color), (c2_rect.x + 22, y2))
+        surface.blit(self.font_bold.render("ENEMY TRACKING: ACTIVE", True, led_color), (c2_rect.x + 22, y2))
         y2 += 22
 
-        path_note = self.font_small.render("PATHFINDING: 100% LLM (NO A*)", True, COLOR_TEXT_MUTED)
-        surface.blit(path_note, (c2_rect.x, y2))
+        surface.blit(self.font_small.render("GRID REFRESH: REAL-TIME (60 FPS)", True, COLOR_TEXT_MUTED), (c2_rect.x, y2))
 
         # ---------------------------------------------------------------------
         # COLUMN 3: LIVE TACTICAL COMMANDER TRANSMISSION
@@ -1397,160 +1391,68 @@ class UIManager:
         level_name: str = "Tactical"
     ) -> None:
         """
-        Render tactical pause demonstration & walkthrough overlay.
-        Allows the student to clearly explain the game and AI architecture to Sir/instructor:
-        - 100% unobstructed view of the game board (center grid is completely clear).
-        - On-grid callout badges pointing out Player, Hunters, Key, Exit, and Gemini Safe Path.
-        - Left Dossier Panel: Academic AI Architecture & Zero A* rule.
-        - Right Dossier Panel: Interactive Controls and Simulation Mechanics.
+        Render a clean, professional, authentic in-game pause menu.
+        Keeps the underlying game world visible with a soft translucent dim.
         """
-        hunters = hunters or []
-        recommended_path = recommended_path or []
-
-        # 1. Very light background tint (alpha=25) so grid and entities remain 100% vivid
+        # 1. Soft atmospheric dim overlay (grid and entities remain visible behind)
         dim_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        dim_surf.fill((8, 12, 18, 28))
+        dim_surf.fill((8, 12, 20, 160))
         surface.blit(dim_surf, (0, 0))
 
-        # 2. Top Presentation Header Bar
-        top_w = 580
-        top_h = 28
-        top_x = (self.screen_width - top_w) // 2
-        top_rect = pygame.Rect(top_x, 8, top_w, top_h)
-        top_glass = pygame.Surface((top_w, top_h), pygame.SRCALPHA)
-        top_glass.fill((12, 18, 28, 200))
-        surface.blit(top_glass, top_rect.topleft)
-        pygame.draw.rect(surface, COLOR_TEXT_ACCENT_AMBER, top_rect, width=1, border_radius=4)
+        cx = self.screen_width // 2
 
-        head_txt = self.font_badge.render("⏸ TACTICAL PAUSE // SIR PROJECT DEMONSTRATION & WALKTHROUGH MODE", True, COLOR_TEXT_ACCENT_AMBER)
-        surface.blit(head_txt, head_txt.get_rect(center=(self.screen_width // 2, 22)))
+        # 2. Centered Pause Modal Box
+        modal_w = 340
+        modal_h = 320
+        modal_x = cx - modal_w // 2
+        modal_y = 175
+        modal_rect = pygame.Rect(modal_x, modal_y, modal_w, modal_h)
 
-        # 3. Helper for drawing on-grid explanatory callouts
-        def draw_callout_badge(label_text: str, tx: float, ty: float, color: Tuple[int, int, int]) -> None:
-            lbl_surf = self.font_small.render(label_text, True, color)
-            lw = lbl_surf.get_width() + 10
-            lh = 18
-            bx = int(tx - lw / 2)
-            by = int(ty - 24)
+        # Drop shadow
+        pygame.draw.rect(surface, (5, 8, 14), modal_rect.move(0, 4), border_radius=8)
 
-            # Keep callout within screen bounds
-            bx = max(195, min(bx, self.screen_width - 195 - lw))
-            by = max(38, min(by, self.hud_rect.y - 22))
+        # Translucent glassmorphic fill
+        glass_surf = pygame.Surface((modal_w, modal_h), pygame.SRCALPHA)
+        glass_surf.fill((14, 20, 32, 240))
+        surface.blit(glass_surf, modal_rect.topleft)
 
-            # Translucent callout pill
-            pill_surf = pygame.Surface((lw, lh), pygame.SRCALPHA)
-            pill_surf.fill((10, 16, 26, 215))
-            surface.blit(pill_surf, (bx, by))
-            pygame.draw.rect(surface, color, pygame.Rect(bx, by, lw, lh), width=1, border_radius=3)
-            surface.blit(lbl_surf, (bx + 5, by + 2))
+        # Cybernetic borders
+        pygame.draw.rect(surface, (36, 60, 95), modal_rect, width=1, border_radius=8)
+        pygame.draw.rect(surface, (0, 180, 240), modal_rect.inflate(-4, -4), width=1, border_radius=6)
 
-            # Small downward pointer line
-            pygame.draw.line(surface, color, (int(tx), by + lh), (int(tx), int(ty - 4)), 1)
+        # Tactical Corner Tick Marks
+        t_sz = 10
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y), (modal_x + t_sz, modal_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y), (modal_x, modal_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y), (modal_x + modal_w - 1 - t_sz, modal_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y), (modal_x + modal_w - 1 - t_sz, modal_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y + modal_h - 1), (modal_x + t_sz, modal_y + modal_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x, modal_y + modal_h - 1), (modal_x, modal_y + modal_h - 1 - t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y + modal_h - 1), (modal_x + modal_w - 1 - t_sz, modal_y + modal_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (modal_x + modal_w - 1, modal_y + modal_h - 1), (modal_x + modal_w - 1, modal_y + modal_h - 1 - t_sz), 2)
 
-        # Draw callouts on active board entities
-        if player_x > 0 and player_y > 0:
-            draw_callout_badge("👤 OPERATIVE (Human Player)", player_x, player_y - cell_size * 0.35, COLOR_TEXT_ACCENT_CYAN)
+        # Header Title
+        title_surf = self.font_title.render("PAUSED", True, COLOR_TEXT_ACCENT_CYAN)
+        surface.blit(title_surf, title_surf.get_rect(center=(cx, modal_y + 32)))
 
-        for h in hunters:
-            draw_callout_badge(f"🚨 HUNTER #{h.hunter_id} (Gemini 2.5 Flash)", h.visual_x, h.visual_y - cell_size * 0.35, COLOR_TEXT_ACCENT_RED)
+        # Sector & Objective summary line
+        sub_str = f"SECTOR: {level_name.upper()}   |   {'KEY SECURED' if has_key else 'FIND KEY'}"
+        sub_col = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_TEXT_SECONDARY
+        sub_surf = self.font_small.render(sub_str, True, sub_col)
+        surface.blit(sub_surf, sub_surf.get_rect(center=(cx, modal_y + 60)))
 
-        if not has_key and cell_size > 0:
-            kx = origin_x + key_pos[1] * cell_size + cell_size / 2.0
-            ky = origin_y + key_pos[0] * cell_size + cell_size / 2.0
-            draw_callout_badge("🔑 CIPHER KEY (Objective 1)", kx, ky - cell_size * 0.32, COLOR_KEY_GOLD)
+        # Subtle divider
+        pygame.draw.line(surface, (28, 45, 70), (modal_x + 20, modal_y + 75), (modal_x + modal_w - 20, modal_y + 75), 1)
 
-        if cell_size > 0:
-            ex_x = origin_x + exit_pos[1] * cell_size + cell_size / 2.0
-            ex_y = origin_y + exit_pos[0] * cell_size + cell_size / 2.0
-            exit_stat = "EXTRACTION (UNLOCKED!)" if has_key else "EXTRACTION (LOCKED: Need Key)"
-            draw_callout_badge(f"🚪 {exit_stat}", ex_x, ex_y - cell_size * 0.38, COLOR_EXIT_PORTAL)
-
-        if recommended_path and cell_size > 0 and len(recommended_path[0]) >= 2:
-            bx = origin_x + recommended_path[0][1] * cell_size + cell_size / 2.0
-            by = origin_y + recommended_path[0][0] * cell_size + cell_size / 2.0
-            draw_callout_badge("🟢 SAFE PATH (No A*)", bx, by - cell_size * 0.22, COLOR_TEXT_ACCENT_GREEN)
-
-        # ---------------------------------------------------------------------
-        # 4. LEFT DOSSIER PANEL: ACADEMIC AI ARCHITECTURE (FOR SIR)
-        # ---------------------------------------------------------------------
-        left_rect = pygame.Rect(8, 10, 174, 598)
-        left_glass = pygame.Surface((left_rect.width, left_rect.height), pygame.SRCALPHA)
-        left_glass.fill((12, 18, 28, 215))
-        surface.blit(left_glass, left_rect.topleft)
-        pygame.draw.rect(surface, COLOR_TEXT_ACCENT_CYAN, left_rect, width=1, border_radius=6)
-
-        ly = left_rect.y + 10
-        surface.blit(self.font_badge.render("// SIR EVALUATION", True, COLOR_TEXT_ACCENT_AMBER), (left_rect.x + 8, ly))
-        ly += 16
-        surface.blit(self.font_bold.render("AI ARCHITECTURE", True, COLOR_TEXT_ACCENT_CYAN), (left_rect.x + 8, ly))
-        ly += 18
-        pygame.draw.line(surface, (35, 55, 80), (left_rect.x + 8, ly), (left_rect.right - 8, ly), 1)
-        ly += 10
-
-        ai_details = [
-            ("AI MODEL:", "gemini-2.5-flash", COLOR_TEXT_ACCENT_GREEN),
-            ("THINKING BUDGET:", "0 (Low latency)", COLOR_TEXT_PRIMARY),
-            ("PATHFINDING:", "STRICTLY NO A*", COLOR_TEXT_ACCENT_RED),
-            ("AI DIRECTIVE:", "100% LLM JSON", COLOR_TEXT_ACCENT_CYAN),
-            ("PURSUIT LOGIC:", "Flank & Intercept", COLOR_TEXT_PRIMARY),
-            ("PLAYER ADVICE:", "3 Safe Steps [r,c]", COLOR_TEXT_ACCENT_GREEN),
-            ("SIGHTLINE EVASION:", "Exploits blind spots", COLOR_TEXT_SECONDARY),
-            ("SAFETY FALLBACK:", "Greedy Manhattan", COLOR_TEXT_ACCENT_AMBER),
-            ("CONCURRENCY:", "daemon=True Thread", COLOR_TEXT_PRIMARY),
-            ("FRAME TIMING:", "60 FPS (Zero Lag)", COLOR_TEXT_ACCENT_GREEN),
-            ("DATA STORAGE:", "SQLite3 DB Record", COLOR_TEXT_SECONDARY),
-        ]
-
-        for heading, val, col in ai_details:
-            surface.blit(self.font_small.render(heading, True, COLOR_TEXT_MUTED), (left_rect.x + 8, ly))
-            ly += 14
-            surface.blit(self.font_bold.render(val, True, col), (left_rect.x + 8, ly))
-            ly += 18
-
-        # ---------------------------------------------------------------------
-        # 5. RIGHT DOSSIER PANEL: CONTROLS & PROJECT MECHANICS (FOR SIR)
-        # ---------------------------------------------------------------------
-        right_rect = pygame.Rect(778, 10, 174, 598)
-        right_glass = pygame.Surface((right_rect.width, right_rect.height), pygame.SRCALPHA)
-        right_glass.fill((12, 18, 28, 215))
-        surface.blit(right_glass, right_rect.topleft)
-        pygame.draw.rect(surface, COLOR_TEXT_ACCENT_AMBER, right_rect, width=1, border_radius=6)
-
-        ry = right_rect.y + 10
-        surface.blit(self.font_badge.render("// ACTIONS & CONTROLS", True, COLOR_TEXT_ACCENT_AMBER), (right_rect.x + 8, ry))
-        ry += 22
-
-        # Draw action buttons inside right dossier card
+        # 3. Action Buttons (Clean & Centered)
         self.btn_pause_resume.draw(surface)
         self.btn_pause_restart.draw(surface)
         self.btn_pause_help.draw(surface)
         self.btn_pause_menu.draw(surface)
 
-        ry = 210
-        pygame.draw.line(surface, (60, 45, 25), (right_rect.x + 8, ry), (right_rect.right - 8, ry), 1)
-        ry += 10
-
-        surface.blit(self.font_badge.render("// SECTOR MECHANICS", True, COLOR_TEXT_ACCENT_CYAN), (right_rect.x + 8, ry))
-        ry += 18
-
-        mechanics = [
-            ("CURRENT LEVEL:", level_name.upper(), COLOR_TEXT_ACCENT_AMBER),
-            ("DYNAMIC WALLS:", "Shifts every 2.5s", COLOR_TEXT_ACCENT_CYAN),
-            ("OVERWRITE SHIELD:", "Entities protected", COLOR_TEXT_PRIMARY),
-            ("HUNTER UNITS:", f"{len(hunters)} / 8 Max Drones", COLOR_TEXT_ACCENT_RED),
-            ("FACING VECTORS:", "Directional [dr, dc]", COLOR_TEXT_SECONDARY),
-            ("LERP INTERPOLATION:", "speed = 0.28 (Smooth)", COLOR_TEXT_ACCENT_GREEN),
-            ("MISSION OBJECTIVE:", "Key [K] -> Exit [E]", COLOR_KEY_GOLD),
-        ]
-
-        for heading, val, col in mechanics:
-            surface.blit(self.font_small.render(heading, True, COLOR_TEXT_MUTED), (right_rect.x + 8, ry))
-            ry += 14
-            surface.blit(self.font_bold.render(val, True, col), (right_rect.x + 8, ry))
-            ry += 18
-
-        hint_unpause = self.font_small.render("[P / SPACE to Resume]", True, COLOR_TEXT_MUTED)
-        surface.blit(hint_unpause, (right_rect.x + 14, right_rect.bottom - 22))
+        # 4. Resume hint at bottom
+        hint_surf = self.font_small.render("[ Press P or SPACE to Resume ]", True, COLOR_TEXT_MUTED)
+        surface.blit(hint_surf, hint_surf.get_rect(center=(cx, modal_y + modal_h - 18)))
 
     def draw_standby_banner(self, surface: pygame.Surface, seconds_remaining: float) -> None:
         """
