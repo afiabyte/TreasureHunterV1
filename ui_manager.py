@@ -53,8 +53,13 @@ from ui.art_helpers import (
     draw_padlock,
 )
 
+from ui.login_screen import LoginScreenRenderer
+from ui.create_account_screen import CreateAccountScreenRenderer
+
 __all__ = [
     "UIManager",
+    "LoginScreenRenderer",
+    "CreateAccountScreenRenderer",
     "UIButton",
     "TextInputBox",
     "COLOR_BG",

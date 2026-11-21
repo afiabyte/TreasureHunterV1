@@ -23,6 +23,7 @@ class GameViewRenderer:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self._cached_cone_surf: Optional[pygame.Surface] = None
+        self._cached_light_surf: Optional[pygame.Surface] = None
 
     def compute_grid_geometry(
         self,
@@ -417,19 +418,21 @@ class GameViewRenderer:
 
         # Flashlight Beam
         light_len = cell_size * 0.85
-        light_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        if self._cached_light_surf is None:
+            self._cached_light_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        self._cached_light_surf.fill((0, 0, 0, 0))
         p_apex = (scanner_tip_x, scanner_tip_y)
 
         half_fov = math.radians(24)
         p_l = (scanner_tip_x + math.cos(angle - half_fov) * light_len, scanner_tip_y + math.sin(angle - half_fov) * light_len)
         p_r = (scanner_tip_x + math.cos(angle + half_fov) * light_len, scanner_tip_y + math.sin(angle + half_fov) * light_len)
-        pygame.draw.polygon(light_surf, (255, 205, 60, 26), [p_apex, p_l, p_r])
+        pygame.draw.polygon(self._cached_light_surf, (255, 205, 60, 26), [p_apex, p_l, p_r])
 
         narrow_fov = math.radians(11)
         p_nl = (scanner_tip_x + math.cos(angle - narrow_fov) * (light_len * 1.05), scanner_tip_y + math.sin(angle - narrow_fov) * (light_len * 1.05))
         p_nr = (scanner_tip_x + math.cos(angle + narrow_fov) * (light_len * 1.05), scanner_tip_y + math.sin(angle + narrow_fov) * (light_len * 1.05))
-        pygame.draw.polygon(light_surf, (255, 235, 130, 48), [p_apex, p_nl, p_nr])
-        surface.blit(light_surf, (0, 0))
+        pygame.draw.polygon(self._cached_light_surf, (255, 235, 130, 48), [p_apex, p_nl, p_nr])
+        surface.blit(self._cached_light_surf, (0, 0))
 
         # 6. Human Head & Fedora
         head_cx = px + cos_a * (1.8 * scale)

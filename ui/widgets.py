@@ -153,6 +153,15 @@ class UIButton:
             surface.blit(txt, rc)
             return
 
+        elif self.style == "link":
+            color = (195, 65, 18) if self.is_hovered else (42, 24, 10)
+            txt = self.font.render(self.text, True, color)
+            rc = txt.get_rect(center=self.rect.center)
+            surface.blit(txt, rc)
+            if self.is_hovered:
+                pygame.draw.line(surface, color, (rc.left, rc.bottom), (rc.right, rc.bottom), 1)
+            return
+
         # Default Tactical Style
         if self.is_selected:
             bg_color = (15, 60, 95)
@@ -191,22 +200,38 @@ class UIButton:
 
 
 class TextInputBox:
-    """Tactical text input field for player callsign input."""
+    """Tactical and retro-pixel text input field with password masking and recessed styling."""
 
     def __init__(self, rect: pygame.Rect, font: pygame.font.Font,
                  placeholder: str = "OPERATIVE-01",
-                 style: str = "tactical") -> None:
+                 style: str = "tactical",
+                 initial_text: Optional[str] = None,
+                 is_password: bool = False,
+                 text_align: str = "left",
+                 max_length: int = 32,
+                 allow_lower: bool = False,
+                 allow_symbols: bool = False) -> None:
         self.rect = rect
         self.font = font
-        self.text = "OPERATIVE-01"
+        if initial_text is not None:
+            self.text = initial_text
+        elif placeholder == "OPERATIVE-01":
+            self.text = "OPERATIVE-01"
+        else:
+            self.text = ""
         self.placeholder = placeholder
         self.style = style
+        self.is_password = is_password
+        self.text_align = text_align
+        self.max_length = max_length
+        self.allow_lower = allow_lower
+        self.allow_symbols = allow_symbols
         self.is_active = False
         self.cursor_visible = True
         self.cursor_timer = 0.0
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        """Handle keyboard typing and mouse focus events."""
+        """Handle keyboard typing, character validation, and mouse focus events."""
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.is_active = self.rect.collidepoint(event.pos)
         elif event.type == pygame.KEYDOWN and self.is_active:
@@ -214,9 +239,26 @@ class TextInputBox:
                 self.text = self.text[:-1]
             elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_ESCAPE):
                 self.is_active = False
+            elif event.key == pygame.K_TAB:
+                # Tab signals switching active focus
+                pass
             else:
-                if len(self.text) < 16 and (event.unicode.isalnum() or event.unicode in "-_ "):
-                    self.text += event.unicode.upper()
+                char = event.unicode
+                if not char:
+                    return
+
+                # Check character allowance
+                is_valid = False
+                if char.isalnum() or char in "-_ ":
+                    is_valid = True
+                elif (self.allow_symbols or self.is_password) and char in "@.+!#$%&*?=":
+                    is_valid = True
+
+                if is_valid and len(self.text) < self.max_length:
+                    if self.allow_lower or self.is_password or self.allow_symbols:
+                        self.text += char
+                    else:
+                        self.text += char.upper()
 
     def update(self, dt: float) -> None:
         """Blink cursor every 0.5s."""
@@ -228,22 +270,76 @@ class TextInputBox:
     def draw(self, surface: pygame.Surface) -> None:
         """Draw text input field with style-specific borders and prompt."""
         if self.style == "wood_recessed":
-            pygame.draw.rect(surface, (54, 26, 10), self.rect, border_radius=8)
-            pygame.draw.rect(surface, (148, 88, 42), self.rect.inflate(-4, -4), border_radius=6)
-            pygame.draw.rect(surface, (216, 172, 116), self.rect.inflate(-6, -6), border_radius=5)
+            # Outer drop shadow underneath
+            pygame.draw.rect(surface, (45, 24, 10), self.rect.move(0, 2), border_radius=8)
+            # Recessed cavity fill
+            pygame.draw.rect(surface, (168, 135, 93), self.rect, border_radius=8)
+            # Outer carved wood frame
+            pygame.draw.rect(surface, (72, 40, 18), self.rect, width=2, border_radius=8)
+            # Top inner shadow line
+            pygame.draw.line(surface, (128, 98, 64), (self.rect.x + 4, self.rect.y + 3), (self.rect.right - 5, self.rect.y + 3), 2)
+            # Golden active focus ring
             if self.is_active:
-                pygame.draw.rect(surface, (255, 215, 80), self.rect, width=2, border_radius=8)
+                pygame.draw.rect(surface, (246, 186, 42), self.rect, width=2, border_radius=8)
 
-            display_text = self.text if self.text else self.placeholder
-            text_surf = self.font.render(display_text, True, (38, 16, 4))
-            text_rc = text_surf.get_rect(center=self.rect.center)
-            surface.blit(text_surf, text_rc)
-
-            if self.is_active and self.cursor_visible:
-                cx = text_rc.right + 4
-                cy = self.rect.y + 8
-                ch = self.rect.height - 16
-                pygame.draw.line(surface, (38, 16, 4), (cx, cy), (cx, cy + ch), 2)
+            # Draw text or placeholder
+            if not self.text:
+                txt_surf = self.font.render(self.placeholder, True, (88, 62, 38))
+                if self.text_align == "center":
+                    rc = txt_surf.get_rect(center=self.rect.center)
+                    surface.blit(txt_surf, rc)
+                    if self.is_active and self.cursor_visible:
+                        cx = self.rect.centerx
+                        cy = self.rect.y + 8
+                        ch = self.rect.height - 16
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy), (cx, cy + ch), 2)
+                else:
+                    surface.blit(txt_surf, (self.rect.x + 16, self.rect.y + (self.rect.height - txt_surf.get_height()) // 2))
+                    if self.is_active and self.cursor_visible:
+                        cx = self.rect.x + 16
+                        cy = self.rect.y + 8
+                        ch = self.rect.height - 16
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy), (cx, cy + ch), 2)
+            elif self.is_password:
+                # Masked solid round dots
+                dot_count = len(self.text)
+                spacing = 14
+                total_w = dot_count * spacing
+                if self.text_align == "center":
+                    start_x = self.rect.centerx - total_w // 2 + spacing // 2
+                    cy = self.rect.centery
+                    for d in range(dot_count):
+                        dx = start_x + d * spacing
+                        pygame.draw.circle(surface, (35, 18, 6), (dx, cy), 4)
+                    if self.is_active and self.cursor_visible:
+                        cx = start_x + (dot_count - 1) * spacing + 10
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy - 8), (cx, cy + 8), 2)
+                else:
+                    start_x = self.rect.x + 18
+                    cy = self.rect.centery
+                    for d in range(dot_count):
+                        dx = start_x + d * spacing
+                        pygame.draw.circle(surface, (35, 18, 6), (dx, cy), 4)
+                    if self.is_active and self.cursor_visible:
+                        cx = start_x + dot_count * spacing + 4
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy - 8), (cx, cy + 8), 2)
+            else:
+                txt_surf = self.font.render(self.text, True, (35, 18, 6))
+                if self.text_align == "center":
+                    rc = txt_surf.get_rect(center=self.rect.center)
+                    surface.blit(txt_surf, rc)
+                    if self.is_active and self.cursor_visible:
+                        cx = rc.right + 4
+                        cy = self.rect.y + 8
+                        ch = self.rect.height - 16
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy), (cx, cy + ch), 2)
+                else:
+                    surface.blit(txt_surf, (self.rect.x + 16, self.rect.y + (self.rect.height - txt_surf.get_height()) // 2))
+                    if self.is_active and self.cursor_visible:
+                        cx = self.rect.x + 16 + txt_surf.get_width() + 4
+                        cy = self.rect.y + 8
+                        ch = self.rect.height - 16
+                        pygame.draw.line(surface, (45, 22, 10), (cx, cy), (cx, cy + ch), 2)
             return
 
         border_color = COLOR_TEXT_ACCENT_CYAN if self.is_active else COLOR_BTN_BORDER

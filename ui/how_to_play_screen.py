@@ -21,6 +21,7 @@ class HowToPlayScreenRenderer:
     def __init__(self, screen_width: int = 960, screen_height: int = 780) -> None:
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self._t_font: Optional[pygame.font.Font] = None
 
     def _draw_iron_corner_bracket(self, surface: pygame.Surface, x: int, y: int, corner: str) -> None:
         """Render heavy dark iron corner bracket with metallic bevel and rivets."""
@@ -526,7 +527,12 @@ class HowToPlayScreenRenderer:
         # 3. 3D Adventure Title "HOW TO PLAY"
         title_y = card_y + 18
         title_text = "HOW TO PLAY"
-        t_font = pygame.font.SysFont("trebuchetms,impact,arial", 38, bold=True)
+        if font_title:
+            t_font = font_title
+        else:
+            if self._t_font is None:
+                self._t_font = pygame.font.SysFont("trebuchetms,impact,arial", 38, bold=True)
+            t_font = self._t_font
         tx = cx - t_font.size(title_text)[0] // 2
 
         # 3D Drop Shadow

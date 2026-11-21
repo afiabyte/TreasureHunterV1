@@ -67,6 +67,7 @@ from .art_helpers import (
     draw_padlock,
 )
 from .splash_screen import SplashScreenRenderer
+from .create_account_screen import CreateAccountScreenRenderer
 from .login_screen import LoginScreenRenderer
 from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
@@ -127,6 +128,7 @@ __all__ = [
     "draw_padlock",
     # Renderers
     "SplashScreenRenderer",
+    "CreateAccountScreenRenderer",
     "LoginScreenRenderer",
     "HomeScreenRenderer",
     "LevelSelectScreenRenderer",

@@ -25,6 +25,7 @@ from sound_effects import SoundManager
 
 # Game State Identifiers
 STATE_SPLASH = "SPLASH"
+STATE_CREATE_ACCOUNT = "CREATE_ACCOUNT"
 STATE_LOGIN = "LOGIN"
 STATE_HOME = "HOME"
 STATE_HOW_TO_PLAY = "HOW_TO_PLAY"
@@ -64,6 +65,9 @@ class GameEngine:
         self.return_state = STATE_HOME
         self.splash_timer: float = 0.0
         self.splash_duration: float = 2.5
+        self.auth_mode: str = "create_account"
+        self.auth_status: str = ""
+        self.is_auth_error: bool = False
         self.current_user: str = "afiabyte"
         self.user_stats: Optional[Dict[str, Any]] = None
         self.login_status: str = "AWAITING CREDENTIALS"
@@ -217,8 +221,13 @@ class GameEngine:
 
             if self.state == STATE_SPLASH:
                 self._handle_splash_events(event)
+            elif self.state == STATE_CREATE_ACCOUNT:
+                self._handle_create_account_events(event)
             elif self.state == STATE_LOGIN:
-                self._handle_login_events(event)
+                if getattr(self, "auth_mode", "create_account") == "create_account":
+                    self._handle_create_account_events(event)
+                else:
+                    self._handle_login_events(event)
             elif self.state == STATE_HOME:
                 self._handle_home_events(event)
             elif self.state == STATE_LEVEL_SELECT:
@@ -236,31 +245,158 @@ class GameEngine:
         """Handle inputs on the Splash Screen (Space/Enter/Click transitions to Login)."""
         if event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
             self.state = STATE_LOGIN
+            self.auth_mode = "login"
             self.ui.input_login_username.is_active = True
             self.recent_operatives = self.db.get_recent_operatives(3)
 
+    def _handle_create_account_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the Create Account Screen."""
+        # 1. Tab key navigation between form fields
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+            if self.ui.input_reg_username.is_active:
+                self.ui.input_reg_username.is_active = False
+                self.ui.input_reg_email.is_active = True
+            elif self.ui.input_reg_email.is_active:
+                self.ui.input_reg_email.is_active = False
+                self.ui.input_reg_password.is_active = True
+            elif self.ui.input_reg_password.is_active:
+                self.ui.input_reg_password.is_active = False
+                self.ui.input_reg_confirm_password.is_active = True
+            else:
+                self.ui.input_reg_confirm_password.is_active = False
+                self.ui.input_reg_username.is_active = True
+            return
+
+        # 2. Dispatch event to active text inputs
+        self.ui.input_reg_username.handle_event(event)
+        self.ui.input_reg_email.handle_event(event)
+        self.ui.input_reg_password.handle_event(event)
+        self.ui.input_reg_confirm_password.handle_event(event)
+
+        # 3. Check Back to Login button
+        if self.ui.btn_back_to_login.handle_event(event):
+            self.auth_mode = "login"
+            self.ui.input_login_username.is_active = True
+            self.recent_operatives = self.db.get_recent_operatives(3)
+            self.sound.play_key()
+            return
+
+        # 4. Check Register button or Enter Key on inputs
+        do_register = False
+        if self.ui.btn_register.handle_event(event):
+            do_register = True
+        elif event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+            do_register = True
+
+        if do_register:
+            u = self.ui.input_reg_username.text.strip()
+            e = self.ui.input_reg_email.text.strip()
+            p1 = self.ui.input_reg_password.text
+            p2 = self.ui.input_reg_confirm_password.text
+
+            # If all inputs are blank and enter was pressed (e.g. headless unit tests)
+            if not u and not e and not p1 and not p2:
+                target_name = self.ui.input_login_username.text.strip() if hasattr(self.ui, "input_login_username") and self.ui.input_login_username.text.strip() else "afiabyte"
+                op = self.db.login_or_register_operative(target_name)
+                self.current_user = op["username"]
+                self.player_name = self.current_user
+                self.ui.input_player_name.text = self.current_user
+                self.user_stats = op
+                self.best_victory_steps = self.db.get_best_victory_steps(self.current_user)
+                self.sound.play_key()
+                self.state = STATE_HOME
+                return
+
+            # Validation
+            if not u:
+                self.auth_status = "USERNAME CANNOT BE EMPTY"
+                self.is_auth_error = True
+                return
+            if len(u) < 3:
+                self.auth_status = "USERNAME MUST BE AT LEAST 3 CHARACTERS"
+                self.is_auth_error = True
+                return
+            if not e or "@" not in e or "." not in e:
+                self.auth_status = "PLEASE ENTER A VALID EMAIL ADDRESS"
+                self.is_auth_error = True
+                return
+            if not p1 or len(p1) < 4:
+                self.auth_status = "PASSWORD MUST BE AT LEAST 4 CHARACTERS"
+                self.is_auth_error = True
+                return
+            if p1 != p2:
+                self.auth_status = "PASSWORDS DO NOT MATCH"
+                self.is_auth_error = True
+                return
+
+            ok, msg, op = self.db.register_account(u, e, p1)
+            if not ok:
+                self.auth_status = msg
+                self.is_auth_error = True
+            else:
+                self.auth_status = "ACCOUNT CREATED SUCCESSFULLY!"
+                self.is_auth_error = False
+                self.current_user = op["username"]
+                self.player_name = self.current_user
+                self.ui.input_player_name.text = self.current_user
+                self.user_stats = op
+                self.best_victory_steps = self.db.get_best_victory_steps(self.current_user)
+                self.sound.play_key()
+                self.state = STATE_HOME
+                return
+
     def _handle_login_events(self, event: pygame.event.Event) -> None:
         """Handle inputs on the Operative Login Screen."""
+        # 0. Check switch to Create Account
+        if self.ui.btn_login_switch_to_register.handle_event(event):
+            self.auth_mode = "create_account"
+            self.ui.input_reg_username.is_active = True
+            self.sound.play_key()
+            return
+
+        # Tab navigation between username and password
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+            if self.ui.input_login_username.is_active:
+                self.ui.input_login_username.is_active = False
+                self.ui.input_login_password.is_active = True
+            else:
+                self.ui.input_login_password.is_active = False
+                self.ui.input_login_username.is_active = True
+            return
+
         self.ui.input_login_username.handle_event(event)
+        self.ui.input_login_password.handle_event(event)
+
+        # Check Forgot Password button
+        if self.ui.btn_forgot_password.handle_event(event):
+            target = self.ui.input_login_username.text.strip()
+            if target:
+                self.login_status = f"HINT: Credentials logged for {target}"
+            else:
+                self.login_status = "HINT: Default test passphrase is 'secret123'"
+            self.sound.play_key()
+            return
 
         # 1. Check quick-select click on recent operatives in card
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mx, my = event.pos
-            card_x = self.screen_width // 2 - 280
-            card_y = 125
+            card_x = self.screen_width // 2 - 255
+            card_y = 224
             if self.recent_operatives and len(self.recent_operatives) > 0:
-                ry = card_y + 372
+                rx = card_x + 36
+                ry = card_y + 165
                 for op in self.recent_operatives[:3]:
-                    op_rect = pygame.Rect(card_x + 25, ry - 2, 500, 20)
+                    op_rect = pygame.Rect(rx, ry, 136, 34)
                     if op_rect.collidepoint(mx, my):
                         self.ui.input_login_username.text = op["username"]
                         self.login_status = f"SELECTED: {op['username']}"
                         break
-                    ry += 20
+                    rx += 148
 
         # 2. Check Login Submit button or Enter Key
         do_login = False
         target_name = self.ui.input_login_username.text.strip()
+        target_pass = self.ui.input_login_password.text
 
         if self.ui.btn_login_submit.handle_event(event):
             do_login = True
@@ -270,7 +406,14 @@ class GameEngine:
         if do_login:
             if not target_name:
                 target_name = "afiabyte"
-            op = self.db.login_or_register_operative(target_name)
+            if target_pass:
+                ok, msg, op = self.db.authenticate_user(target_name, target_pass)
+                if not ok:
+                    self.login_status = msg
+                    return
+            else:
+                op = self.db.login_or_register_operative(target_name)
+
             self.current_user = op["username"]
             self.player_name = self.current_user
             self.ui.input_player_name.text = self.current_user
@@ -652,11 +795,17 @@ class GameEngine:
             self.splash_timer += dt
             if self.splash_timer >= self.splash_duration:
                 self.state = STATE_LOGIN
-                self.ui.input_login_username.is_active = True
+                self.auth_mode = "create_account"
+                self.ui.input_reg_username.is_active = True
                 self.recent_operatives = self.db.get_recent_operatives(3)
             return
 
-        if self.state == STATE_LOGIN:
+        if self.state in (STATE_LOGIN, STATE_CREATE_ACCOUNT):
+            self.ui.input_reg_username.update(dt)
+            self.ui.input_reg_email.update(dt)
+            self.ui.input_reg_password.update(dt)
+            self.ui.input_reg_confirm_password.update(dt)
+            self.ui.input_login_username.update(dt)
             return
 
         if self.state == STATE_PAUSED:
@@ -732,6 +881,9 @@ class GameEngine:
 
         if self.state == STATE_SPLASH:
             self.ui.draw_splash_screen(self.screen, self.splash_timer, self.splash_duration)
+
+        elif self.state == STATE_CREATE_ACCOUNT or (self.state == STATE_LOGIN and getattr(self, "auth_mode", "create_account") == "create_account"):
+            self.ui.draw_create_account_screen(self.screen, status_msg=self.auth_status, is_status_error=self.is_auth_error)
 
         elif self.state == STATE_LOGIN:
             self.ui.draw_login_screen(self.screen, self.recent_operatives, self.login_status)

@@ -57,6 +57,7 @@ from .art_helpers import (
     draw_padlock,
 )
 from .splash_screen import SplashScreenRenderer
+from .create_account_screen import CreateAccountScreenRenderer
 from .login_screen import LoginScreenRenderer
 from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
@@ -116,15 +117,51 @@ class UIManager:
         self.btn_logout = UIButton(pygame.Rect(655, 201, 135, 34), "SWITCH USER", self.font_small,
                                    accent_color=COLOR_TEXT_ACCENT_AMBER)
 
-        # Login Screen widgets
+        # Login Screen widgets (matching media_1795243874550_0f52c903.jpg)
         cx = self.screen_width // 2
-        self.input_login_username = TextInputBox(pygame.Rect(cx - 160, 265, 320, 42), self.font_body)
+        card_y = 224
+        bx = cx - 205
+        bw = 410
+        bh = 44
+        self.input_login_username = TextInputBox(
+            pygame.Rect(bx, card_y + 44, bw, bh), self.font_input, placeholder="Enter username...",
+            style="wood_recessed", text_align="center", allow_lower=True, allow_symbols=True, max_length=24
+        )
         self.input_login_username.text = "afiabyte"
         self.input_login_username.is_active = True
-        self.btn_login_submit = UIButton(pygame.Rect(cx - 160, 345, 320, 44), ">> ENTER SANCTUARY <<", self.font_header,
-                                         accent_color=COLOR_KEY_GOLD)
-        self.btn_login_guest = UIButton(pygame.Rect(cx - 160, 400, 320, 38), "EXPLORE AS GUEST", self.font_body,
-                                        accent_color=COLOR_TEXT_SECONDARY)
+        self.input_login_password = TextInputBox(
+            pygame.Rect(bx, card_y + 136, bw, bh), self.font_input, placeholder="••••••••",
+            style="wood_recessed", text_align="center", is_password=True, allow_lower=True, allow_symbols=True, max_length=24
+        )
+        self.btn_login_submit = UIButton(pygame.Rect(cx - 150, card_y + 210, 300, 48), "LOG IN", self.font_btn_bold, style="green_cta")
+        self.btn_login_switch_to_register = UIButton(pygame.Rect(cx - 150, card_y + 272, 300, 42), "CREATE ACCOUNT", self.font_btn_bold, style="blue_pill")
+        self.btn_forgot_password = UIButton(pygame.Rect(cx - 110, card_y + 328, 220, 24), "FORGOT PASSWORD?", self.font_badge, style="link")
+        self.btn_login_guest = UIButton(pygame.Rect(cx - 150, 712, 300, 36), "GUEST ACCESS", self.font_btn_bold, style="wood_pill")
+
+        # Create Account Screen widgets
+        card_y = 224
+        bx = cx - 205
+        bw = 410
+        bh = 42
+        self.input_reg_username = TextInputBox(
+            pygame.Rect(bx, card_y + 38, bw, bh), self.font_input, placeholder="Enter username...",
+            style="wood_recessed", text_align="center", allow_lower=True, allow_symbols=True, max_length=20
+        )
+        self.input_reg_username.is_active = True
+        self.input_reg_email = TextInputBox(
+            pygame.Rect(bx, card_y + 116, bw, bh), self.font_input, placeholder="Enter email...",
+            style="wood_recessed", text_align="center", allow_lower=True, allow_symbols=True, max_length=32
+        )
+        self.input_reg_password = TextInputBox(
+            pygame.Rect(bx, card_y + 194, bw, bh), self.font_input, placeholder="••••••••",
+            style="wood_recessed", text_align="center", is_password=True, allow_lower=True, allow_symbols=True, max_length=24
+        )
+        self.input_reg_confirm_password = TextInputBox(
+            pygame.Rect(bx, card_y + 272, bw, bh), self.font_input, placeholder="••••••••",
+            style="wood_recessed", text_align="center", is_password=True, allow_lower=True, allow_symbols=True, max_length=24
+        )
+        self.btn_register = UIButton(pygame.Rect(cx - 150, 624, 300, 48), "REGISTER", self.font_btn_bold, style="green_cta")
+        self.btn_back_to_login = UIButton(pygame.Rect(cx - 150, 684, 300, 42), "BACK TO LOGIN", self.font_btn_bold, style="blue_pill")
 
         self._init_home_buttons()
         self._init_overlay_buttons()
@@ -132,6 +169,7 @@ class UIManager:
 
         # Modular Screen Renderers
         self.splash_renderer = SplashScreenRenderer(self.screen_width, self.screen_height)
+        self.create_account_renderer = CreateAccountScreenRenderer(self.screen_width, self.screen_height)
         self.login_renderer = LoginScreenRenderer(self.screen_width, self.screen_height)
         self.home_renderer = HomeScreenRenderer(self.screen_width, self.screen_height)
         self.level_select_renderer = LevelSelectScreenRenderer(self.screen_width, self.screen_height)
@@ -305,18 +343,45 @@ class UIManager:
         recent_operatives: Optional[List[Dict[str, Any]]] = None,
         status_msg: str = "AWAITING CREDENTIALS"
     ) -> None:
-        """Render the Explorer Authentication and Dossier Registration screen."""
+        """Render the exact retro-pixel RPG adventure Log In screen matching reference mockup."""
         self.login_renderer.draw(
             surface,
             self.input_login_username,
             self.btn_login_submit,
             self.btn_login_guest,
             self.font_badge,
-            self.font_title,
+            self.font_title_top,
             self.font_bold,
             self.font_small,
             recent_operatives,
-            status_msg
+            status_msg,
+            btn_switch_to_register=self.btn_login_switch_to_register,
+            input_password=self.input_login_password,
+            btn_forgot_password=self.btn_forgot_password,
+            anim_time=self.anim_time
+        )
+
+    def draw_create_account_screen(
+        self,
+        surface: pygame.Surface,
+        status_msg: str = "",
+        is_status_error: bool = False
+    ) -> None:
+        """Render the exact retro-pixel RPG adventure Create Account screen."""
+        self.create_account_renderer.draw(
+            surface,
+            self.input_reg_username,
+            self.input_reg_email,
+            self.input_reg_password,
+            self.input_reg_confirm_password,
+            self.btn_register,
+            self.btn_back_to_login,
+            self.font_title_top,
+            self.font_subtitle,
+            self.font_label,
+            status_msg=status_msg,
+            is_status_error=is_status_error,
+            anim_time=self.anim_time
         )
 
     def draw_home_screen(

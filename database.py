@@ -9,8 +9,9 @@ Thread-safety is guaranteed using a threading lock.
 
 import sqlite3
 import threading
+import hashlib
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 
 class DatabaseManager:
@@ -86,11 +87,149 @@ class DatabaseManager:
                         total_missions INTEGER DEFAULT 0,
                         victories INTEGER DEFAULT 0,
                         defeats INTEGER DEFAULT 0,
-                        best_steps INTEGER DEFAULT NULL
+                        best_steps INTEGER DEFAULT NULL,
+                        email TEXT,
+                        password_hash TEXT
                     );
                     """
                 )
+                # Safely ensure email and password_hash columns exist on legacy tables
+                cursor.execute("PRAGMA table_info(operatives);")
+                existing_cols = [col["name"] for col in cursor.fetchall()]
+                if "email" not in existing_cols:
+                    cursor.execute("ALTER TABLE operatives ADD COLUMN email TEXT;")
+                if "password_hash" not in existing_cols:
+                    cursor.execute("ALTER TABLE operatives ADD COLUMN password_hash TEXT;")
                 conn.commit()
+            finally:
+                conn.close()
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        """Compute SHA-256 hash for secure operative credential storage."""
+        if not password:
+            return ""
+        return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+    def register_account(
+        self, username: str, email: str, password: str
+    ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+        """
+        Register a new operative account with username, email, and password.
+
+        Args:
+            username: Operative handle (min 3 chars).
+            email: Contact email address.
+            password: Secret passphrase (min 4 chars).
+
+        Returns:
+            Tuple of (success: bool, message: str, operative_dict: Optional[Dict]).
+        """
+        clean_user = username.strip() if username else ""
+        clean_email = email.strip().lower() if email else ""
+
+        if not clean_user or len(clean_user) < 3:
+            return False, "USERNAME MUST BE AT LEAST 3 CHARACTERS", None
+        if not clean_email or "@" not in clean_email or "." not in clean_email:
+            return False, "PLEASE ENTER A VALID EMAIL ADDRESS", None
+        if not password or len(password) < 4:
+            return False, "PASSWORD MUST BE AT LEAST 4 CHARACTERS", None
+
+        pw_hash = self.hash_password(password)
+
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                # Check for existing username (case-insensitive)
+                cursor.execute(
+                    "SELECT id FROM operatives WHERE username = ? COLLATE NOCASE;",
+                    (clean_user,)
+                )
+                if cursor.fetchone():
+                    return False, "USERNAME IS ALREADY REGISTERED", None
+
+                # Check for existing email (case-insensitive)
+                cursor.execute(
+                    "SELECT id FROM operatives WHERE email = ? COLLATE NOCASE;",
+                    (clean_email,)
+                )
+                if cursor.fetchone():
+                    return False, "EMAIL IS ALREADY ASSOCIATED WITH AN ACCOUNT", None
+
+                # Insert new operative
+                cursor.execute(
+                    """
+                    INSERT INTO operatives (username, email, password_hash, last_login)
+                    VALUES (?, ?, ?, datetime('now'));
+                    """,
+                    (clean_user, clean_email, pw_hash)
+                )
+                conn.commit()
+                new_id = cursor.lastrowid
+                cursor.execute("SELECT * FROM operatives WHERE id = ?;", (new_id,))
+                row = cursor.fetchone()
+                return True, "ACCOUNT CREATED SUCCESSFULLY", dict(row)
+            finally:
+                conn.close()
+
+    def authenticate_user(
+        self, username_or_email: str, password: str
+    ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+        """
+        Authenticate an operative by username or email and verify password.
+
+        Args:
+            username_or_email: Operative callsign or email.
+            password: Secret passphrase.
+
+        Returns:
+            Tuple of (success: bool, message: str, operative_dict: Optional[Dict]).
+        """
+        clean_ident = username_or_email.strip() if username_or_email else ""
+        if not clean_ident:
+            return False, "PLEASE ENTER USERNAME OR EMAIL", None
+
+        pw_hash = self.hash_password(password) if password else ""
+
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    SELECT * FROM operatives
+                    WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE;
+                    """,
+                    (clean_ident, clean_ident.lower())
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return False, "OPERATIVE NOT FOUND IN GUILD ARCHIVES", None
+
+                row_dict = dict(row)
+                stored_hash = row_dict.get("password_hash")
+
+                # If account has a stored password hash, verify it
+                if stored_hash:
+                    if stored_hash != pw_hash:
+                        return False, "INCORRECT PASSPHRASE", None
+                else:
+                    # Legacy operative created before password system: update password on first login
+                    if pw_hash:
+                        cursor.execute(
+                            "UPDATE operatives SET password_hash = ? WHERE id = ?;",
+                            (pw_hash, row_dict["id"])
+                        )
+
+                # Update last login timestamp
+                cursor.execute(
+                    "UPDATE operatives SET last_login = datetime('now') WHERE id = ?;",
+                    (row_dict["id"],)
+                )
+                conn.commit()
+                cursor.execute("SELECT * FROM operatives WHERE id = ?;", (row_dict["id"],))
+                return True, "AUTHENTICATION SUCCESSFUL", dict(cursor.fetchone())
             finally:
                 conn.close()
 

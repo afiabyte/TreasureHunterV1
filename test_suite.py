@@ -86,6 +86,40 @@ class TestDatabaseManager(unittest.TestCase):
         recent = self.db.get_recent_operatives(5)
         self.assertTrue(any(r["username"] == "afiabyte" for r in recent))
 
+    def test_account_registration_and_authentication(self) -> None:
+        """Verify new operative registration with email and password hashing."""
+        # 1. Successful registration
+        ok, msg, op = self.db.register_account("Bravo42", "bravo42@hunter.io", "secretPass123")
+        self.assertTrue(ok)
+        self.assertIn("SUCCESS", msg)
+        self.assertEqual(op["username"], "Bravo42")
+        self.assertEqual(op["email"], "bravo42@hunter.io")
+
+        # 2. Reject duplicate username
+        ok_dup, msg_dup, _ = self.db.register_account("bravo42", "other@hunter.io", "pass123")
+        self.assertFalse(ok_dup)
+        self.assertIn("ALREADY REGISTERED", msg_dup)
+
+        # 3. Reject duplicate email
+        ok_em, msg_em, _ = self.db.register_account("AgentX", "bravo42@hunter.io", "pass123")
+        self.assertFalse(ok_em)
+        self.assertIn("EMAIL IS ALREADY", msg_em)
+
+        # 4. Successful authentication with username
+        auth_ok, auth_msg, auth_op = self.db.authenticate_user("Bravo42", "secretPass123")
+        self.assertTrue(auth_ok)
+        self.assertEqual(auth_op["username"], "Bravo42")
+
+        # 5. Successful authentication with email
+        auth_ok2, _, auth_op2 = self.db.authenticate_user("bravo42@hunter.io", "secretPass123")
+        self.assertTrue(auth_ok2)
+        self.assertEqual(auth_op2["username"], "Bravo42")
+
+        # 6. Reject invalid password
+        bad_ok, bad_msg, _ = self.db.authenticate_user("Bravo42", "wrongPass")
+        self.assertFalse(bad_ok)
+        self.assertIn("INCORRECT", bad_msg)
+
 
 class TestGeminiTacticalAI(unittest.TestCase):
     """Test suite for Gemini Tactical AI and fallback mechanisms."""
@@ -366,7 +400,7 @@ class TestGameEngineIntegration(unittest.TestCase):
         """Verify human player and human hunter render across cardinal facings and cell sizes."""
         engine = GameEngine(db_path=self.test_db_path)
         engine.start_mission(grid_size=7, level=2, player_name="HERO_AGENT")
-        test_surf = pygame.Surface((960, 780))
+        test_surf = engine.screen
 
         # Test player facing in all 4 cardinal directions with/without key
         for fdr, fdc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -377,6 +411,27 @@ class TestGameEngineIntegration(unittest.TestCase):
         for fdr, fdc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             engine.ui._draw_human_hunter(test_surf, 300.0, 300.0, 64.0, fdr, fdc, hunter_id=1)
             engine.ui._draw_human_hunter(test_surf, 300.0, 300.0, 64.0, fdr, fdc, hunter_id=2)
+
+
+    def test_create_account_screen_registration(self) -> None:
+        """Verify Create Account UI form input, validation, registration, and progression to Home."""
+        engine = GameEngine(db_path=self.test_db_path)
+        engine.state = "LOGIN"
+        engine.auth_mode = "create_account"
+
+        # Populate registration fields
+        engine.ui.input_reg_username.text = "Explorer77"
+        engine.ui.input_reg_email.text = "explorer77@dungeon.net"
+        engine.ui.input_reg_password.text = "dungeonSecret9"
+        engine.ui.input_reg_confirm_password.text = "dungeonSecret9"
+
+        # Trigger registration
+        reg_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_register.rect.center)
+        engine._handle_create_account_events(reg_click)
+
+        self.assertEqual(engine.state, STATE_HOME)
+        self.assertEqual(engine.current_user, "Explorer77")
+        self.assertIsNotNone(engine.user_stats)
 
 
 class TestArchitectureAndZeroDeadCode(unittest.TestCase):
@@ -396,6 +451,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         import ui.widgets
         import ui.art_helpers
         import ui.splash_screen
+        import ui.create_account_screen
         import ui.login_screen
         import ui.home_screen
         import ui.level_select_screen
@@ -418,6 +474,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui, "UIButton"))
         self.assertTrue(hasattr(ui, "TextInputBox"))
         self.assertTrue(hasattr(ui, "SplashScreenRenderer"))
+        self.assertTrue(hasattr(ui, "CreateAccountScreenRenderer"))
         self.assertTrue(hasattr(ui, "LoginScreenRenderer"))
         self.assertTrue(hasattr(ui, "HomeScreenRenderer"))
         self.assertTrue(hasattr(ui, "LevelSelectScreenRenderer"))
