@@ -562,8 +562,7 @@ class GameEngine:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mx, my = event.pos
             cx = self.screen_width // 2
-            card_y = 30
-            level_badge_rect = pygame.Rect(cx + 8, card_y + 115, 175, 36)
+            level_badge_rect = pygame.Rect(cx + 9, 172, 180, 34)
             if level_badge_rect.collidepoint(mx, my):
                 self.return_state = STATE_HOME
                 self.state = STATE_LEVEL_SELECT
@@ -571,7 +570,7 @@ class GameEngine:
                 return
 
             # 7c. Click on BEST TROPHY badge on Parchment Header -> Opens Dungeon Records
-            trophy_badge_rect = pygame.Rect(cx - 183, card_y + 115, 175, 36)
+            trophy_badge_rect = pygame.Rect(cx - 189, 172, 180, 34)
             if trophy_badge_rect.collidepoint(mx, my):
                 self.return_state = STATE_HOME
                 self.state = STATE_HISTORY
@@ -582,6 +581,13 @@ class GameEngine:
         if self.ui.btn_how_to_play.handle_event(event):
             self.return_state = STATE_HOME
             self.state = STATE_HOW_TO_PLAY
+            self.sound.play_step()
+            return
+
+        # 8b. "History" button in 2x2 grid
+        if hasattr(self.ui, "btn_history") and self.ui.btn_history.handle_event(event):
+            self.return_state = STATE_HOME
+            self.state = STATE_HISTORY
             self.sound.play_step()
             return
 

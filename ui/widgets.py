@@ -55,14 +55,13 @@ class UIButton:
                 txt = self.font.render(self.text, True, (52, 22, 4))
                 surface.blit(txt, txt.get_rect(center=self.rect.center))
             else:
-                bg = (148, 138, 130) if self.is_hovered else (136, 126, 118)
+                bg = (152, 142, 134) if self.is_hovered else (138, 128, 120)
                 pygame.draw.rect(surface, (54, 48, 44), self.rect.move(0, 4), border_radius=10)
                 pygame.draw.rect(surface, bg, self.rect, border_radius=10)
-                pygame.draw.rect(surface, (168, 158, 150), self.rect.inflate(-4, -4), border_radius=8)
-                pygame.draw.rect(surface, (126, 116, 108), self.rect.inflate(-8, -8), border_radius=6)
-                pygame.draw.rect(surface, (50, 44, 40), self.rect, width=2, border_radius=10)
-                pygame.draw.line(surface, (84, 76, 70), (self.rect.x + 14, self.rect.bottom - 14), (self.rect.x + 26, self.rect.bottom - 22), 2)
-                txt = self.font.render(self.text, True, (40, 34, 30))
+                pygame.draw.rect(surface, (172, 162, 154), self.rect.inflate(-4, -4), border_radius=8)
+                pygame.draw.rect(surface, (122, 112, 104), self.rect.inflate(-8, -8), border_radius=6)
+                pygame.draw.rect(surface, (48, 42, 38), self.rect, width=2, border_radius=10)
+                txt = self.font.render(self.text, True, (38, 32, 28))
                 surface.blit(txt, txt.get_rect(center=self.rect.center))
             return
 
@@ -164,15 +163,71 @@ class UIButton:
                 surface.blit(txt, rc)
             return
 
+        elif self.style == "history_pill":
+            c_shadow = (22, 14, 26)
+            c_face = (60, 44, 66) if self.is_hovered else (48, 34, 54)
+            c_light = (86, 64, 94)
+            c_inner = (36, 24, 42)
+            c_border = (212, 158, 48)  # Rich golden border
+            c_dark_outline = (32, 18, 10)
+
+            # Drop shadow
+            pygame.draw.rect(surface, c_shadow, self.rect.move(0, 3), border_radius=10)
+            # Golden outer rim
+            pygame.draw.rect(surface, c_border, self.rect, border_radius=10)
+            # Dark outer contour
+            pygame.draw.rect(surface, c_dark_outline, self.rect, width=1, border_radius=10)
+            # Body fill
+            pygame.draw.rect(surface, c_face, self.rect.inflate(-4, -4), border_radius=8)
+            pygame.draw.rect(surface, c_light, self.rect.inflate(-6, -6), width=1, border_radius=7)
+            pygame.draw.rect(surface, c_inner, self.rect.inflate(-10, -10), border_radius=6)
+
+            txt = self.font.render(self.text, True, (255, 248, 238))
+            txt_s = self.font.render(self.text, True, (16, 8, 20))
+
+            # Render Scroll Icon on Left & Clock Icon on Right
+            tw = txt.get_width()
+            total_w = 20 + 8 + tw + 8 + 18
+            start_x = self.rect.centerx - total_w // 2
+            cy = self.rect.centery
+
+            # 1. Left Scroll Icon
+            sx = start_x
+            sy = cy - 8
+            pygame.draw.rect(surface, (238, 214, 166), pygame.Rect(sx + 2, sy + 2, 14, 12))
+            pygame.draw.rect(surface, (72, 38, 12), pygame.Rect(sx + 2, sy + 2, 14, 12), 1)
+            pygame.draw.rect(surface, (148, 92, 42), pygame.Rect(sx, sy, 18, 4), border_radius=2)
+            pygame.draw.rect(surface, (54, 24, 8), pygame.Rect(sx, sy, 18, 4), 1, border_radius=2)
+            pygame.draw.rect(surface, (148, 92, 42), pygame.Rect(sx, sy + 12, 18, 4), border_radius=2)
+            pygame.draw.rect(surface, (54, 24, 8), pygame.Rect(sx, sy + 12, 18, 4), 1, border_radius=2)
+            pygame.draw.line(surface, (150, 110, 70), (sx + 5, sy + 6), (sx + 13, sy + 6), 1)
+            pygame.draw.line(surface, (150, 110, 70), (sx + 5, sy + 9), (sx + 11, sy + 9), 1)
+
+            # 2. Text in Middle
+            tx = start_x + 28
+            ty = cy - txt.get_height() // 2
+            surface.blit(txt_s, (tx, ty + 1))
+            surface.blit(txt, (tx, ty))
+
+            # 3. Right Clock Icon
+            cx_icon = start_x + 28 + tw + 14
+            pygame.draw.circle(surface, (48, 24, 8), (cx_icon, cy + 1), 8)
+            pygame.draw.circle(surface, (235, 175, 48), (cx_icon, cy), 8)
+            pygame.draw.circle(surface, (255, 248, 235), (cx_icon, cy), 6)
+            pygame.draw.circle(surface, (48, 24, 8), (cx_icon, cy), 6, 1)
+            pygame.draw.line(surface, (48, 24, 8), (cx_icon, cy), (cx_icon - 2, cy - 4), 2)
+            pygame.draw.line(surface, (48, 24, 8), (cx_icon, cy), (cx_icon + 3, cy), 2)
+            return
+
         elif self.style == "red_pill":
-            c_shadow = (72, 20, 16)
-            c_face = (184, 60, 48) if self.is_hovered else (168, 52, 40)
-            c_light = (220, 94, 80)
-            c_border = (48, 14, 10)
+            c_shadow = (54, 16, 14)
+            c_face = (156, 52, 44) if self.is_hovered else (138, 44, 38)
+            c_light = (188, 76, 68)
+            c_border = (42, 12, 10)
             pygame.draw.rect(surface, c_shadow, self.rect.move(0, 3), border_radius=10)
             pygame.draw.rect(surface, c_face, self.rect, border_radius=10)
             pygame.draw.rect(surface, c_light, self.rect.inflate(-4, -4), border_radius=8)
-            pygame.draw.rect(surface, (145, 42, 32), self.rect.inflate(-8, -8), border_radius=6)
+            pygame.draw.rect(surface, (118, 34, 28), self.rect.inflate(-8, -8), border_radius=6)
             pygame.draw.rect(surface, c_border, self.rect, width=2, border_radius=10)
             txt = self.font.render(self.text, True, (255, 250, 242))
             txt_s = self.font.render(self.text, True, c_border)
@@ -299,20 +354,20 @@ class TextInputBox:
         """Draw text input field with style-specific borders and prompt."""
         if self.style == "wood_recessed":
             # Outer drop shadow underneath
-            pygame.draw.rect(surface, (45, 24, 10), self.rect.move(0, 2), border_radius=8)
-            # Recessed cavity fill
-            pygame.draw.rect(surface, (168, 135, 93), self.rect, border_radius=8)
-            # Outer carved wood frame
-            pygame.draw.rect(surface, (72, 40, 18), self.rect, width=2, border_radius=8)
-            # Top inner shadow line
-            pygame.draw.line(surface, (128, 98, 64), (self.rect.x + 4, self.rect.y + 3), (self.rect.right - 5, self.rect.y + 3), 2)
+            pygame.draw.rect(surface, (38, 20, 8), self.rect.move(0, 3), border_radius=10)
+            # Recessed cavity plate
+            pygame.draw.rect(surface, (186, 142, 98), self.rect, border_radius=10)
+            # Inner bevel: top/left shadow, bottom/right highlight
+            pygame.draw.rect(surface, (148, 108, 68), self.rect.inflate(-4, -4), width=2, border_radius=8)
+            # Outer dark carved wood frame
+            pygame.draw.rect(surface, (54, 28, 12), self.rect, width=3, border_radius=10)
             # Golden active focus ring
             if self.is_active:
-                pygame.draw.rect(surface, (246, 186, 42), self.rect, width=2, border_radius=8)
+                pygame.draw.rect(surface, (246, 186, 42), self.rect, width=2, border_radius=10)
 
             # Draw text or placeholder
             if not self.text:
-                txt_surf = self.font.render(self.placeholder, True, (88, 62, 38))
+                txt_surf = self.font.render(self.placeholder, True, (96, 68, 42))
                 if self.text_align == "center":
                     rc = txt_surf.get_rect(center=self.rect.center)
                     surface.blit(txt_surf, rc)

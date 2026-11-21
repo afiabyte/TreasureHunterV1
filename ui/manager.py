@@ -200,62 +200,67 @@ class UIManager:
     def _init_home_buttons(self) -> None:
         """Initialize interactive buttons for the Main Menu parchment scroll."""
         cx = self.screen_width // 2
-        card_y = 30
 
         self.input_player_name = TextInputBox(
-            pygame.Rect(cx - 225, card_y + 228, 450, 44),
+            pygame.Rect(cx - 185, 234, 370, 44),
             self.font_input,
             placeholder="Bravo42",
-            style="wood_recessed"
+            style="wood_recessed",
+            text_align="center"
         )
         self.input_player_name.text = "afiabyte"
 
         self.grid_buttons: List[UIButton] = []
         sizes = [5, 7, 9, 11]
-        btn_w, btn_h = 98, 62
-        start_x = cx - (4 * btn_w + 3 * 18) // 2
+        btn_w, btn_h = 78, 54
+        gap = 12
+        start_x = cx - (4 * btn_w + 3 * gap) // 2
         for i, s in enumerate(sizes):
             label = f"{s}x{s}"
-            btn = UIButton(pygame.Rect(start_x + i * (btn_w + 18), card_y + 314, btn_w, btn_h),
-                           label, self.font_btn_lg, tag=str(s), style="stone")
+            btn = UIButton(pygame.Rect(start_x + i * (btn_w + gap), 308, btn_w, btn_h),
+                           label, self.font_btn_bold, tag=str(s), style="amber_glow" if s == 7 else "stone")
             if s == 7:
                 btn.is_selected = True
             self.grid_buttons.append(btn)
 
         self.level_buttons: List[UIButton] = []
-        diff_w = 450
-        diff_h = 44
+        diff_w = 380
+        diff_h = 38
         seg_w = diff_w // 3
         levels = [(1, "RECRUIT"), (2, "TACTICAL"), (3, "NIGHTMARE")]
         for i, (lvl, label) in enumerate(levels):
-            seg_x = cx - 225 + i * seg_w
-            btn = UIButton(pygame.Rect(seg_x, card_y + 420, seg_w, diff_h),
+            seg_x = cx - 190 + i * seg_w
+            btn = UIButton(pygame.Rect(seg_x, 392, seg_w, diff_h),
                            label, self.font_btn_bold, tag=str(lvl))
             if lvl == 1:
                 btn.is_selected = True
             self.level_buttons.append(btn)
 
         self.btn_start_mission = UIButton(
-            pygame.Rect(cx - 180, card_y + 486, 360, 54),
+            pygame.Rect(cx - 150, 448, 300, 48),
             "START MISSION", self.font_btn_lg, style="green_cta"
         )
         self.btn_levels = UIButton(
-            pygame.Rect(cx - 225, card_y + 558, 220, 42),
+            pygame.Rect(cx - 190, 512, 180, 42),
             "LEVELS (1-50)", self.font_btn_bold, style="blue_pill"
         )
         self.btn_how_to_play = UIButton(
-            pygame.Rect(cx + 5, card_y + 558, 220, 42),
+            pygame.Rect(cx + 10, 512, 180, 42),
             "HOW TO PLAY", self.font_btn_bold, style="wood_pill"
         )
+        self.btn_history = UIButton(
+            pygame.Rect(cx - 190, 566, 180, 42),
+            "HISTORY", self.font_btn_bold, style="history_pill"
+        )
         self.btn_settings = UIButton(
-            pygame.Rect(cx - 225, card_y + 616, 220, 42),
+            pygame.Rect(cx + 10, 566, 180, 42),
             "SETTINGS", self.font_btn_bold, style="wood_gear_pill"
         )
         self.btn_exit = UIButton(
-            pygame.Rect(cx + 5, card_y + 616, 220, 42),
+            pygame.Rect(cx - 85, 622, 170, 38),
             "EXIT", self.font_btn_bold, style="red_pill"
         )
-        self.btn_logout = UIButton(pygame.Rect(cx - 225, card_y + 616, 220, 42), "SWITCH USER", self.font_small,
+        self.btn_logout = UIButton(pygame.Rect(cx - 190, 622, 180, 38), "SWITCH USER", self.font_small,
                                    accent_color=COLOR_TEXT_ACCENT_AMBER)
         self.btn_pause = UIButton(pygame.Rect(self.screen_width - 130, 16, 110, 32), "|| PAUSE", self.font_badge,
                                   accent_color=COLOR_TEXT_ACCENT_AMBER)
@@ -434,7 +439,8 @@ class UIManager:
             self.btn_close_modal,
             self.btn_toggle_sfx,
             self.btn_modal_switch_user,
-            self.font_small
+            self.font_small,
+            btn_history=self.btn_history
         )
 
     def draw_level_select_screen(

@@ -507,8 +507,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
         # Click trophy badge on Home Screen -> transitions to STATE_HISTORY
         cx = engine.screen_width // 2
-        card_y = 30
-        trophy_badge_center = (cx - 183 + 175 // 2, card_y + 115 + 36 // 2)
+        trophy_badge_center = (cx - 189 + 180 // 2, 172 + 34 // 2)
         click_trophy = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=trophy_badge_center)
         engine._handle_home_events(click_trophy)
         self.assertEqual(engine.state, STATE_HISTORY)
@@ -518,6 +517,15 @@ class TestGameEngineIntegration(unittest.TestCase):
 
         # Click BACK TO MENU button -> transitions back to STATE_HOME
         click_back = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_history_back.rect.center)
+        engine._handle_history_events(click_back)
+        self.assertEqual(engine.state, STATE_HOME)
+
+        # Click HISTORY button in 2x2 grid -> transitions to STATE_HISTORY
+        click_btn_history = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_history.rect.center)
+        engine._handle_home_events(click_btn_history)
+        self.assertEqual(engine.state, STATE_HISTORY)
+
+        # Click BACK TO MENU button again -> transitions back to STATE_HOME
         engine._handle_history_events(click_back)
         self.assertEqual(engine.state, STATE_HOME)
 
