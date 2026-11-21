@@ -396,6 +396,7 @@ class UIManager:
 
         self._init_home_buttons()
         self._init_overlay_buttons()
+        self._init_level_select_ui()
 
     def _init_home_buttons(self) -> None:
         """Initialize interactive buttons for the Main Menu parchment scroll."""
@@ -475,6 +476,172 @@ class UIManager:
         # How to Play back button
         self.btn_back_to_menu = UIButton(pygame.Rect(self.screen_width // 2 - 110, 680, 220, 42),
                                          "<< RETURN", self.font_header)
+
+    def _init_level_select_ui(self) -> None:
+        """Initialize widgets for the 1-50 Select Level Screen."""
+        cx = self.screen_width // 2
+        card_y = 30
+        self.selected_chamber_level: int = 12
+
+        self.level_tile_buttons: List[UIButton] = []
+        cols = 5
+        rows = 7
+        btn_w = 72
+        btn_h = 54
+        gap_x = 18
+        gap_y = 12
+        grid_w = cols * btn_w + (cols - 1) * gap_x
+        start_grid_x = cx - grid_w // 2
+        start_grid_y = card_y + 115
+
+        for r in range(rows):
+            for c in range(cols):
+                bx = start_grid_x + c * (btn_w + gap_x)
+                by = start_grid_y + r * (btn_h + gap_y)
+                btn = UIButton(pygame.Rect(bx, by, btn_w, btn_h), "", self.font_btn_bold)
+                self.level_tile_buttons.append(btn)
+
+        st_y = start_grid_y + rows * (btn_h + gap_y) + 8
+        btn_play_w = 260
+        btn_back_w = 160
+        btn_act_h = 48
+        btn_gap = 18
+        total_btn_w = btn_play_w + btn_back_w + btn_gap
+        btn_start_x = cx - total_btn_w // 2
+        btn_act_y = st_y + 24
+
+        self.btn_level_play = UIButton(
+            pygame.Rect(btn_start_x, btn_act_y, btn_play_w, btn_act_h),
+            f"PLAY LEVEL {self.selected_chamber_level}",
+            self.font_btn_lg,
+            style="green_cta"
+        )
+        self.btn_level_back = UIButton(
+            pygame.Rect(btn_start_x + btn_play_w + btn_gap, btn_act_y, btn_back_w, btn_act_h),
+            "BACK",
+            self.font_btn_lg,
+            style="wood_pill"
+        )
+
+    def _draw_padlock(self, surface: pygame.Surface, center_x: int, center_y: int) -> None:
+        """Render a crisp, metallic padlock icon on locked stone tiles."""
+        # Shackle (silver metallic arch)
+        sh_rect = pygame.Rect(center_x - 6, center_y - 9, 12, 11)
+        pygame.draw.arc(surface, (50, 54, 62), sh_rect, 0, 3.1415, 3)
+        pygame.draw.arc(surface, (200, 205, 215), sh_rect.move(0, -1), 0, 3.1415, 2)
+
+        # Body (carved metal padlock body with bevel and keyhole)
+        b_rect = pygame.Rect(center_x - 8, center_y, 16, 13)
+        pygame.draw.rect(surface, (36, 32, 28), b_rect.move(0, 2), border_radius=3)
+        pygame.draw.rect(surface, (138, 142, 150), b_rect, border_radius=3)
+        pygame.draw.rect(surface, (196, 202, 212), b_rect.inflate(-2, -2), border_radius=2)
+        pygame.draw.rect(surface, (120, 125, 134), b_rect.inflate(-4, -4), border_radius=1)
+        pygame.draw.rect(surface, (48, 44, 40), b_rect, width=1, border_radius=3)
+
+        # Dark keyhole
+        pygame.draw.circle(surface, (32, 28, 24), (center_x, center_y + 4), 2)
+        pygame.draw.rect(surface, (32, 28, 24), pygame.Rect(center_x - 1, center_y + 4, 2, 4))
+
+    def _draw_level_tile(self, surface: pygame.Surface, rect: pygame.Rect, lvl_num: int, state: str) -> None:
+        """Draw an individual level tile: green completed, golden glowing selected, or locked stone with padlock."""
+        if state == "selected":
+            pygame.draw.rect(surface, (100, 48, 6), rect.move(0, 3), border_radius=8)
+            pygame.draw.rect(surface, (250, 182, 52), rect, border_radius=8)
+            pygame.draw.rect(surface, (255, 222, 118), rect.inflate(-4, -4), border_radius=6)
+            pygame.draw.rect(surface, (246, 170, 40), rect.inflate(-6, -6), border_radius=5)
+            pygame.draw.rect(surface, (92, 42, 6), rect, width=3, border_radius=8)
+            txt = self.font_input.render(str(lvl_num), True, (48, 18, 4))
+            surface.blit(txt, txt.get_rect(center=rect.center))
+
+        elif state == "completed":
+            pygame.draw.rect(surface, (12, 54, 28), rect.move(0, 3), border_radius=8)
+            pygame.draw.rect(surface, (34, 148, 82), rect, border_radius=8)
+            pygame.draw.rect(surface, (60, 188, 112), rect.inflate(-4, -4), border_radius=6)
+            pygame.draw.rect(surface, (28, 136, 74), rect.inflate(-6, -6), border_radius=5)
+            pygame.draw.rect(surface, (10, 50, 26), rect, width=2, border_radius=8)
+
+            txt = self.font_input.render(str(lvl_num), True, (255, 218, 88))
+            txt_s = self.font_input.render(str(lvl_num), True, (10, 50, 26))
+            rc = txt.get_rect(center=rect.center)
+            surface.blit(txt_s, rc.move(0, 1))
+            surface.blit(txt, rc)
+
+        else:
+            # Drop shadow
+            pygame.draw.rect(surface, (42, 38, 34), rect.move(0, 3), border_radius=8)
+            # Stone body with bevel
+            pygame.draw.rect(surface, (132, 122, 114), rect, border_radius=8)
+            pygame.draw.rect(surface, (162, 152, 144), rect.inflate(-4, -4), border_radius=6)
+            pygame.draw.rect(surface, (118, 108, 100), rect.inflate(-6, -6), border_radius=5)
+            pygame.draw.rect(surface, (48, 42, 38), rect, width=2, border_radius=8)
+
+            # Authentic stone fissure cracks
+            pygame.draw.line(surface, (78, 70, 64), (rect.x + 8, rect.bottom - 10), (rect.x + 18, rect.bottom - 18), 1)
+            pygame.draw.line(surface, (78, 70, 64), (rect.right - 10, rect.y + 10), (rect.right - 18, rect.y + 18), 1)
+
+            # Carved stone number
+            txt = self.font_input.render(str(lvl_num), True, (56, 48, 42))
+            txt_shadow = self.font_input.render(str(lvl_num), True, (176, 168, 160))
+            num_rc = txt.get_rect(center=(rect.centerx, rect.y + 17))
+            surface.blit(txt_shadow, num_rc.move(0, 1))
+            surface.blit(txt, num_rc)
+
+            # Padlock icon
+            self._draw_padlock(surface, rect.centerx, rect.bottom - 14)
+
+    def draw_level_select_screen(
+        self,
+        surface: pygame.Surface,
+        user_stats: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Render the exact retro-pixel RPG Select Level parchment screen."""
+        cx = self.screen_width // 2
+        card_w = 560
+        card_h = 715
+        card_x = cx - card_w // 2
+        card_y = 30
+        card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
+
+        # 1. Dark dungeon stone brick wall background
+        self._draw_dungeon_background(surface)
+
+        # 2. Main Parchment Sheet Chassis
+        self._draw_parchment_chassis(surface, card_rect)
+
+        # 3. Royal Crown & 3D Title "SELECT LEVEL"
+        self._draw_royal_crown(surface, cx, card_y + 26)
+        self._draw_adventure_title(surface, "SELECT LEVEL", card_y + 48, self.font_title_top, cx)
+
+        # Calculate max unlocked level from user stats
+        victories = user_stats.get("victories", 0) if user_stats else 11
+        unlocked_max = max(1, min(50, 1 + victories))
+
+        # Check page offset based on selected level
+        base_offset = 15 if self.selected_chamber_level > 35 else 0
+
+        # Draw the 35 level tiles (5x7)
+        for i, btn in enumerate(self.level_tile_buttons):
+            lvl = base_offset + i + 1
+            btn.tag = str(lvl)
+
+            if lvl == self.selected_chamber_level:
+                st = "selected"
+            elif lvl <= unlocked_max:
+                st = "completed"
+            else:
+                st = "locked"
+
+            self._draw_level_tile(surface, btn.rect, lvl, st)
+
+        # 4. Status Footer: "UNLOCKED: {unlocked_max} / 50"
+        st_y = card_y + 115 + 7 * 66 + 8
+        status_txt = self.font_label.render(f"UNLOCKED: {unlocked_max} / 50", True, (54, 24, 6))
+        surface.blit(status_txt, status_txt.get_rect(center=(cx, st_y)))
+
+        # 5. Bottom Action Buttons: [ PLAY LEVEL {N} ] and [ BACK ]
+        self.btn_level_play.text = f"PLAY LEVEL {self.selected_chamber_level}"
+        self.btn_level_play.draw(surface)
+        self.btn_level_back.draw(surface)
 
     def _init_overlay_buttons(self) -> None:
         """Initialize buttons for VICTORY, DEFEAT, and PAUSE states."""

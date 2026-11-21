@@ -23,7 +23,7 @@ import pygame
 from database import DatabaseManager
 from ai_tactical import GeminiTacticalAI, TacticalDecision
 from environment import GridEnvironment, Hunter
-from game_engine import GameEngine, STATE_HOME, STATE_HOW_TO_PLAY, STATE_PLAYING, STATE_GAME_OVER
+from game_engine import GameEngine, STATE_HOME, STATE_HOW_TO_PLAY, STATE_LEVEL_SELECT, STATE_PLAYING, STATE_GAME_OVER
 
 
 class TestDatabaseManager(unittest.TestCase):
@@ -252,6 +252,39 @@ class TestGameEngineIntegration(unittest.TestCase):
 
         # Render game over overlay
         engine.render()
+
+    def test_level_select_screen_transition_and_selection(self) -> None:
+        """Verify navigation to 1-50 Select Level screen, chamber picking, and mission start."""
+        engine = GameEngine(db_path=self.test_db_path)
+        engine.user_stats = {"username": "afiabyte", "victories": 11, "total_missions": 12, "best_steps": 14}
+        engine.state = STATE_HOME
+
+        # 1. Click "LEVELS (1-50)" button on Main Menu
+        click_levels = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_levels.rect.center)
+        engine._handle_home_events(click_levels)
+        self.assertEqual(engine.state, STATE_LEVEL_SELECT)
+
+        # 2. Render level select screen
+        engine.render()
+
+        # 3. Click an unlocked chamber (e.g. tile 5)
+        tile_5 = engine.ui.level_tile_buttons[4]
+        click_t5 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_5.rect.center)
+        engine._handle_level_select_events(click_t5)
+        self.assertEqual(engine.ui.selected_chamber_level, 5)
+        self.assertEqual(engine.selected_level, 1)  # Levels 1-15 map to difficulty 1 (Recruit)
+
+        # 4. Attempt to click a locked chamber (e.g. tile 20 while victories=11 -> max unlocked=12)
+        tile_20 = engine.ui.level_tile_buttons[19]
+        click_t20 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_20.rect.center)
+        engine._handle_level_select_events(click_t20)
+        self.assertEqual(engine.ui.selected_chamber_level, 5)  # Should remain unchanged
+
+        # 5. Click "PLAY LEVEL 5" button to launch mission
+        click_play = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_level_play.rect.center)
+        engine._handle_level_select_events(click_play)
+        self.assertEqual(engine.state, STATE_PLAYING)
+        self.assertEqual(engine.selected_level, 1)
 
     def test_how_to_play_transition(self) -> None:
         """Verify navigation to How to Play and back to Home."""

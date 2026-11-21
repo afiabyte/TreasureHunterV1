@@ -101,6 +101,10 @@ class SoundManager:
         if self.snd_move and not self.is_muted:
             self.snd_move.play()
 
+    def play_step(self) -> None:
+        """Alias for UI click and navigation steps."""
+        self.play_move()
+
     def play_key(self) -> None:
         if self.snd_key and not self.is_muted:
             self.snd_key.play()

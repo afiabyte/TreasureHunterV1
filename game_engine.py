@@ -28,6 +28,7 @@ STATE_SPLASH = "SPLASH"
 STATE_LOGIN = "LOGIN"
 STATE_HOME = "HOME"
 STATE_HOW_TO_PLAY = "HOW_TO_PLAY"
+STATE_LEVEL_SELECT = "LEVEL_SELECT"
 STATE_PLAYING = "PLAYING"
 STATE_PAUSED = "PAUSED"
 STATE_GAME_OVER = "GAME_OVER"
@@ -220,6 +221,8 @@ class GameEngine:
                 self._handle_login_events(event)
             elif self.state == STATE_HOME:
                 self._handle_home_events(event)
+            elif self.state == STATE_LEVEL_SELECT:
+                self._handle_level_select_events(event)
             elif self.state == STATE_HOW_TO_PLAY:
                 self._handle_how_to_play_events(event)
             elif self.state == STATE_PLAYING:
@@ -380,9 +383,22 @@ class GameEngine:
 
         # 7. "Levels (1-50)" button
         if hasattr(self.ui, "btn_levels") and self.ui.btn_levels.handle_event(event):
-            self.ui.show_levels_modal = True
+            self.return_state = STATE_HOME
+            self.state = STATE_LEVEL_SELECT
             self.sound.play_step()
             return
+
+        # 7b. Click on LEVEL badge on Parchment Header
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mx, my = event.pos
+            cx = self.screen_width // 2
+            card_y = 30
+            level_badge_rect = pygame.Rect(cx + 8, card_y + 115, 175, 36)
+            if level_badge_rect.collidepoint(mx, my):
+                self.return_state = STATE_HOME
+                self.state = STATE_LEVEL_SELECT
+                self.sound.play_step()
+                return
 
         # 8. "How to Play" button
         if self.ui.btn_how_to_play.handle_event(event):
@@ -408,6 +424,53 @@ class GameEngine:
             self.login_status = f"SWITCHING FROM {self.current_user}"
             self.ui.input_login_username.is_active = True
             self.state = STATE_LOGIN
+            return
+
+    def _handle_level_select_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the 1-50 Select Level screen."""
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.state = self.return_state
+            return
+
+        # 1. Back button returns to Home screen
+        if hasattr(self.ui, "btn_level_back") and self.ui.btn_level_back.handle_event(event):
+            self.state = self.return_state
+            self.sound.play_step()
+            return
+
+        # 2. Check clicks on Level Tiles
+        victories = self.user_stats.get("victories", 0) if self.user_stats else 11
+        unlocked_max = max(1, min(50, 1 + victories))
+
+        for btn in getattr(self.ui, "level_tile_buttons", []):
+            if btn.handle_event(event):
+                try:
+                    lvl = int(btn.tag)
+                    if lvl <= unlocked_max:
+                        self.ui.selected_chamber_level = lvl
+                        diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+                        self.selected_level = diff
+                        for b in self.ui.level_buttons:
+                            b.is_selected = (int(b.tag) == diff)
+                        self.sound.play_step()
+                except ValueError:
+                    pass
+                return
+
+        # 3. Play Level Button launches mission with corresponding difficulty
+        if hasattr(self.ui, "btn_level_play") and self.ui.btn_level_play.handle_event(event):
+            lvl = getattr(self.ui, "selected_chamber_level", 1)
+            diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+            self.selected_level = diff
+            callsign = self.ui.input_player_name.text.strip() if hasattr(self.ui, "input_player_name") else self.current_user
+            if not callsign:
+                callsign = self.current_user
+            self.sound.play_key()
+            self.start_mission(
+                grid_size=self.selected_grid_size,
+                level=self.selected_level,
+                player_name=callsign,
+            )
             return
 
     def _handle_how_to_play_events(self, event: pygame.event.Event) -> None:
@@ -678,6 +741,9 @@ class GameEngine:
 
         elif self.state == STATE_HOW_TO_PLAY:
             self.ui.draw_how_to_play_screen(self.screen)
+
+        elif self.state == STATE_LEVEL_SELECT:
+            self.ui.draw_level_select_screen(self.screen, self.user_stats)
 
         elif self.state in (STATE_PLAYING, STATE_PAUSED, STATE_GAME_OVER) and self.env:
             # 1. Draw Grid Area and Entities
