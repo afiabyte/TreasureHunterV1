@@ -48,7 +48,7 @@ from .colors import (
     COLOR_BTN_BORDER_HOVER,
 )
 
-from .widgets import UIButton, TextInputBox
+from .widgets import UIButton, TextInputBox, UIToggleSwitch
 from .art_helpers import (
     draw_dungeon_background,
     draw_parchment_chassis,
@@ -62,6 +62,7 @@ from .login_screen import LoginScreenRenderer
 from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
 from .how_to_play_screen import HowToPlayScreenRenderer
+from .settings_screen import SettingsScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .overlays import OverlayRenderer
@@ -163,6 +164,18 @@ class UIManager:
         self.btn_register = UIButton(pygame.Rect(cx - 150, 624, 300, 48), "REGISTER", self.font_btn_bold, style="green_cta")
         self.btn_back_to_login = UIButton(pygame.Rect(cx - 150, 684, 300, 42), "BACK TO LOGIN", self.font_btn_bold, style="blue_pill")
 
+        # Settings Screen widgets (matching media_1795244853028_f736cb43.jpg)
+        card_w = 510
+        card_x = cx - card_w // 2
+        card_y = 125
+        self.toggle_sfx = UIToggleSwitch(pygame.Rect(card_x + 338, card_y + 44, 138, 46), is_on=True, font=self.font_btn_bold, tag="sfx")
+        self.toggle_bgm = UIToggleSwitch(pygame.Rect(card_x + 338, card_y + 110, 138, 46), is_on=False, font=self.font_btn_bold, tag="bgm")
+        self.toggle_ai_hints = UIToggleSwitch(pygame.Rect(card_x + 338, card_y + 176, 138, 46), is_on=True, font=self.font_btn_bold, tag="ai_hints")
+        self.btn_anim_smooth = UIButton(pygame.Rect(card_x + 252, card_y + 246, 110, 46), "SMOOTH", self.font_btn_bold, style="amber_glow")
+        self.btn_anim_fast = UIButton(pygame.Rect(card_x + 368, card_y + 246, 108, 46), "FAST", self.font_btn_bold, style="amber_glow")
+        self.btn_settings_save = UIButton(pygame.Rect(cx - 145, card_y + 406, 290, 48), "SAVE & APPLY", self.font_btn_bold, style="green_cta")
+        self.btn_settings_back = UIButton(pygame.Rect(cx - 145, card_y + 472, 290, 48), "BACK TO MENU", self.font_btn_bold, style="wood_pill")
+
         self._init_home_buttons()
         self._init_overlay_buttons()
         self._init_level_select_ui()
@@ -174,6 +187,7 @@ class UIManager:
         self.home_renderer = HomeScreenRenderer(self.screen_width, self.screen_height)
         self.level_select_renderer = LevelSelectScreenRenderer(self.screen_width, self.screen_height)
         self.how_to_play_renderer = HowToPlayScreenRenderer(self.screen_width, self.screen_height)
+        self.settings_renderer = SettingsScreenRenderer(self.screen_width, self.screen_height)
         self.game_view_renderer = GameViewRenderer(self.screen_width, self.screen_height)
         self.hud_renderer = HUDConsoleRenderer(self.screen_width, self.screen_height, self.hud_height)
         self.overlay_renderer = OverlayRenderer(self.screen_width, self.screen_height)
@@ -447,6 +461,29 @@ class UIManager:
             anim_time=self.anim_time,
             font_btn_bold=self.font_btn_bold,
             font_key=self.font_btn_bold
+        )
+
+    def draw_settings_screen(
+        self,
+        surface: pygame.Surface,
+        is_smooth_selected: bool = True,
+        is_api_connected: bool = True,
+        status_message: str = "",
+    ) -> None:
+        """Render the authentic retro-pixel RPG adventure Settings screen matching reference mockup."""
+        self.settings_renderer.draw_settings_screen(
+            surface,
+            toggle_sfx=self.toggle_sfx,
+            toggle_bgm=self.toggle_bgm,
+            toggle_ai_hints=self.toggle_ai_hints,
+            btn_anim_smooth=self.btn_anim_smooth,
+            btn_anim_fast=self.btn_anim_fast,
+            is_smooth_selected=is_smooth_selected,
+            is_api_connected=is_api_connected,
+            btn_save=self.btn_settings_save,
+            btn_back=self.btn_settings_back,
+            anim_time=self.anim_time,
+            status_message=status_message,
         )
 
     def draw_grid_environment(

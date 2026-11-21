@@ -11,6 +11,7 @@ Manages:
 - Procedural audio feedback integration via SoundManager.
 """
 
+import os
 import sys
 import time
 from typing import Optional, Dict, Any, List, Tuple
@@ -28,6 +29,7 @@ STATE_SPLASH = "SPLASH"
 STATE_CREATE_ACCOUNT = "CREATE_ACCOUNT"
 STATE_LOGIN = "LOGIN"
 STATE_HOME = "HOME"
+STATE_SETTINGS = "SETTINGS"
 STATE_HOW_TO_PLAY = "HOW_TO_PLAY"
 STATE_LEVEL_SELECT = "LEVEL_SELECT"
 STATE_PLAYING = "PLAYING"
@@ -79,8 +81,23 @@ class GameEngine:
         self.ui = UIManager(self.screen_width, self.screen_height)
         self.sound = SoundManager()
 
-        # Query recent operatives from SQLite
+        # Query recent operatives and persistent settings from SQLite
         self.recent_operatives = self.db.get_recent_operatives(3)
+        self.settings = self.db.get_settings()
+        self.settings_sfx: bool = self.settings.get("sound_effects", "true").lower() == "true"
+        self.settings_bgm: bool = self.settings.get("background_music", "false").lower() == "true"
+        self.settings_ai_hints: bool = self.settings.get("ai_commander_hints", "true").lower() == "true"
+        self.settings_move_animation: str = self.settings.get("move_animation", "SMOOTH")
+        self.settings_status: str = ""
+        self.is_api_connected: bool = bool(os.environ.get("GEMINI_API_KEY"))
+
+        # Synchronize UI widgets with persistent settings
+        self.ui.toggle_sfx.is_on = self.settings_sfx
+        self.ui.toggle_bgm.is_on = self.settings_bgm
+        self.ui.toggle_ai_hints.is_on = self.settings_ai_hints
+        self.ui.sound_enabled = self.settings_sfx
+        if hasattr(self.sound, "sound_enabled"):
+            self.sound.sound_enabled = self.settings_sfx
 
         # Configurable Game Parameters (set from Home screen)
         self.selected_grid_size: int = 7
@@ -230,6 +247,8 @@ class GameEngine:
                     self._handle_login_events(event)
             elif self.state == STATE_HOME:
                 self._handle_home_events(event)
+            elif self.state == STATE_SETTINGS:
+                self._handle_settings_events(event)
             elif self.state == STATE_LEVEL_SELECT:
                 self._handle_level_select_events(event)
             elif self.state == STATE_HOW_TO_PLAY:
@@ -552,7 +571,9 @@ class GameEngine:
 
         # 9. "Settings" button
         if hasattr(self.ui, "btn_settings") and self.ui.btn_settings.handle_event(event):
-            self.ui.show_settings_modal = True
+            self.return_state = STATE_HOME
+            self.state = STATE_SETTINGS
+            self.settings_status = ""
             self.sound.play_step()
             return
 
@@ -567,6 +588,63 @@ class GameEngine:
             self.login_status = f"SWITCHING FROM {self.current_user}"
             self.ui.input_login_username.is_active = True
             self.state = STATE_LOGIN
+            return
+
+    def _handle_settings_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the Retro-Pixel RPG Settings Screen."""
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.state = getattr(self, "return_state", STATE_HOME)
+            self.sound.play_step()
+            return
+
+        # 1. SFX Toggle Switch
+        if self.ui.toggle_sfx.handle_event(event):
+            self.settings_sfx = self.ui.toggle_sfx.is_on
+            self.sound.sound_enabled = self.settings_sfx
+            self.ui.sound_enabled = self.settings_sfx
+            self.sound.play_step()
+            return
+
+        # 2. BGM Toggle Switch
+        if self.ui.toggle_bgm.handle_event(event):
+            self.settings_bgm = self.ui.toggle_bgm.is_on
+            self.sound.play_step()
+            return
+
+        # 3. AI Commander Hints Toggle Switch
+        if self.ui.toggle_ai_hints.handle_event(event):
+            self.settings_ai_hints = self.ui.toggle_ai_hints.is_on
+            self.sound.play_step()
+            return
+
+        # 4. Move Animation Selector (SMOOTH vs FAST)
+        if self.ui.btn_anim_smooth.handle_event(event):
+            self.settings_move_animation = "SMOOTH"
+            self.sound.play_step()
+            return
+
+        if self.ui.btn_anim_fast.handle_event(event):
+            self.settings_move_animation = "FAST"
+            self.sound.play_step()
+            return
+
+        # 5. "SAVE & APPLY" button
+        if self.ui.btn_settings_save.handle_event(event):
+            self.db.save_settings({
+                "sound_effects": "true" if self.settings_sfx else "false",
+                "background_music": "true" if self.settings_bgm else "false",
+                "ai_commander_hints": "true" if self.settings_ai_hints else "false",
+                "move_animation": self.settings_move_animation,
+            })
+            self.settings_status = "SETTINGS SAVED & APPLIED!"
+            self.sound.play_key()
+            self.state = getattr(self, "return_state", STATE_HOME)
+            return
+
+        # 6. "BACK TO MENU" button
+        if self.ui.btn_settings_back.handle_event(event):
+            self.state = getattr(self, "return_state", STATE_HOME)
+            self.sound.play_step()
             return
 
     def _handle_level_select_events(self, event: pygame.event.Event) -> None:
@@ -868,9 +946,9 @@ class GameEngine:
                 if not is_busy:
                     self._dispatch_ai_query()
 
-            # 5. Entity LERP Visual Updates (speed = 0.28)
-            # visual = visual + (target - visual) * 0.28
-            self.env.update_lerp_all(speed=0.28)
+            # 5. Entity LERP Visual Updates (speed depends on move animation setting)
+            lerp_speed = 0.55 if getattr(self, "settings_move_animation", "SMOOTH") == "FAST" else 0.28
+            self.env.update_lerp_all(speed=lerp_speed)
 
     # =========================================================================
     # RENDERING PIPELINE
@@ -890,6 +968,14 @@ class GameEngine:
 
         elif self.state == STATE_HOME:
             self.ui.draw_home_screen(self.screen, self.best_victory_steps, self.user_stats)
+
+        elif self.state == STATE_SETTINGS:
+            self.ui.draw_settings_screen(
+                self.screen,
+                is_smooth_selected=(getattr(self, "settings_move_animation", "SMOOTH") == "SMOOTH"),
+                is_api_connected=getattr(self, "is_api_connected", True),
+                status_message=getattr(self, "settings_status", ""),
+            )
 
         elif self.state == STATE_HOW_TO_PLAY:
             self.ui.draw_how_to_play_screen(self.screen)

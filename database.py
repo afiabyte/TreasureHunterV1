@@ -100,6 +100,25 @@ class DatabaseManager:
                     cursor.execute("ALTER TABLE operatives ADD COLUMN email TEXT;")
                 if "password_hash" not in existing_cols:
                     cursor.execute("ALTER TABLE operatives ADD COLUMN password_hash TEXT;")
+
+                # Game settings table for audio, hints, and animations
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS game_settings (
+                        key TEXT PRIMARY KEY,
+                        value TEXT NOT NULL
+                    );
+                    """
+                )
+                defaults = {
+                    "sound_effects": "true",
+                    "background_music": "false",
+                    "ai_commander_hints": "true",
+                    "move_animation": "SMOOTH",
+                }
+                for k, v in defaults.items():
+                    cursor.execute("INSERT OR IGNORE INTO game_settings (key, value) VALUES (?, ?);", (k, v))
+
                 conn.commit()
             finally:
                 conn.close()
@@ -460,5 +479,46 @@ class DatabaseManager:
                 )
                 rows = cursor.fetchall()
                 return [dict(row) for row in rows]
+            finally:
+                conn.close()
+
+    def get_settings(self) -> Dict[str, str]:
+        """
+        Fetch all user configuration settings from the database.
+
+        Returns:
+            Dictionary mapping setting key to string value.
+        """
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT key, value FROM game_settings;")
+                rows = cursor.fetchall()
+                return {row["key"]: row["value"] for row in rows}
+            finally:
+                conn.close()
+
+    def save_settings(self, settings_dict: Dict[str, str]) -> None:
+        """
+        Persist user configuration settings to the database.
+
+        Args:
+            settings_dict: Dictionary mapping setting key to value.
+        """
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                for key, val in settings_dict.items():
+                    cursor.execute(
+                        """
+                        INSERT INTO game_settings (key, value)
+                        VALUES (?, ?)
+                        ON CONFLICT(key) DO UPDATE SET value = excluded.value;
+                        """,
+                        (str(key), str(val)),
+                    )
+                conn.commit()
             finally:
                 conn.close()

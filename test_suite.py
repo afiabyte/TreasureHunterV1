@@ -433,6 +433,56 @@ class TestGameEngineIntegration(unittest.TestCase):
         self.assertEqual(engine.current_user, "Explorer77")
         self.assertIsNotNone(engine.user_stats)
 
+    def test_settings_screen_transition_and_options(self) -> None:
+        """Verify Settings screen transitions, interactive toggle controls, and SQLite persistence."""
+        from game_engine import STATE_SETTINGS
+        engine = GameEngine(db_path=self.test_db_path)
+        engine.state = STATE_HOME
+
+        # 1. Click Settings button on Home Screen -> transitions to STATE_SETTINGS
+        click_settings = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_settings.rect.center)
+        engine._handle_home_events(click_settings)
+        self.assertEqual(engine.state, STATE_SETTINGS)
+
+        # 2. Toggle Audio SFX (True -> False)
+        click_sfx = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.toggle_sfx.rect.center)
+        engine._handle_settings_events(click_sfx)
+        self.assertFalse(engine.settings_sfx)
+        self.assertFalse(engine.sound.sound_enabled)
+
+        # 3. Toggle BGM (False -> True)
+        click_bgm = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.toggle_bgm.rect.center)
+        engine._handle_settings_events(click_bgm)
+        self.assertTrue(engine.settings_bgm)
+
+        # 4. Toggle AI Commander Hints (True -> False)
+        click_hints = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.toggle_ai_hints.rect.center)
+        engine._handle_settings_events(click_hints)
+        self.assertFalse(engine.settings_ai_hints)
+
+        # 5. Switch Move Animation to FAST
+        click_fast = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_anim_fast.rect.center)
+        engine._handle_settings_events(click_fast)
+        self.assertEqual(engine.settings_move_animation, "FAST")
+
+        # 6. Click SAVE & APPLY -> Saves to SQLite and returns to HOME
+        click_save = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_settings_save.rect.center)
+        engine._handle_settings_events(click_save)
+        self.assertEqual(engine.state, STATE_HOME)
+
+        # Verify saved settings persisted in database
+        saved = engine.db.get_settings()
+        self.assertEqual(saved["sound_effects"], "false")
+        self.assertEqual(saved["background_music"], "true")
+        self.assertEqual(saved["ai_commander_hints"], "false")
+        self.assertEqual(saved["move_animation"], "FAST")
+
+        # 7. Transition back to Settings and click BACK TO MENU
+        engine.state = STATE_SETTINGS
+        click_back = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_settings_back.rect.center)
+        engine._handle_settings_events(click_back)
+        self.assertEqual(engine.state, STATE_HOME)
+
 
 class TestArchitectureAndZeroDeadCode(unittest.TestCase):
     """Verify circular dependencies and clean architecture."""
@@ -456,6 +506,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         import ui.home_screen
         import ui.level_select_screen
         import ui.how_to_play_screen
+        import ui.settings_screen
         import ui.game_view
         import ui.hud_console
         import ui.overlays
@@ -473,12 +524,14 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui, "UIManager"))
         self.assertTrue(hasattr(ui, "UIButton"))
         self.assertTrue(hasattr(ui, "TextInputBox"))
+        self.assertTrue(hasattr(ui, "UIToggleSwitch"))
         self.assertTrue(hasattr(ui, "SplashScreenRenderer"))
         self.assertTrue(hasattr(ui, "CreateAccountScreenRenderer"))
         self.assertTrue(hasattr(ui, "LoginScreenRenderer"))
         self.assertTrue(hasattr(ui, "HomeScreenRenderer"))
         self.assertTrue(hasattr(ui, "LevelSelectScreenRenderer"))
         self.assertTrue(hasattr(ui, "HowToPlayScreenRenderer"))
+        self.assertTrue(hasattr(ui, "SettingsScreenRenderer"))
         self.assertTrue(hasattr(ui, "GameViewRenderer"))
         self.assertTrue(hasattr(ui, "HUDConsoleRenderer"))
         self.assertTrue(hasattr(ui, "OverlayRenderer"))

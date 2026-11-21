@@ -44,7 +44,7 @@ from ui.colors import (
     COLOR_BTN_BORDER,
     COLOR_BTN_BORDER_HOVER,
 )
-from ui.widgets import UIButton, TextInputBox
+from ui.widgets import UIButton, TextInputBox, UIToggleSwitch
 from ui.art_helpers import (
     draw_dungeon_background,
     draw_parchment_chassis,
@@ -55,13 +55,16 @@ from ui.art_helpers import (
 
 from ui.login_screen import LoginScreenRenderer
 from ui.create_account_screen import CreateAccountScreenRenderer
+from ui.settings_screen import SettingsScreenRenderer
 
 __all__ = [
     "UIManager",
     "LoginScreenRenderer",
     "CreateAccountScreenRenderer",
+    "SettingsScreenRenderer",
     "UIButton",
     "TextInputBox",
+    "UIToggleSwitch",
     "COLOR_BG",
     "COLOR_GRID_BG",
     "COLOR_GRID_LINE",

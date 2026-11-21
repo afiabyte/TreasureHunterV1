@@ -58,7 +58,7 @@ from .colors import (
     COLOR_BTN_BORDER_HOVER,
 )
 
-from .widgets import UIButton, TextInputBox
+from .widgets import UIButton, TextInputBox, UIToggleSwitch
 from .art_helpers import (
     draw_dungeon_background,
     draw_parchment_chassis,
@@ -72,6 +72,7 @@ from .login_screen import LoginScreenRenderer
 from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
 from .how_to_play_screen import HowToPlayScreenRenderer
+from .settings_screen import SettingsScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .overlays import OverlayRenderer
@@ -120,6 +121,7 @@ __all__ = [
     # Widgets
     "UIButton",
     "TextInputBox",
+    "UIToggleSwitch",
     # Art Helpers
     "draw_dungeon_background",
     "draw_parchment_chassis",
@@ -133,6 +135,7 @@ __all__ = [
     "HomeScreenRenderer",
     "LevelSelectScreenRenderer",
     "HowToPlayScreenRenderer",
+    "SettingsScreenRenderer",
     "GameViewRenderer",
     "HUDConsoleRenderer",
     "OverlayRenderer",
