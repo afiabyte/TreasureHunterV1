@@ -856,10 +856,11 @@ class GameEngine:
             self.start_mission(self.selected_grid_size, self.selected_level, self.player_name)
             return
 
-        # Controls & Help
-        if self.ui.btn_pause_help.handle_event(event):
+        # Settings from Pause
+        if (hasattr(self.ui, "btn_pause_settings") and self.ui.btn_pause_settings.handle_event(event)) or self.ui.btn_pause_help.handle_event(event):
             self.return_state = STATE_PAUSED
-            self.state = STATE_HOW_TO_PLAY
+            self.state = STATE_SETTINGS
+            self.sound.play_step()
             return
 
         # Return to Home Menu
@@ -1085,7 +1086,7 @@ class GameEngine:
             if self.state == STATE_PLAYING and self.standby_timer > 0:
                 self.ui.draw_standby_banner(self.screen, self.standby_timer)
 
-            # 5. Draw Tactical Pause Overlay (Sir Demonstration & Walkthrough Mode)
+            # 5. Draw Tactical Pause Overlay
             if self.state == STATE_PAUSED:
                 self.ui.draw_pause_overlay(
                     surface=self.screen,
@@ -1102,6 +1103,7 @@ class GameEngine:
                     ai_latency_ms=latency_ms,
                     ai_status=status_text,
                     level_name=level_name,
+                    level_num=getattr(self, "selected_chamber_level", 12),
                 )
 
             # 6. Draw Game Over Overlay if in GAME_OVER state

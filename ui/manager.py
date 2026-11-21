@@ -66,6 +66,7 @@ from .settings_screen import SettingsScreenRenderer
 from .history_screen import HistoryScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
+from .pause_screen import PauseScreenRenderer
 from .overlays import OverlayRenderer
 
 
@@ -195,6 +196,7 @@ class UIManager:
         self.history_renderer = HistoryScreenRenderer(self.screen_width, self.screen_height)
         self.game_view_renderer = GameViewRenderer(self.screen_width, self.screen_height)
         self.hud_renderer = HUDConsoleRenderer(self.screen_width, self.screen_height, self.hud_height)
+        self.pause_renderer = PauseScreenRenderer(self.screen_width, self.screen_height)
         self.overlay_renderer = OverlayRenderer(self.screen_width, self.screen_height)
 
     def _init_home_buttons(self) -> None:
@@ -326,13 +328,13 @@ class UIManager:
                                         accent_color=COLOR_TEXT_ACCENT_RED)
         self.btn_defeat_menu = UIButton(pygame.Rect(cx + 15, 440, 195, 42), "HOME MENU", self.font_header)
 
-        self.btn_pause_resume = UIButton(pygame.Rect(785, 82, 160, 34), "RESUME", self.font_header,
-                                         accent_color=COLOR_TEXT_ACCENT_GREEN)
-        self.btn_pause_restart = UIButton(pygame.Rect(785, 122, 160, 34), "RESTART", self.font_header,
-                                          accent_color=COLOR_TEXT_ACCENT_CYAN)
-        self.btn_pause_help = UIButton(pygame.Rect(785, 162, 160, 32), "CONTROLS", self.font_body)
-        self.btn_pause_menu = UIButton(pygame.Rect(785, 198, 160, 32), "MAIN MENU", self.font_body,
-                                       accent_color=COLOR_TEXT_ACCENT_RED)
+        btn_w, btn_h = 295, 48
+        btn_x = cx - btn_w // 2
+        self.btn_pause_resume = UIButton(pygame.Rect(btn_x, 370, btn_w, btn_h), "RESUME GAME", self.font_btn_bold, style="green_cta")
+        self.btn_pause_restart = UIButton(pygame.Rect(btn_x, 434, btn_w, btn_h), "RESTART LEVEL [R]", self.font_btn_bold, style="blue_pill")
+        self.btn_pause_settings = UIButton(pygame.Rect(btn_x, 498, btn_w, btn_h), "SETTINGS", self.font_btn_bold, style="wood_pill")
+        self.btn_pause_help = self.btn_pause_settings  # alias for backward-compatibility
+        self.btn_pause_menu = UIButton(pygame.Rect(btn_x, 562, btn_w, btn_h), "QUIT TO MENU", self.font_btn_bold, style="burgundy")
 
     def update(self, dt: float) -> None:
         """Update animation timers and interactive text fields."""
@@ -658,20 +660,19 @@ class UIManager:
         recommended_path: List[List[int]] = None,
         ai_latency_ms: int = 0,
         ai_status: str = "ONLINE",
-        level_name: str = "Tactical"
+        level_name: str = "Tactical",
+        level_num: int = 12
     ) -> None:
-        """Render right-margin tactical pause inspection dock."""
-        self.overlay_renderer.draw_pause_overlay(
-            surface,
-            self.btn_pause_resume,
-            self.btn_pause_restart,
-            self.btn_pause_help,
-            self.btn_pause_menu,
-            has_key,
-            level_name,
-            self.font_bold,
-            self.font_badge,
-            self.font_small
+        """Render exact retro-pixel RPG pause dialog matching media_1795263510678_20cb89ba.jpg."""
+        self.pause_renderer.draw(
+            surface=surface,
+            btn_resume=self.btn_pause_resume,
+            btn_restart=self.btn_pause_restart,
+            btn_settings=self.btn_pause_settings,
+            btn_quit=self.btn_pause_menu,
+            level_num=level_num,
+            difficulty_name=level_name,
+            anim_time=self.anim_time,
         )
 
     def draw_standby_banner(self, surface: pygame.Surface, seconds_remaining: float) -> None:
