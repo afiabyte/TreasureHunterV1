@@ -391,6 +391,20 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         import ui_manager
         import game_engine
         import main
+        import ui
+        import ui.colors
+        import ui.widgets
+        import ui.art_helpers
+        import ui.splash_screen
+        import ui.login_screen
+        import ui.home_screen
+        import ui.level_select_screen
+        import ui.how_to_play_screen
+        import ui.game_view
+        import ui.hud_console
+        import ui.overlays
+        import ui.manager
+
         self.assertTrue(hasattr(database, "DatabaseManager"))
         self.assertTrue(hasattr(ai_tactical, "GeminiTacticalAI"))
         self.assertTrue(hasattr(environment, "GridEnvironment"))
@@ -398,6 +412,19 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui_manager, "UIManager"))
         self.assertTrue(hasattr(game_engine, "GameEngine"))
         self.assertTrue(hasattr(main, "main"))
+
+        # Verify modular UI package exports
+        self.assertTrue(hasattr(ui, "UIManager"))
+        self.assertTrue(hasattr(ui, "UIButton"))
+        self.assertTrue(hasattr(ui, "TextInputBox"))
+        self.assertTrue(hasattr(ui, "SplashScreenRenderer"))
+        self.assertTrue(hasattr(ui, "LoginScreenRenderer"))
+        self.assertTrue(hasattr(ui, "HomeScreenRenderer"))
+        self.assertTrue(hasattr(ui, "LevelSelectScreenRenderer"))
+        self.assertTrue(hasattr(ui, "HowToPlayScreenRenderer"))
+        self.assertTrue(hasattr(ui, "GameViewRenderer"))
+        self.assertTrue(hasattr(ui, "HUDConsoleRenderer"))
+        self.assertTrue(hasattr(ui, "OverlayRenderer"))
 
 
 if __name__ == "__main__":
