@@ -376,9 +376,12 @@ class UIManager:
         self.how_to_play_renderer.draw(
             surface,
             self.btn_back_to_menu,
-            self.font_title,
+            self.font_title_top,
             self.font_header,
-            self.font_body
+            self.font_bold,
+            anim_time=self.anim_time,
+            font_btn_bold=self.font_btn_bold,
+            font_key=self.font_btn_bold
         )
 
     def draw_grid_environment(
