@@ -98,6 +98,10 @@ class GameEngine:
         self.ui.sound_enabled = self.settings_sfx
         if hasattr(self.sound, "sound_enabled"):
             self.sound.sound_enabled = self.settings_sfx
+        if hasattr(self.sound, "music_enabled"):
+            self.sound.music_enabled = self.settings_bgm
+            if self.settings_bgm:
+                self.sound.play_music("menu")
 
         # Configurable Game Parameters (set from Home screen)
         self.selected_grid_size: int = 7
@@ -163,8 +167,9 @@ class GameEngine:
         # Standby Reconnaissance Phase (3.0s buffer so game never starts abruptly)
         self.standby_timer = 3.0
 
-        # Transition state
+        # Transition state and start dungeon infiltration soundtrack
         self.state = STATE_PLAYING
+        self.sound.play_music("dungeon")
 
         # Dispatch immediate tactical query to background worker
         self._dispatch_ai_query()
@@ -608,6 +613,12 @@ class GameEngine:
         # 2. BGM Toggle Switch
         if self.ui.toggle_bgm.handle_event(event):
             self.settings_bgm = self.ui.toggle_bgm.is_on
+            if hasattr(self.sound, "music_enabled"):
+                self.sound.music_enabled = self.settings_bgm
+                if self.settings_bgm:
+                    self.sound.play_music("menu")
+                else:
+                    self.sound.stop_music()
             self.sound.play_step()
             return
 
@@ -630,6 +641,13 @@ class GameEngine:
 
         # 5. "SAVE & APPLY" button
         if self.ui.btn_settings_save.handle_event(event):
+            self.sound.sound_enabled = self.settings_sfx
+            self.sound.music_enabled = self.settings_bgm
+            if self.settings_bgm:
+                self.sound.play_music("menu")
+            else:
+                self.sound.stop_music()
+
             self.db.save_settings({
                 "sound_effects": "true" if self.settings_sfx else "false",
                 "background_music": "true" if self.settings_bgm else "false",
@@ -819,6 +837,7 @@ class GameEngine:
         if self.ui.btn_pause_menu.handle_event(event):
             self.best_victory_steps = self.db.get_best_victory_steps()
             self.state = STATE_HOME
+            self.sound.play_music("menu")
             return
 
     def _handle_game_over_events(self, event: pygame.event.Event) -> None:
@@ -843,6 +862,7 @@ class GameEngine:
             if self.ui.btn_victory_menu.handle_event(event):
                 self.best_victory_steps = self.db.get_best_victory_steps()
                 self.state = STATE_HOME
+                self.sound.play_music("menu")
                 return
         else:
             # Retry level on defeat
@@ -854,6 +874,7 @@ class GameEngine:
             if self.ui.btn_defeat_menu.handle_event(event):
                 self.best_victory_steps = self.db.get_best_victory_steps()
                 self.state = STATE_HOME
+                self.sound.play_music("menu")
                 return
 
     # =========================================================================

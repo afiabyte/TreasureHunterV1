@@ -450,10 +450,12 @@ class TestGameEngineIntegration(unittest.TestCase):
         self.assertFalse(engine.settings_sfx)
         self.assertFalse(engine.sound.sound_enabled)
 
-        # 3. Toggle BGM (False -> True)
+        # 3. Toggle BGM
+        initial_bgm = engine.settings_bgm
         click_bgm = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.toggle_bgm.rect.center)
         engine._handle_settings_events(click_bgm)
-        self.assertTrue(engine.settings_bgm)
+        self.assertEqual(engine.settings_bgm, not initial_bgm)
+        self.assertEqual(engine.sound.music_enabled, not initial_bgm)
 
         # 4. Toggle AI Commander Hints (True -> False)
         click_hints = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.toggle_ai_hints.rect.center)
@@ -473,7 +475,7 @@ class TestGameEngineIntegration(unittest.TestCase):
         # Verify saved settings persisted in database
         saved = engine.db.get_settings()
         self.assertEqual(saved["sound_effects"], "false")
-        self.assertEqual(saved["background_music"], "true")
+        self.assertEqual(saved["background_music"], "false" if initial_bgm else "true")
         self.assertEqual(saved["ai_commander_hints"], "false")
         self.assertEqual(saved["move_animation"], "FAST")
 
@@ -482,6 +484,52 @@ class TestGameEngineIntegration(unittest.TestCase):
         click_back = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_settings_back.rect.center)
         engine._handle_settings_events(click_back)
         self.assertEqual(engine.state, STATE_HOME)
+
+    def test_procedural_sound_effects_and_bgm(self) -> None:
+        """Verify SoundManager synthesizes all retro RPG SFX and BGM tracks without exceptions."""
+        from sound_effects import SoundManager
+        sound = SoundManager()
+
+        # If mixer is available, verify synthesized audio buffers exist
+        if sound.enabled:
+            self.assertIsNotNone(sound.snd_move)
+            self.assertIsNotNone(sound.snd_click)
+            self.assertIsNotNone(sound.snd_key)
+            self.assertIsNotNone(sound.snd_shift)
+            self.assertIsNotNone(sound.snd_spawn)
+            self.assertIsNotNone(sound.snd_victory)
+            self.assertIsNotNone(sound.snd_defeat)
+            self.assertIsNotNone(sound.bgm_menu)
+            self.assertIsNotNone(sound.bgm_dungeon)
+
+        # Test playback methods execute gracefully
+        sound.sound_enabled = True
+        sound.music_enabled = True
+        sound.set_music_volume(0.5)
+        sound.set_sfx_volume(0.8)
+
+        sound.play_move()
+        sound.play_step()
+        sound.play_click()
+        sound.play_key()
+        sound.play_shift()
+        sound.play_spawn()
+        sound.play_door()
+        sound.play_alert()
+        sound.play_victory()
+        sound.play_defeat()
+
+        sound.play_music("menu")
+        sound.pause_music()
+        sound.unpause_music()
+        sound.play_music("dungeon")
+        sound.stop_music()
+
+        # Test mute state
+        sound.toggle_sound()
+        self.assertFalse(sound.sound_enabled)
+        sound.toggle_music()
+        self.assertFalse(sound.music_enabled)
 
 
 class TestArchitectureAndZeroDeadCode(unittest.TestCase):

@@ -112,7 +112,7 @@ class DatabaseManager:
                 )
                 defaults = {
                     "sound_effects": "true",
-                    "background_music": "false",
+                    "background_music": "true",
                     "ai_commander_hints": "true",
                     "move_animation": "SMOOTH",
                 }
