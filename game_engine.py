@@ -873,9 +873,20 @@ class GameEngine:
     def _handle_game_over_events(self, event: pygame.event.Event) -> None:
         """Handle inputs on the Victory and Defeat overlays."""
         if self.is_victory:
+            # Keyboard shortcuts: [R] for Play Again, [ESC] for Main Menu
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    self.start_mission(self.selected_grid_size, self.selected_level, self.player_name)
+                    return
+                elif event.key == pygame.K_ESCAPE:
+                    self.best_victory_steps = self.db.get_best_victory_steps()
+                    self.state = STATE_HOME
+                    self.sound.play_music("menu")
+                    return
+
             # Advance to Next Level (Seamless progression: Recruit -> Tactical -> Nightmare)
-            if self.selected_level < 3 and self.ui.btn_next_level.handle_event(event):
-                next_lvl = self.selected_level + 1
+            if self.ui.btn_next_level.handle_event(event):
+                next_lvl = self.selected_level + 1 if self.selected_level < 3 else self.selected_level
                 self.selected_level = next_lvl
                 # Update level button highlights on home screen
                 for b in self.ui.level_buttons:
@@ -895,13 +906,13 @@ class GameEngine:
                 self.sound.play_music("menu")
                 return
         else:
-            # Retry level on defeat
-            if self.ui.btn_retry_level.handle_event(event):
+            # Retry level on defeat (Click or [R])
+            if self.ui.btn_retry_level.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_r):
                 self.start_mission(self.selected_grid_size, self.selected_level, self.player_name)
                 return
 
-            # Return to Home Menu
-            if self.ui.btn_defeat_menu.handle_event(event):
+            # Return to Home Menu (Click or [ESC])
+            if self.ui.btn_defeat_menu.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 self.best_victory_steps = self.db.get_best_victory_steps()
                 self.state = STATE_HOME
                 self.sound.play_music("menu")
@@ -1108,12 +1119,19 @@ class GameEngine:
 
             # 6. Draw Game Over Overlay if in GAME_OVER state
             if self.state == STATE_GAME_OVER:
+                mode_name = self.env.config["name"].upper()
+                mode_str = f"{self.selected_grid_size}x{self.selected_grid_size} {mode_name}"
+                best_s = self.best_victory_steps if self.best_victory_steps is not None else self.env.steps
+                callsign = getattr(self, "player_name", "Bravo42") or getattr(self, "current_user", "Bravo42")
                 self.ui.draw_game_over_overlay(
                     surface=self.screen,
                     is_victory=self.is_victory,
                     steps=self.env.steps,
                     is_new_best=self.is_new_best_record,
                     current_level=self.selected_level,
+                    player_name=callsign,
+                    mode_str=mode_str,
+                    best_steps=best_s,
                 )
 
         pygame.display.flip()

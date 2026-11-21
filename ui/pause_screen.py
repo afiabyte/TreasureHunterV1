@@ -30,6 +30,9 @@ class PauseScreenRenderer:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
+        if not pygame.font.get_init():
+            pygame.font.init()
+
         # Cached typography matching mockup aesthetics
         self.font_title = pygame.font.SysFont("impact", 38)
         self.font_badge = pygame.font.SysFont("trebuchetms,tahoma,arial", 16, bold=True)

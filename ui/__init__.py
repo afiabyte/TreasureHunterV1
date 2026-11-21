@@ -77,6 +77,7 @@ from .history_screen import HistoryScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .pause_screen import PauseScreenRenderer
+from .victory_screen import VictoryScreenRenderer
 from .overlays import OverlayRenderer
 from .manager import UIManager
 
