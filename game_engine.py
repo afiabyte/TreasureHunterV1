@@ -290,49 +290,125 @@ class GameEngine:
             return
 
     def _handle_home_events(self, event: pygame.event.Event) -> None:
-        """Handle inputs on the Home Screen."""
-        # Text input field for player callsign
-        self.ui.input_player_name.handle_event(event)
-
-        # Switch User / Logout button returns to Login screen
-        if self.ui.btn_logout.handle_event(event):
-            self.recent_operatives = self.db.get_recent_operatives(3)
-            self.login_status = f"SWITCHING FROM {self.current_user}"
-            self.ui.input_login_username.is_active = True
-            self.state = STATE_LOGIN
+        """Handle inputs on the Main Menu parchment scroll."""
+        # 1. Handle Levels Modal clicks if open
+        if getattr(self.ui, "show_levels_modal", False):
+            if self.ui.btn_close_modal.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                self.ui.show_levels_modal = False
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mx, my = event.pos
+                cx = self.screen_width // 2
+                cols = 10
+                cell_sz = 38
+                gap = 8
+                grid_w = cols * cell_sz + (cols - 1) * gap
+                grid_start_x = cx - grid_w // 2
+                grid_start_y = 140 + 60
+                victories = self.user_stats.get("victories", 0) if self.user_stats else 11
+                user_level = max(1, min(50, 1 + victories))
+                for lvl in range(1, 51):
+                    idx = lvl - 1
+                    r = idx // cols
+                    c = idx % cols
+                    cell_x = grid_start_x + c * (cell_sz + gap)
+                    cell_y = grid_start_y + r * (cell_sz + gap)
+                    c_rect = pygame.Rect(cell_x, cell_y, cell_sz, cell_sz)
+                    if c_rect.collidepoint(mx, my) and lvl <= user_level:
+                        self.ui.selected_chamber_level = lvl
+                        diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+                        self.selected_level = diff
+                        for b in self.ui.level_buttons:
+                            b.is_selected = (int(b.tag) == diff)
+                        self.ui.show_levels_modal = False
+                        self.sound.play_step()
+                        return
             return
 
-        # Grid size selector buttons (5x5, 7x7 default, 9x9, 11x11)
+        # 2. Handle Settings Modal clicks if open
+        if getattr(self.ui, "show_settings_modal", False):
+            if self.ui.btn_close_modal.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                self.ui.show_settings_modal = False
+                return
+            if self.ui.btn_toggle_sfx.handle_event(event):
+                self.ui.sound_enabled = not self.ui.sound_enabled
+                if hasattr(self.sound, "sound_enabled"):
+                    self.sound.sound_enabled = self.ui.sound_enabled
+                return
+            if self.ui.btn_modal_switch_user.handle_event(event):
+                self.ui.show_settings_modal = False
+                self.recent_operatives = self.db.get_recent_operatives(3)
+                self.login_status = f"SWITCHING FROM {self.current_user}"
+                self.ui.input_login_username.is_active = True
+                self.state = STATE_LOGIN
+                return
+            return
+
+        # 3. Text input field for player callsign
+        self.ui.input_player_name.handle_event(event)
+
+        # 4. Grid size selector buttons (5x5, 7x7 default, 9x9, 11x11)
         for btn in self.ui.grid_buttons:
             if btn.handle_event(event):
                 for b in self.ui.grid_buttons:
                     b.is_selected = False
                 btn.is_selected = True
                 self.selected_grid_size = int(btn.tag)
+                self.sound.play_step()
 
-        # Level selector buttons (1: Recruit, 2: Tactical, 3: Nightmare)
+        # 5. Level / Difficulty selector buttons (1: Recruit, 2: Tactical, 3: Nightmare)
         for btn in self.ui.level_buttons:
             if btn.handle_event(event):
                 for b in self.ui.level_buttons:
                     b.is_selected = False
                 btn.is_selected = True
                 self.selected_level = int(btn.tag)
+                self.sound.play_step()
 
-        # "How to Play" button
-        if self.ui.btn_how_to_play.handle_event(event):
-            self.return_state = STATE_HOME
-            self.state = STATE_HOW_TO_PLAY
-
-        # "Start Mission" button
+        # 6. "Start Mission" button
         if self.ui.btn_start_mission.handle_event(event):
             callsign = self.ui.input_player_name.text.strip()
             if not callsign:
                 callsign = self.current_user
+            self.sound.play_key()
             self.start_mission(
                 grid_size=self.selected_grid_size,
                 level=self.selected_level,
                 player_name=callsign,
             )
+            return
+
+        # 7. "Levels (1-50)" button
+        if hasattr(self.ui, "btn_levels") and self.ui.btn_levels.handle_event(event):
+            self.ui.show_levels_modal = True
+            self.sound.play_step()
+            return
+
+        # 8. "How to Play" button
+        if self.ui.btn_how_to_play.handle_event(event):
+            self.return_state = STATE_HOME
+            self.state = STATE_HOW_TO_PLAY
+            self.sound.play_step()
+            return
+
+        # 9. "Settings" button
+        if hasattr(self.ui, "btn_settings") and self.ui.btn_settings.handle_event(event):
+            self.ui.show_settings_modal = True
+            self.sound.play_step()
+            return
+
+        # 10. "Exit" button
+        if hasattr(self.ui, "btn_exit") and self.ui.btn_exit.handle_event(event):
+            self.is_running = False
+            return
+
+        # 11. Switch User / Logout button returns to Login screen
+        if self.ui.btn_logout.handle_event(event):
+            self.recent_operatives = self.db.get_recent_operatives(3)
+            self.login_status = f"SWITCHING FROM {self.current_user}"
+            self.ui.input_login_username.is_active = True
+            self.state = STATE_LOGIN
+            return
 
     def _handle_how_to_play_events(self, event: pygame.event.Event) -> None:
         """Handle inputs on the How to Play Screen."""

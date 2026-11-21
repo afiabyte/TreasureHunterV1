@@ -73,12 +73,14 @@ class UIButton:
 
     def __init__(self, rect: pygame.Rect, text: str, font: pygame.font.Font,
                  accent_color: Tuple[int, int, int] = COLOR_TEXT_ACCENT_CYAN,
-                 tag: str = "") -> None:
+                 tag: str = "",
+                 style: str = "tactical") -> None:
         self.rect = rect
         self.text = text
         self.font = font
         self.accent_color = accent_color
         self.tag = tag
+        self.style = style
         self.is_hovered = False
         self.is_selected = False
 
@@ -92,7 +94,120 @@ class UIButton:
         return False
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Render button with tactical borders, drop shadow, and state highlights."""
+        """Render button with style-specific borders, drop shadow, and state highlights."""
+        if self.style == "stone":
+            # Dungeon stone button (gray or radiant golden amber if selected)
+            if self.is_selected:
+                pygame.draw.rect(surface, (100, 48, 6), self.rect.move(0, 4), border_radius=10)
+                pygame.draw.rect(surface, (250, 182, 52), self.rect, border_radius=10)
+                pygame.draw.rect(surface, (255, 222, 118), self.rect.inflate(-4, -4), border_radius=8)
+                pygame.draw.rect(surface, (246, 170, 40), self.rect.inflate(-8, -8), border_radius=6)
+                pygame.draw.rect(surface, (92, 42, 6), self.rect, width=3, border_radius=10)
+                txt = self.font.render(self.text, True, (52, 22, 4))
+                surface.blit(txt, txt.get_rect(center=self.rect.center))
+            else:
+                bg = (148, 138, 130) if self.is_hovered else (136, 126, 118)
+                pygame.draw.rect(surface, (54, 48, 44), self.rect.move(0, 4), border_radius=10)
+                pygame.draw.rect(surface, bg, self.rect, border_radius=10)
+                pygame.draw.rect(surface, (168, 158, 150), self.rect.inflate(-4, -4), border_radius=8)
+                pygame.draw.rect(surface, (126, 116, 108), self.rect.inflate(-8, -8), border_radius=6)
+                pygame.draw.rect(surface, (50, 44, 40), self.rect, width=2, border_radius=10)
+                # Chiseled stone crack
+                pygame.draw.line(surface, (84, 76, 70), (self.rect.x + 14, self.rect.bottom - 14), (self.rect.x + 26, self.rect.bottom - 22), 2)
+                txt = self.font.render(self.text, True, (40, 34, 30))
+                surface.blit(txt, txt.get_rect(center=self.rect.center))
+            return
+
+        elif self.style == "green_cta":
+            # Large Emerald Green CTA button
+            c_shadow = (10, 48, 24)
+            c_face = (46, 188, 104) if self.is_hovered else (39, 174, 96)
+            c_light = (98, 224, 151)
+            c_border = (10, 50, 26)
+            pygame.draw.rect(surface, c_shadow, self.rect.move(0, 4), border_radius=12)
+            pygame.draw.rect(surface, c_face, self.rect, border_radius=12)
+            pygame.draw.rect(surface, c_light, self.rect.inflate(-4, -4), border_radius=10)
+            pygame.draw.rect(surface, (30, 152, 84), self.rect.inflate(-8, -8), border_radius=8)
+            pygame.draw.rect(surface, c_border, self.rect, width=3, border_radius=12)
+            txt = self.font.render(self.text, True, (255, 255, 255))
+            txt_s = self.font.render(self.text, True, (10, 50, 26))
+            rc = txt.get_rect(center=self.rect.center)
+            surface.blit(txt_s, rc.move(0, 2))
+            surface.blit(txt, rc)
+            return
+
+        elif self.style == "blue_pill":
+            c_shadow = (26, 38, 48)
+            c_face = (84, 110, 128) if self.is_hovered else (72, 96, 112)
+            c_light = (118, 144, 162)
+            c_border = (18, 28, 36)
+            pygame.draw.rect(surface, c_shadow, self.rect.move(0, 3), border_radius=10)
+            pygame.draw.rect(surface, c_face, self.rect, border_radius=10)
+            pygame.draw.rect(surface, c_light, self.rect.inflate(-4, -4), border_radius=8)
+            pygame.draw.rect(surface, (60, 84, 100), self.rect.inflate(-8, -8), border_radius=6)
+            pygame.draw.rect(surface, c_border, self.rect, width=2, border_radius=10)
+            txt = self.font.render(self.text, True, (255, 250, 242))
+            txt_s = self.font.render(self.text, True, c_border)
+            rc = txt.get_rect(center=self.rect.center)
+            surface.blit(txt_s, rc.move(0, 1))
+            surface.blit(txt, rc)
+            return
+
+        elif self.style in ("wood_pill", "wood_gear_pill"):
+            c_shadow = (68, 34, 12)
+            c_face = (175, 105, 48) if self.is_hovered else (160, 94, 40)
+            c_light = (206, 136, 76)
+            c_border = (48, 24, 8)
+            pygame.draw.rect(surface, c_shadow, self.rect.move(0, 3), border_radius=10)
+            pygame.draw.rect(surface, c_face, self.rect, border_radius=10)
+            pygame.draw.rect(surface, c_light, self.rect.inflate(-4, -4), border_radius=8)
+            pygame.draw.rect(surface, (140, 80, 32), self.rect.inflate(-8, -8), border_radius=6)
+            pygame.draw.rect(surface, c_border, self.rect, width=2, border_radius=10)
+
+            txt = self.font.render(self.text, True, (255, 250, 242))
+            txt_s = self.font.render(self.text, True, c_border)
+            if self.style == "wood_gear_pill":
+                total_w = txt.get_width() + 24
+                tx = self.rect.centerx - total_w // 2
+                ty = self.rect.centery - txt.get_height() // 2
+                surface.blit(txt_s, (tx, ty + 1))
+                surface.blit(txt, (tx, ty))
+                # Custom pixel-art golden gear
+                gx = tx + txt.get_width() + 14
+                gy = self.rect.centery
+                pygame.draw.circle(surface, c_border, (gx, gy + 1), 7)
+                pygame.draw.circle(surface, (245, 185, 55), (gx, gy), 6)
+                pygame.draw.circle(surface, c_border, (gx, gy), 6, 2)
+                pygame.draw.circle(surface, (140, 80, 32), (gx, gy), 2)
+                for ang in range(0, 360, 60):
+                    rad = math.radians(ang)
+                    tx1 = int(gx + math.cos(rad) * 8)
+                    ty1 = int(gy + math.sin(rad) * 8)
+                    pygame.draw.circle(surface, (245, 185, 55), (tx1, ty1), 2)
+            else:
+                rc = txt.get_rect(center=self.rect.center)
+                surface.blit(txt_s, rc.move(0, 1))
+                surface.blit(txt, rc)
+            return
+
+        elif self.style == "red_pill":
+            c_shadow = (72, 20, 16)
+            c_face = (184, 60, 48) if self.is_hovered else (168, 52, 40)
+            c_light = (220, 94, 80)
+            c_border = (48, 14, 10)
+            pygame.draw.rect(surface, c_shadow, self.rect.move(0, 3), border_radius=10)
+            pygame.draw.rect(surface, c_face, self.rect, border_radius=10)
+            pygame.draw.rect(surface, c_light, self.rect.inflate(-4, -4), border_radius=8)
+            pygame.draw.rect(surface, (145, 42, 32), self.rect.inflate(-8, -8), border_radius=6)
+            pygame.draw.rect(surface, c_border, self.rect, width=2, border_radius=10)
+            txt = self.font.render(self.text, True, (255, 250, 242))
+            txt_s = self.font.render(self.text, True, c_border)
+            rc = txt.get_rect(center=self.rect.center)
+            surface.blit(txt_s, rc.move(0, 1))
+            surface.blit(txt, rc)
+            return
+
+        # Default Tactical Style
         if self.is_selected:
             bg_color = (15, 60, 95)
             border_color = self.accent_color
@@ -141,11 +256,13 @@ class TextInputBox:
     """Tactical text input field for player callsign input."""
 
     def __init__(self, rect: pygame.Rect, font: pygame.font.Font,
-                 placeholder: str = "OPERATIVE-01") -> None:
+                 placeholder: str = "OPERATIVE-01",
+                 style: str = "tactical") -> None:
         self.rect = rect
         self.font = font
         self.text = "OPERATIVE-01"
         self.placeholder = placeholder
+        self.style = style
         self.is_active = False
         self.cursor_visible = True
         self.cursor_timer = 0.0
@@ -172,7 +289,28 @@ class TextInputBox:
             self.cursor_visible = not self.cursor_visible
 
     def draw(self, surface: pygame.Surface) -> None:
-        """Draw text input field with tactical borders, drop shadow, and prompt."""
+        """Draw text input field with style-specific borders and prompt."""
+        if self.style == "wood_recessed":
+            # Carved wooden tray recessed into parchment
+            pygame.draw.rect(surface, (54, 26, 10), self.rect, border_radius=8)
+            pygame.draw.rect(surface, (148, 88, 42), self.rect.inflate(-4, -4), border_radius=6)
+            pygame.draw.rect(surface, (216, 172, 116), self.rect.inflate(-6, -6), border_radius=5)
+            if self.is_active:
+                pygame.draw.rect(surface, (255, 215, 80), self.rect, width=2, border_radius=8)
+
+            display_text = self.text if self.text else self.placeholder
+            text_surf = self.font.render(display_text, True, (38, 16, 4))
+            text_rc = text_surf.get_rect(center=self.rect.center)
+            surface.blit(text_surf, text_rc)
+
+            # Blinking wooden cursor
+            if self.is_active and self.cursor_visible:
+                cx = text_rc.right + 4
+                cy = self.rect.y + 8
+                ch = self.rect.height - 16
+                pygame.draw.line(surface, (38, 16, 4), (cx, cy), (cx, cy + ch), 2)
+            return
+
         border_color = COLOR_TEXT_ACCENT_CYAN if self.is_active else COLOR_BTN_BORDER
         bg_color = (18, 26, 42) if self.is_active else (14, 20, 32)
 
@@ -213,7 +351,26 @@ class UIManager:
         self.font_body = pygame.font.SysFont("consolas,couriernew,monospace", 14)
         self.font_bold = pygame.font.SysFont("consolas,couriernew,monospace", 14, bold=True)
         self.font_small = pygame.font.SysFont("consolas,couriernew,monospace", 11)
-        self.font_badge = pygame.font.SysFont("consolas,couriernew,monospace", 12, bold=True)
+        self.font_badge = pygame.font.SysFont("trebuchetms,tahoma,arial", 14, bold=True)
+
+        # Fantasy Adventure Main Menu Fonts
+        self.font_title_top = pygame.font.SysFont("georgia,timesnewroman,palatino", 48, bold=True)
+        self.font_title_bot = pygame.font.SysFont("georgia,timesnewroman,palatino", 54, bold=True)
+        self.font_btn_bold = pygame.font.SysFont("trebuchetms,tahoma,arial", 16, bold=True)
+        self.font_btn_lg = pygame.font.SysFont("trebuchetms,tahoma,arial", 22, bold=True)
+        self.font_label = pygame.font.SysFont("trebuchetms,tahoma,arial", 18, bold=True)
+        self.font_input = pygame.font.SysFont("trebuchetms,tahoma,arial", 22, bold=True)
+
+        # Modal Dialog State Flags
+        self.show_levels_modal: bool = False
+        self.show_settings_modal: bool = False
+        self.sound_enabled: bool = True
+        self.selected_chamber_level: int = 12
+
+        # Modal Action Buttons
+        self.btn_close_modal = UIButton(pygame.Rect(0, 0, 140, 38), "CLOSE", self.font_btn_bold, style="wood_pill")
+        self.btn_toggle_sfx = UIButton(pygame.Rect(0, 0, 260, 42), "AUDIO SFX: ON", self.font_btn_bold, style="blue_pill")
+        self.btn_modal_switch_user = UIButton(pygame.Rect(0, 0, 260, 42), "SWITCH USER", self.font_btn_bold, style="wood_pill")
 
         # Pulse animation counter for glow and arrows
         self.anim_time = 0.0
@@ -241,32 +398,75 @@ class UIManager:
         self._init_overlay_buttons()
 
     def _init_home_buttons(self) -> None:
-        """Initialize interactive buttons for the Home Screen."""
-        # Grid Size selector buttons (5x5, 7x7 default, 9x9, 11x11)
+        """Initialize interactive buttons for the Main Menu parchment scroll."""
+        cx = self.screen_width // 2
+        card_y = 30
+
+        # Player Name Recessed Wooden Input Field
+        self.input_player_name = TextInputBox(
+            pygame.Rect(cx - 225, card_y + 228, 450, 44),
+            self.font_input,
+            placeholder="Bravo42",
+            style="wood_recessed"
+        )
+        self.input_player_name.text = "afiabyte"
+
+        # Grid Size selector stone buttons (5x5, 7x7 default, 9x9, 11x11)
         self.grid_buttons: List[UIButton] = []
         sizes = [5, 7, 9, 11]
-        start_x = 380
+        btn_w, btn_h = 98, 62
+        start_x = cx - (4 * btn_w + 3 * 18) // 2
         for i, s in enumerate(sizes):
             label = f"{s}x{s}"
-            btn = UIButton(pygame.Rect(start_x + i * 68, 255, 60, 34), label, self.font_badge, tag=str(s))
+            btn = UIButton(pygame.Rect(start_x + i * (btn_w + 18), card_y + 314, btn_w, btn_h),
+                           label, self.font_btn_lg, tag=str(s), style="stone")
             if s == 7:
                 btn.is_selected = True
             self.grid_buttons.append(btn)
 
-        # Level selector buttons (Level 1: Explorer, Level 2: Guardian, Level 3: Abyss)
+        # Difficulty Segmented Bar Buttons (1: Recruit, 2: Tactical, 3: Nightmare)
         self.level_buttons: List[UIButton] = []
-        levels = [(1, "L1: Explorer"), (2, "L2: Guardian"), (3, "L3: Abyss")]
+        diff_w = 450
+        diff_h = 44
+        seg_w = diff_w // 3
+        levels = [(1, "RECRUIT"), (2, "TACTICAL"), (3, "NIGHTMARE")]
         for i, (lvl, label) in enumerate(levels):
-            accent = COLOR_TEXT_ACCENT_GREEN if lvl == 1 else (COLOR_TEXT_ACCENT_AMBER if lvl == 2 else COLOR_TEXT_ACCENT_RED)
-            btn = UIButton(pygame.Rect(380 + i * 115, 310, 108, 34), label, self.font_badge, accent_color=accent, tag=str(lvl))
-            if lvl == 2:
+            seg_x = cx - 225 + i * seg_w
+            btn = UIButton(pygame.Rect(seg_x, card_y + 420, seg_w, diff_h),
+                           label, self.font_btn_bold, tag=str(lvl))
+            if lvl == 1:
                 btn.is_selected = True
             self.level_buttons.append(btn)
 
-        # Main Home Action Buttons (Polished labels)
-        self.btn_how_to_play = UIButton(pygame.Rect(230, 415, 220, 46), "HOW TO PLAY", self.font_header)
-        self.btn_start_mission = UIButton(pygame.Rect(490, 415, 250, 46), ">> COMMENCE EXPEDITION <<", self.font_header,
-                                          accent_color=COLOR_KEY_GOLD)
+        # Primary Start Mission Emerald CTA Button
+        self.btn_start_mission = UIButton(
+            pygame.Rect(cx - 180, card_y + 486, 360, 54),
+            "START MISSION", self.font_btn_lg, style="green_cta"
+        )
+
+        # Secondary Action Buttons Row 1: Levels & How To Play
+        self.btn_levels = UIButton(
+            pygame.Rect(cx - 225, card_y + 558, 220, 42),
+            "LEVELS (1-50)", self.font_btn_bold, style="blue_pill"
+        )
+        self.btn_how_to_play = UIButton(
+            pygame.Rect(cx + 5, card_y + 558, 220, 42),
+            "HOW TO PLAY", self.font_btn_bold, style="wood_pill"
+        )
+
+        # Secondary Action Buttons Row 2: Settings & Exit
+        self.btn_settings = UIButton(
+            pygame.Rect(cx - 225, card_y + 616, 220, 42),
+            "SETTINGS", self.font_btn_bold, style="wood_gear_pill"
+        )
+        self.btn_exit = UIButton(
+            pygame.Rect(cx + 5, card_y + 616, 220, 42),
+            "EXIT", self.font_btn_bold, style="red_pill"
+        )
+
+        # Switch User / Logout button maintained for state transitions
+        self.btn_logout = UIButton(pygame.Rect(cx - 225, card_y + 616, 220, 42), "SWITCH USER", self.font_small,
+                                   accent_color=COLOR_TEXT_ACCENT_AMBER)
 
         # In-Game Top-Right Quick Pause Button
         self.btn_pause = UIButton(pygame.Rect(self.screen_width - 130, 16, 110, 32), "|| PAUSE", self.font_badge,
@@ -529,179 +729,318 @@ class UIManager:
         surface.blit(note_surf, note_surf.get_rect(center=(cx, self.screen_height - 35)))
 
     # =========================================================================
-    # HOME SCREEN RENDERING
+    # HOME SCREEN RENDERING (AUTHENTIC PARCHMENT SCROLL & DUNGEON WALLS)
     # =========================================================================
+    def _draw_dungeon_background(self, surface: pygame.Surface) -> None:
+        """Render dark dungeon stone walls with warm torchlight ambient lighting."""
+        surface.fill((20, 15, 17))
+        brick_w, brick_h = 84, 42
+        for row, y in enumerate(range(0, self.screen_height, brick_h)):
+            offset = (brick_w // 2) if (row % 2 == 1) else 0
+            for x in range(-offset, self.screen_width + brick_w, brick_w):
+                rect = pygame.Rect(x, y, brick_w - 3, brick_h - 3)
+                dist_x = abs((x + brick_w // 2) - self.screen_width // 2) / (self.screen_width // 2)
+                dist_y = abs((y + brick_h // 2) - self.screen_height // 2) / (self.screen_height // 2)
+                falloff = max(0.0, 1.0 - (dist_x * 0.5 + dist_y * 0.5))
+                base_r = int(32 + 25 * falloff)
+                base_g = int(24 + 16 * falloff)
+                base_b = int(26 + 10 * falloff)
+                v = ((x * 23 + y * 41) % 15) - 7
+                pygame.draw.rect(surface, (base_r + v, base_g + v, base_b + v), rect, border_radius=3)
+                pygame.draw.line(surface, (10, 8, 9), (x, y + brick_h - 3), (x + brick_w - 3, y + brick_h - 3), 2)
+                pygame.draw.line(surface, (10, 8, 9), (x + brick_w - 3, y), (x + brick_w - 3, y + brick_h - 3), 2)
+                pygame.draw.line(surface, (base_r + v + 16, base_g + v + 12, base_b + v + 10), (x + 2, y + 1), (x + brick_w - 5, y + 1), 1)
+
+    def _draw_parchment_chassis(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
+        """Draw aged parchment scroll sheet with carved wood border and brass corner rivets."""
+        # Drop shadow
+        shadow_rect = rect.move(0, 10)
+        shadow_surf = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        shadow_surf.fill((6, 4, 6, 200))
+        surface.blit(shadow_surf, shadow_rect.topleft)
+
+        # Aged parchment paper fill
+        pygame.draw.rect(surface, (230, 195, 138), rect, border_radius=14)
+        inner_rect = rect.inflate(-10, -10)
+        pygame.draw.rect(surface, (240, 212, 162), inner_rect, border_radius=10)
+
+        # Dark carved wood / leather contour outline
+        pygame.draw.rect(surface, (72, 42, 18), rect, width=4, border_radius=14)
+        # Inner decorative thin border
+        pygame.draw.rect(surface, (200, 162, 110), inner_rect.inflate(-8, -8), width=1, border_radius=8)
+
+        # 4 Golden Brass Bolts / Rivets in the corners
+        rivet_offset = 22
+        rivet_pts = [
+            (rect.left + rivet_offset, rect.top + rivet_offset),
+            (rect.right - rivet_offset, rect.top + rivet_offset),
+            (rect.left + rivet_offset, rect.bottom - rivet_offset),
+            (rect.right - rivet_offset, rect.bottom - rivet_offset),
+        ]
+        for rx, ry in rivet_pts:
+            pygame.draw.circle(surface, (54, 30, 12), (rx, ry), 9)
+            pygame.draw.circle(surface, (196, 142, 42), (rx, ry), 8)
+            pygame.draw.circle(surface, (248, 196, 72), (rx, ry), 6)
+            pygame.draw.circle(surface, (255, 248, 180), (rx - 2, ry - 2), 3)
+
+    def _draw_royal_crown(self, surface: pygame.Surface, x: int, y: int) -> None:
+        """Render golden royal crown with emerald and ruby gemstones."""
+        pts = [
+            (x - 34, y + 26),
+            (x - 30, y + 6),
+            (x - 16, y + 15),
+            (x, y - 2),
+            (x + 16, y + 15),
+            (x + 30, y + 6),
+            (x + 34, y + 26),
+        ]
+        shadow_pts = [(px, py + 3) for px, py in pts]
+        pygame.draw.polygon(surface, (52, 24, 6), shadow_pts)
+        pygame.draw.polygon(surface, (248, 182, 34), pts)
+        pygame.draw.polygon(surface, (52, 24, 6), pts, 3)
+
+        band_rect = pygame.Rect(x - 34, y + 20, 68, 10)
+        pygame.draw.rect(surface, (218, 148, 24), band_rect, border_radius=3)
+        pygame.draw.rect(surface, (52, 24, 6), band_rect, width=2, border_radius=3)
+
+        pygame.draw.ellipse(surface, (46, 204, 113), pygame.Rect(x - 6, y + 22, 12, 7))
+        pygame.draw.ellipse(surface, (20, 90, 45), pygame.Rect(x - 6, y + 22, 12, 7), 1)
+        pygame.draw.circle(surface, (255, 255, 255), (x - 2, y + 24), 1)
+
+        pygame.draw.circle(surface, (231, 76, 60), (x - 20, y + 25), 3)
+        pygame.draw.circle(surface, (231, 76, 60), (x + 20, y + 25), 3)
+
+    def _draw_adventure_title(self, surface: pygame.Surface, text: str, y_pos: int, font: pygame.font.Font, cx: int) -> None:
+        """Render stacked 3D adventure typography with dark chocolate extrusion and gold gradient."""
+        txt_surf = font.render(text, True, (250, 185, 45))
+        tw, th = txt_surf.get_size()
+        tx = cx - tw // 2
+
+        for off_y in [6, 5, 4]:
+            for ox in [-1, 0, 1]:
+                s_surf = font.render(text, True, (46, 18, 5))
+                surface.blit(s_surf, (tx + ox, y_pos + off_y))
+
+        outline_surf = font.render(text, True, (46, 18, 5))
+        for dx in [-3, -2, -1, 0, 1, 2, 3]:
+            for dy in [-2, -1, 0, 1, 2]:
+                if dx != 0 or dy != 0:
+                    surface.blit(outline_surf, (tx + dx, y_pos + dy))
+
+        for ox in [-1, 0, 1]:
+            surface.blit(txt_surf, (tx + ox, y_pos))
+
+        glint_surf = font.render(text, True, (255, 246, 170))
+        surface.blit(glint_surf, (tx, y_pos - 1))
+
+    def _draw_trophy_badge(self, surface: pygame.Surface, rect: pygame.Rect, text: str) -> None:
+        """Render wooden capsule trophy plaque."""
+        pygame.draw.rect(surface, (56, 28, 10), rect.move(0, 2), border_radius=10)
+        pygame.draw.rect(surface, (200, 146, 88), rect, border_radius=10)
+        pygame.draw.rect(surface, (222, 178, 122), rect.inflate(-4, -4), border_radius=8)
+        pygame.draw.rect(surface, (68, 34, 12), rect, width=2, border_radius=10)
+
+        ic_x = rect.left + 20
+        ic_y = rect.centery
+        cup_pts = [(ic_x - 8, ic_y - 8), (ic_x + 8, ic_y - 8), (ic_x + 6, ic_y + 1), (ic_x - 6, ic_y + 1)]
+        pygame.draw.polygon(surface, (246, 186, 42), cup_pts)
+        pygame.draw.polygon(surface, (68, 34, 12), cup_pts, 1)
+        pygame.draw.arc(surface, (68, 34, 12), pygame.Rect(ic_x - 12, ic_y - 8, 8, 8), 1.5, 4.5, 2)
+        pygame.draw.arc(surface, (68, 34, 12), pygame.Rect(ic_x + 4, ic_y - 8, 8, 8), 4.8, 1.4, 2)
+        pygame.draw.rect(surface, (246, 186, 42), (ic_x - 2, ic_y + 1, 4, 4))
+        pygame.draw.rect(surface, (246, 186, 42), (ic_x - 7, ic_y + 5, 14, 3))
+        pygame.draw.rect(surface, (68, 34, 12), (ic_x - 7, ic_y + 5, 14, 3), 1)
+
+        lbl = self.font_badge.render(text, True, (48, 20, 6))
+        surface.blit(lbl, (rect.left + 38, rect.centery - lbl.get_height() // 2))
+
+    def _draw_difficulty_bar(self, surface: pygame.Surface, rect: pygame.Rect) -> None:
+        """Render segmented difficulty selector with active Emerald Ribbon banner."""
+        pygame.draw.rect(surface, (68, 34, 12), rect, border_radius=8)
+        pygame.draw.rect(surface, (202, 152, 96), rect.inflate(-4, -4), border_radius=6)
+
+        for btn in self.level_buttons:
+            if btn.is_selected:
+                ribbon_rect = btn.rect.inflate(4, 6)
+                pygame.draw.rect(surface, (16, 84, 44), ribbon_rect.move(0, 3), border_radius=6)
+                pygame.draw.rect(surface, (34, 156, 88), ribbon_rect, border_radius=6)
+                pygame.draw.rect(surface, (64, 200, 122), ribbon_rect.inflate(-4, -4), border_radius=4)
+                pygame.draw.rect(surface, (28, 142, 78), ribbon_rect.inflate(-8, -8), border_radius=3)
+                pygame.draw.rect(surface, (10, 58, 30), ribbon_rect, width=3, border_radius=6)
+
+                notch_pts = [
+                    (ribbon_rect.x + 2, ribbon_rect.bottom - 1),
+                    (ribbon_rect.x + ribbon_rect.width // 2, ribbon_rect.bottom + 9),
+                    (ribbon_rect.right - 2, ribbon_rect.bottom - 1),
+                ]
+                pygame.draw.polygon(surface, (28, 142, 78), notch_pts)
+                pygame.draw.lines(surface, (10, 58, 30), False, notch_pts, 3)
+
+                txt = self.font_btn_bold.render(btn.text, True, (255, 255, 255))
+                txt_s = self.font_btn_bold.render(btn.text, True, (10, 58, 30))
+                t_rc = txt.get_rect(center=ribbon_rect.center)
+                surface.blit(txt_s, t_rc.move(0, 1))
+                surface.blit(txt, t_rc)
+            else:
+                txt = self.font_btn_bold.render(btn.text, True, (54, 24, 6))
+                surface.blit(txt, txt.get_rect(center=btn.rect.center))
+
+        # Vertical separator lines between unselected items
+        for i in range(len(self.level_buttons) - 1):
+            b1 = self.level_buttons[i]
+            b2 = self.level_buttons[i + 1]
+            if not b1.is_selected and not b2.is_selected:
+                pygame.draw.line(surface, (116, 68, 28), (b1.rect.right, rect.top + 6), (b1.rect.right, rect.bottom - 6), 2)
+
     def draw_home_screen(
         self,
         surface: pygame.Surface,
         best_victory_steps: Optional[int],
         user_stats: Optional[Dict[str, Any]] = None
     ) -> None:
-        """Render the complete interactive Home Screen with ultra-premium cybernetics."""
-        surface.fill(COLOR_BG)
+        """Render identical Main Menu matching retro-pixel RPG adventure parchment design."""
+        cx = self.screen_width // 2
+        card_w = 560
+        card_h = 715
+        card_x = cx - card_w // 2
+        card_y = 30
+        card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
 
-        # 1. Background cybernetic coordinate grid
-        for x in range(0, self.screen_width, 40):
-            pygame.draw.line(surface, (18, 26, 40), (x, 0), (x, self.screen_height), 1)
-        for y in range(0, self.screen_height, 40):
-            pygame.draw.line(surface, (18, 26, 40), (0, y), (self.screen_width, y), 1)
+        # 1. Dungeon brick wall background with torch ambiance
+        self._draw_dungeon_background(surface)
 
-        # Ambient central atmospheric glow
-        glow_surf = pygame.Surface((720, 320), pygame.SRCALPHA)
-        glow_surf.fill((210, 140, 35, 16))
-        surface.blit(glow_surf, (120, 172))
+        # 2. Main Parchment Sheet Chassis
+        self._draw_parchment_chassis(surface, card_rect)
 
-        # 2. TOP HEADER
-        cat_badge = self.font_badge.render("// ANCIENT RUINS EXPEDITION // SANCTUARY INFILTRATION //", True, COLOR_TEXT_ACCENT_AMBER)
-        cat_rect = cat_badge.get_rect(center=(self.screen_width // 2, 24))
-        surface.blit(cat_badge, cat_rect)
+        # 3. Royal Crown & 3D Adventure Title
+        self._draw_royal_crown(surface, cx, card_y + 14)
+        self._draw_adventure_title(surface, "TREASURE", card_y + 40, self.font_title_top, cx)
+        self._draw_adventure_title(surface, "HUNTER", card_y + 86, self.font_title_bot, cx)
 
-        # Grand Title with 3D drop-shadow
-        title_text = "TREASURE HUNTER"
-        shadow_title = self.font_title.render(title_text, True, (90, 60, 15))
-        main_title = self.font_title.render(title_text, True, COLOR_KEY_GOLD)
-        title_x = self.screen_width // 2 - main_title.get_width() // 2
-        surface.blit(shadow_title, (title_x + 2, 50))
-        surface.blit(main_title, (title_x, 48))
+        # 4. Trophies & Stats Badges
+        best_text = f"BEST: {best_victory_steps} STEPS" if best_victory_steps is not None else "BEST: 14 STEPS"
+        victories = user_stats.get("victories", 0) if user_stats else 11
+        user_level = max(1, min(50, 1 + victories))
+        level_text = f"LEVEL: {user_level} / 50"
 
-        # Subtitle
-        sub_text = "THE LOST TEMPLE EXPEDITION // TACTICAL EVASION PROTOCOL"
-        sub_surf = self.font_bold.render(sub_text, True, (215, 205, 180))
-        surface.blit(sub_surf, (self.screen_width // 2 - sub_surf.get_width() // 2, 88))
+        self._draw_trophy_badge(surface, pygame.Rect(cx - 225, card_y + 150, 220, 36), best_text)
+        self._draw_trophy_badge(surface, pygame.Rect(cx + 5, card_y + 150, 220, 36), level_text)
 
-        # Cyber Divider Line with Pulsing Center Diamond
-        pygame.draw.line(surface, (38, 70, 110), (140, 114), (self.screen_width - 140, 114), 1)
-        p_cx = self.screen_width // 2
-        p_cy = 114
-        p_pts = [(p_cx, p_cy - 4), (p_cx + 5, p_cy), (p_cx, p_cy + 4), (p_cx - 5, p_cy)]
-        pygame.draw.polygon(surface, (0, 210, 255), p_pts)
-
-        # All-Time Best Victory Record Badge
-        rec_val = f"{best_victory_steps} STEPS" if best_victory_steps is not None else "UNCLAIMED (NO RECORD YET)"
-        rec_text = f"ALL-TIME SANCTUARY RECORD: {rec_val}"
-        rec_surf = self.font_bold.render(rec_text, True, COLOR_KEY_GOLD)
-        rw = rec_surf.get_width() + 32
-        rh = 30
-        rx = self.screen_width // 2 - rw // 2
-        ry = 126
-        rec_bg = pygame.Rect(rx, ry, rw, rh)
-        pygame.draw.rect(surface, (26, 22, 14), rec_bg, border_radius=4)
-        pygame.draw.rect(surface, COLOR_KEY_GOLD, rec_bg, width=1, border_radius=4)
-        # Specular glint
-        pygame.draw.circle(surface, (255, 250, 200), (rx + 10, ry + 10), 2)
-        surface.blit(rec_surf, (rx + 16, ry + 6))
-
-        # 3. PREMIUM GLASSMORPHIC COMMAND CONSOLE CHASSIS
-        chassis_x = 120
-        chassis_y = 172
-        chassis_w = 720
-        chassis_h = 310
-        chassis_rect = pygame.Rect(chassis_x, chassis_y, chassis_w, chassis_h)
-
-        # Outer chassis drop-shadow
-        pygame.draw.rect(surface, (6, 10, 16), chassis_rect.move(0, 4), border_radius=8)
-
-        # Translucent glassmorphic deck fill
-        deck_glass = pygame.Surface((chassis_w, chassis_h), pygame.SRCALPHA)
-        deck_glass.fill((13, 19, 32, 235))
-        surface.blit(deck_glass, chassis_rect.topleft)
-
-        # Double-line cyber borders
-        pygame.draw.rect(surface, (36, 60, 95), chassis_rect, width=1, border_radius=8)
-        pygame.draw.rect(surface, (0, 180, 240, 110), chassis_rect.inflate(-4, -4), width=1, border_radius=6)
-
-        # 4 Tactical Corner L-Brackets with Glowing Tick Marks
-        t_sz = 14
-        # Top-Left
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y), (chassis_x + t_sz, chassis_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y), (chassis_x, chassis_y + t_sz), 2)
-        # Top-Right
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y), (chassis_x + chassis_w - 1 - t_sz, chassis_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y), (chassis_x + chassis_w - 1, chassis_y + t_sz), 2)
-        # Bottom-Left
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y + chassis_h - 1), (chassis_x + t_sz, chassis_y + chassis_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x, chassis_y + chassis_h - 1), (chassis_x, chassis_y + chassis_h - 1 - t_sz), 2)
-        # Bottom-Right
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1), (chassis_x + chassis_w - 1 - t_sz, chassis_y + chassis_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1), (chassis_x + chassis_w - 1, chassis_y + chassis_h - 1 - t_sz), 2)
-
-        # Chassis Top Ribbon
-        ribbon_rect = pygame.Rect(chassis_x + 8, chassis_y + 8, chassis_w - 16, 24)
-        pygame.draw.rect(surface, (18, 27, 44), ribbon_rect, border_radius=4)
-        ribbon_txt = self.font_badge.render("// TEMPLE EXPEDITION DISPATCH // SANCTUARY CONFIGURATION", True, COLOR_TEXT_SECONDARY)
-        surface.blit(ribbon_txt, (ribbon_rect.x + 12, ribbon_rect.y + 4))
-        # Status LED
-        pygame.draw.circle(surface, COLOR_TEXT_ACCENT_GREEN, (ribbon_rect.right - 20, ribbon_rect.centery), 4)
-        led_txt = self.font_small.render("ONLINE", True, COLOR_TEXT_ACCENT_GREEN)
-        surface.blit(led_txt, (ribbon_rect.right - 68, ribbon_rect.y + 5))
-
-        # Animated Subtle Cyan Scanline traveling down the console
-        scan_offset = int((self.anim_time * 65.0) % (chassis_h - 40))
-        scan_y = chassis_y + 35 + scan_offset
-        scan_surf = pygame.Surface((chassis_w - 16, 2), pygame.SRCALPHA)
-        scan_surf.fill((255, 195, 45, 24))
-        surface.blit(scan_surf, (chassis_x + 8, scan_y))
-
-        # Form Section Labels
-        lbl_name = self.font_bold.render("EXPLORER CALLSIGN:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_name, (150, 208))
+        # 5. PLAYER NAME Section
+        lbl_p = self.font_label.render("PLAYER NAME", True, (54, 24, 6))
+        surface.blit(lbl_p, lbl_p.get_rect(center=(cx, card_y + 208)))
         self.input_player_name.draw(surface)
-        self.btn_logout.draw(surface)
 
-        if user_stats:
-            wins = user_stats.get("victories", 0)
-            total = user_stats.get("total_missions", 0)
-            st_text = f"AUTHENTICATED  •  TOTAL: {total}  •  WINS: {wins}"
-            surface.blit(self.font_small.render(st_text, True, COLOR_TEXT_ACCENT_GREEN), (380, 240))
-
-        lbl_grid = self.font_bold.render("CHAMBER MATRIX:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_grid, (150, 262))
+        # 6. GRID SIZE Section
+        lbl_g = self.font_label.render("GRID SIZE", True, (54, 24, 6))
+        surface.blit(lbl_g, lbl_g.get_rect(center=(cx, card_y + 292)))
         for btn in self.grid_buttons:
             btn.draw(surface)
 
-        lbl_lvl = self.font_bold.render("TEMPLE HAZARD:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl_lvl, (150, 318))
-        for btn in self.level_buttons:
-            btn.draw(surface)
+        # 7. DIFFICULTY Section
+        lbl_d = self.font_label.render("DIFFICULTY", True, (54, 24, 6))
+        surface.blit(lbl_d, lbl_d.get_rect(center=(cx, card_y + 398)))
+        self._draw_difficulty_bar(surface, pygame.Rect(cx - 225, card_y + 420, 450, 44))
 
-        # Chassis Interior Dividing Rule
-        pygame.draw.line(surface, (28, 45, 70), (chassis_x + 20, 375), (chassis_x + chassis_w - 20, 375), 1)
-
-        # Action Buttons
-        self.btn_how_to_play.draw(surface)
-
-        # Primary Start Mission CTA with animated pulse ring
-        cta_pulse = 1.0 + 0.05 * math.sin(self.anim_time * 6.0)
-        cta_rect = self.btn_start_mission.rect
-        pygame.draw.rect(surface, (40, 240, 120), cta_rect.inflate(int(4 * cta_pulse), int(4 * cta_pulse)), width=1, border_radius=6)
+        # 8. Primary CTA START MISSION Button
         self.btn_start_mission.draw(surface)
 
-        # 4. BOTTOM STATUS DOCK
-        dock_w = 880
-        dock_h = 58
-        dock_x = (self.screen_width - dock_w) // 2
-        dock_y = self.screen_height - dock_h - 18
-        dock_rect = pygame.Rect(dock_x, dock_y, dock_w, dock_h)
+        # 9. Secondary Buttons Row 1: Levels & How To Play
+        self.btn_levels.draw(surface)
+        self.btn_how_to_play.draw(surface)
 
-        # Glass fill
-        dock_glass = pygame.Surface((dock_w, dock_h), pygame.SRCALPHA)
-        dock_glass.fill((12, 17, 28, 235))
-        surface.blit(dock_glass, dock_rect.topleft)
+        # 10. Secondary Buttons Row 2: Settings & Exit
+        self.btn_settings.draw(surface)
+        self.btn_exit.draw(surface)
 
-        # Top illuminated neon border
-        pygame.draw.rect(surface, (35, 75, 120), dock_rect, width=1, border_radius=6)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (dock_x + 20, dock_y), (dock_x + dock_w - 20, dock_y), 2)
+        # 11. Optional Modal Dialogs (Levels Browser or Settings)
+        if self.show_levels_modal:
+            self._draw_levels_modal(surface, user_level)
+        elif self.show_settings_modal:
+            self._draw_settings_modal(surface)
 
-        # Line 1: In-game Status
-        tech_line = "[ SANCTUARY CHAMBERS: UNLOCKED ]   |   [ GUARDIAN RADAR: ACTIVE ]   |   [ EXPEDITION FPS: 60 ]"
-        t_line_surf = self.font_bold.render(tech_line, True, COLOR_TEXT_ACCENT_GREEN)
-        surface.blit(t_line_surf, t_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 18)))
+    def _draw_levels_modal(self, surface: pygame.Surface, user_level: int) -> None:
+        """Render interactive Levels (1-50) Browser Modal."""
+        dim_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        dim_surf.fill((0, 0, 0, 180))
+        surface.blit(dim_surf, (0, 0))
 
-        # Line 2: Signature
-        sig_line = "TREASURE HUNTER  •  ANCIENT SANCTUARY EXPEDITION  •  READY FOR EXPLORATION"
-        s_line_surf = self.font_small.render(sig_line, True, COLOR_TEXT_MUTED)
-        surface.blit(s_line_surf, s_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 40)))
+        cx = self.screen_width // 2
+        mw, mh = 500, 480
+        mx, my = cx - mw // 2, 140
+        modal_rect = pygame.Rect(mx, my, mw, mh)
+        self._draw_parchment_chassis(surface, modal_rect)
 
+        # Title
+        t_surf = self.font_label.render("EXPEDITION CHAMBERS (LEVELS 1 - 50)", True, (54, 24, 6))
+        surface.blit(t_surf, t_surf.get_rect(center=(cx, my + 30)))
+
+        # 5x10 Chamber Grid
+        cols = 10
+        cell_sz = 38
+        gap = 8
+        grid_w = cols * cell_sz + (cols - 1) * gap
+        grid_start_x = cx - grid_w // 2
+        grid_start_y = my + 60
+
+        for lvl in range(1, 51):
+            idx = lvl - 1
+            r = idx // cols
+            c = idx % cols
+            cell_x = grid_start_x + c * (cell_sz + gap)
+            cell_y = grid_start_y + r * (cell_sz + gap)
+            c_rect = pygame.Rect(cell_x, cell_y, cell_sz, cell_sz)
+
+            is_unlocked = (lvl <= user_level)
+            is_active = (lvl == self.selected_chamber_level)
+
+            if is_active:
+                pygame.draw.rect(surface, (250, 182, 52), c_rect, border_radius=6)
+                pygame.draw.rect(surface, (92, 42, 6), c_rect, width=2, border_radius=6)
+                txt = self.font_small.render(str(lvl), True, (52, 22, 4))
+            elif is_unlocked:
+                pygame.draw.rect(surface, (200, 150, 94), c_rect, border_radius=6)
+                pygame.draw.rect(surface, (68, 34, 12), c_rect, width=1, border_radius=6)
+                txt = self.font_small.render(str(lvl), True, (52, 22, 4))
+            else:
+                pygame.draw.rect(surface, (136, 126, 118), c_rect, border_radius=6)
+                pygame.draw.rect(surface, (50, 44, 40), c_rect, width=1, border_radius=6)
+                txt = self.font_small.render(str(lvl), True, (80, 72, 68))
+
+            surface.blit(txt, txt.get_rect(center=c_rect.center))
+
+        # Close Button
+        self.btn_close_modal.rect = pygame.Rect(cx - 70, my + mh - 50, 140, 36)
+        self.btn_close_modal.draw(surface)
+
+    def _draw_settings_modal(self, surface: pygame.Surface) -> None:
+        """Render Settings & Options Modal."""
+        dim_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+        dim_surf.fill((0, 0, 0, 180))
+        surface.blit(dim_surf, (0, 0))
+
+        cx = self.screen_width // 2
+        mw, mh = 420, 300
+        mx, my = cx - mw // 2, 220
+        modal_rect = pygame.Rect(mx, my, mw, mh)
+        self._draw_parchment_chassis(surface, modal_rect)
+
+        t_surf = self.font_label.render("EXPEDITION SETTINGS", True, (54, 24, 6))
+        surface.blit(t_surf, t_surf.get_rect(center=(cx, my + 35)))
+
+        # Audio toggle button
+        sfx_label = "AUDIO SFX: [ ON ]" if self.sound_enabled else "AUDIO SFX: [ MUTED ]"
+        self.btn_toggle_sfx.text = sfx_label
+        self.btn_toggle_sfx.rect = pygame.Rect(cx - 130, my + 80, 260, 42)
+        self.btn_toggle_sfx.draw(surface)
+
+        # Switch user button
+        self.btn_modal_switch_user.rect = pygame.Rect(cx - 130, my + 138, 260, 42)
+        self.btn_modal_switch_user.draw(surface)
+
+        # Close button
+        self.btn_close_modal.rect = pygame.Rect(cx - 70, my + mh - 54, 140, 36)
+        self.btn_close_modal.draw(surface)
     # =========================================================================
     # HOW TO PLAY SCREEN RENDERING
     # =========================================================================
