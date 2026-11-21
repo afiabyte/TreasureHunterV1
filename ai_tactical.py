@@ -80,9 +80,10 @@ class GeminiTacticalAI:
         self.model_name: str = "gemini-3.8-flash"
         self.candidate_models: List[str] = [
             "gemini-3.8-flash",
-            "gemini-2.5-flash",
             "gemini-2.0-flash",
             "gemini-1.5-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-2.5-flash",
         ]
 
         # Latest cached decision
@@ -271,13 +272,23 @@ Tactical Directive:
                         config=config,
                     )
                     if cand_model != self.model_name:
+                        logger.info(f"Switched active Gemini model from {self.model_name} to {cand_model}")
                         self.model_name = cand_model
                     break
                 except Exception as ex:
                     last_err = ex
                     err_str = str(ex).lower()
-                    if "404" in err_str or "not_found" in err_str or "not found" in err_str:
-                        logger.info(f"Model {cand_model} returned 404, attempting fallback candidate...")
+                    # Check for recoverable model errors: 404 (Not Found/Deprecated),
+                    # 503 (Unavailable / High Demand), 429 (Resource Exhausted / Rate Limit),
+                    # 500 (Internal Server Error)
+                    is_recoverable = any(k in err_str for k in [
+                        "404", "not_found", "not found",
+                        "503", "unavailable", "high demand", "overloaded",
+                        "429", "resource_exhausted", "quota", "rate limit",
+                        "500", "internal", "service unavailable"
+                    ])
+                    if is_recoverable:
+                        logger.warning(f"Model {cand_model} failed with: {ex}. Trying next candidate model...")
                         continue
                     else:
                         raise ex
@@ -311,17 +322,28 @@ Tactical Directive:
                 success = True
 
         except Exception as e:
-            logger.warning(f"Gemini API worker encountered error: {e}. Falling back to greedy.")
+            err_msg = str(e)
+            logger.warning(f"Gemini API worker encountered error: {err_msg}. Falling back to greedy.")
             # Trigger greedy Manhattan fallback on network failure or timeout
             fallback_res = self._compute_greedy_fallback(
                 grid_size, player_pos, hunter_positions, wall_positions, key_pos, has_key, exit_pos
             )
             elapsed_ms = int((time.perf_counter() - t_start) * 1000)
 
+            err_lower = err_msg.lower()
+            if "503" in err_lower or "unavailable" in err_lower or "high demand" in err_lower:
+                status_label = "FALLBACK (Server Busy - 503)"
+            elif "429" in err_lower or "quota" in err_lower or "exhausted" in err_lower:
+                status_label = "FALLBACK (Rate Limit - 429)"
+            elif "404" in err_lower:
+                status_label = "FALLBACK (Model Not Found)"
+            else:
+                status_label = "FALLBACK (Network Error)"
+
             with self._lock:
                 self.latest_decision = fallback_res
                 self.latency_ms = elapsed_ms
-                self.ai_status = "FALLBACK (Network Error)"
+                self.ai_status = status_label
 
         finally:
             with self._lock:
