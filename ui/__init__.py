@@ -78,6 +78,7 @@ from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .pause_screen import PauseScreenRenderer
 from .victory_screen import VictoryScreenRenderer
+from .defeat_screen import DefeatScreenRenderer
 from .overlays import OverlayRenderer
 from .manager import UIManager
 
@@ -142,6 +143,9 @@ __all__ = [
     "HistoryScreenRenderer",
     "GameViewRenderer",
     "HUDConsoleRenderer",
+    "PauseScreenRenderer",
+    "VictoryScreenRenderer",
+    "DefeatScreenRenderer",
     "OverlayRenderer",
     "UIManager",
 ]

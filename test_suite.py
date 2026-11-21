@@ -638,6 +638,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui, "HUDConsoleRenderer"))
         self.assertTrue(hasattr(ui, "PauseScreenRenderer"))
         self.assertTrue(hasattr(ui, "VictoryScreenRenderer"))
+        self.assertTrue(hasattr(ui, "DefeatScreenRenderer"))
         self.assertTrue(hasattr(ui, "OverlayRenderer"))
 
     def test_victory_screen_rendering(self) -> None:
@@ -659,6 +660,25 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
             btn_next_level=btn_next,
             btn_play_again=btn_again,
             btn_menu=btn_menu
+        )
+
+    def test_defeat_screen_rendering(self) -> None:
+        """Verify retro-pixel RPG defeat dialog overlay renders cleanly without runtime exceptions."""
+        import ui
+        from ui.defeat_screen import DefeatScreenRenderer
+        renderer = DefeatScreenRenderer(764, 1024)
+        surf = pygame.Surface((764, 1024))
+        btn_retry = ui.UIButton(pygame.Rect(0, 0, 100, 40), "RETRY", pygame.font.SysFont("trebuchetms", 14))
+        btn_menu = ui.UIButton(pygame.Rect(0, 0, 100, 40), "MENU", pygame.font.SysFont("trebuchetms", 14))
+        renderer.draw(
+            surface=surf,
+            player_name="Bravo42",
+            mode_str="7x7 TACTICAL",
+            survived_steps=9,
+            has_key=False,
+            btn_retry=btn_retry,
+            btn_menu=btn_menu,
+            defeat_cause="CAPTURED BY HUNTER"
         )
 
 

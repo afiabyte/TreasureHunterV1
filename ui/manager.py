@@ -68,6 +68,7 @@ from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .pause_screen import PauseScreenRenderer
 from .victory_screen import VictoryScreenRenderer
+from .defeat_screen import DefeatScreenRenderer
 from .overlays import OverlayRenderer
 
 
@@ -199,6 +200,7 @@ class UIManager:
         self.hud_renderer = HUDConsoleRenderer(self.screen_width, self.screen_height, self.hud_height)
         self.pause_renderer = PauseScreenRenderer(self.screen_width, self.screen_height)
         self.victory_renderer = VictoryScreenRenderer(self.screen_width, self.screen_height)
+        self.defeat_renderer = DefeatScreenRenderer(self.screen_width, self.screen_height)
         self.overlay_renderer = OverlayRenderer(self.screen_width, self.screen_height)
 
     def _init_home_buttons(self) -> None:
@@ -330,9 +332,12 @@ class UIManager:
         self.btn_victory_menu = UIButton(pygame.Rect(btn_vic_x, 700, btn_vic_w, btn_vic_h), "MAIN MENU [ESC]", self.font_btn_bold,
                                        style="wood_pill")
 
-        self.btn_retry_level = UIButton(pygame.Rect(cx - 210, 440, 195, 42), "RETRY MISSION", self.font_header,
-                                        accent_color=COLOR_TEXT_ACCENT_RED)
-        self.btn_defeat_menu = UIButton(pygame.Rect(cx + 15, 440, 195, 42), "HOME MENU", self.font_header)
+        btn_def_w, btn_def_h = 355, 56
+        btn_def_x = cx - btn_def_w // 2
+        self.btn_retry_level = UIButton(pygame.Rect(btn_def_x, 630, btn_def_w, btn_def_h), "RETRY LEVEL [R]", self.font_btn_bold,
+                                        style="amber_glow")
+        self.btn_defeat_menu = UIButton(pygame.Rect(btn_def_x, 705, btn_def_w, btn_def_h), "MAIN MENU [ESC]", self.font_btn_bold,
+                                        style="wood_pill")
 
         btn_w, btn_h = 295, 48
         btn_x = cx - btn_w // 2
@@ -634,7 +639,9 @@ class UIManager:
         current_level: int,
         player_name: str = "Bravo42",
         mode_str: str = "7x7 TACTICAL",
-        best_steps: int = 12
+        best_steps: int = 12,
+        has_key: bool = False,
+        defeat_cause: str = "CAPTURED BY HUNTER"
     ) -> None:
         """Render the victory or defeat modal overlay."""
         if is_victory:
@@ -651,21 +658,16 @@ class UIManager:
                 anim_time=self.anim_time
             )
         else:
-            self.overlay_renderer.draw_game_over_overlay(
-                surface,
-                is_victory,
-                steps,
-                is_new_best,
-                current_level,
-                self.btn_next_level,
-                self.btn_victory_replay,
-                self.btn_victory_menu,
-                self.btn_retry_level,
-                self.btn_defeat_menu,
-                self.font_title,
-                self.font_header,
-                self.font_body,
-                self.font_small
+            self.defeat_renderer.draw(
+                surface=surface,
+                player_name=player_name,
+                mode_str=mode_str,
+                survived_steps=steps,
+                has_key=has_key,
+                btn_retry=self.btn_retry_level,
+                btn_menu=self.btn_defeat_menu,
+                defeat_cause=defeat_cause,
+                anim_time=self.anim_time
             )
 
     def draw_pause_overlay(

@@ -1132,6 +1132,8 @@ class GameEngine:
                     player_name=callsign,
                     mode_str=mode_str,
                     best_steps=best_s,
+                    has_key=self.env.has_key,
+                    defeat_cause="CAPTURED BY HUNTER",
                 )
 
         pygame.display.flip()
