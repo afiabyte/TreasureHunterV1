@@ -79,6 +79,7 @@ from .hud_console import HUDConsoleRenderer
 from .pause_screen import PauseScreenRenderer
 from .victory_screen import VictoryScreenRenderer
 from .defeat_screen import DefeatScreenRenderer
+from .exit_dialog import ExitDialogRenderer
 from .overlays import OverlayRenderer
 from .manager import UIManager
 
@@ -146,6 +147,7 @@ __all__ = [
     "PauseScreenRenderer",
     "VictoryScreenRenderer",
     "DefeatScreenRenderer",
+    "ExitDialogRenderer",
     "OverlayRenderer",
     "UIManager",
 ]

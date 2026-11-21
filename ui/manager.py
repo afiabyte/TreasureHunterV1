@@ -69,6 +69,7 @@ from .hud_console import HUDConsoleRenderer
 from .pause_screen import PauseScreenRenderer
 from .victory_screen import VictoryScreenRenderer
 from .defeat_screen import DefeatScreenRenderer
+from .exit_dialog import ExitDialogRenderer
 from .overlays import OverlayRenderer
 
 
@@ -102,6 +103,7 @@ class UIManager:
         # Modal Dialog State Flags
         self.show_levels_modal: bool = False
         self.show_settings_modal: bool = False
+        self.show_exit_modal: bool = False
         self.sound_enabled: bool = True
         self.selected_chamber_level: int = 12
 
@@ -109,6 +111,8 @@ class UIManager:
         self.btn_close_modal = UIButton(pygame.Rect(0, 0, 140, 38), "CLOSE", self.font_btn_bold, style="wood_pill")
         self.btn_toggle_sfx = UIButton(pygame.Rect(0, 0, 260, 42), "AUDIO SFX: ON", self.font_btn_bold, style="blue_pill")
         self.btn_modal_switch_user = UIButton(pygame.Rect(0, 0, 260, 42), "SWITCH USER", self.font_btn_bold, style="wood_pill")
+        self.btn_exit_confirm = UIButton(pygame.Rect(0, 0, 200, 52), "YES, EXIT", self.font_btn_bold, style="red_exit")
+        self.btn_exit_cancel = UIButton(pygame.Rect(0, 0, 200, 52), "CANCEL", self.font_btn_bold, style="green_cancel")
 
         # Pulse animation counter for glow and arrows
         self.anim_time = 0.0
@@ -201,6 +205,7 @@ class UIManager:
         self.pause_renderer = PauseScreenRenderer(self.screen_width, self.screen_height)
         self.victory_renderer = VictoryScreenRenderer(self.screen_width, self.screen_height)
         self.defeat_renderer = DefeatScreenRenderer(self.screen_width, self.screen_height)
+        self.exit_dialog_renderer = ExitDialogRenderer(self.screen_width, self.screen_height)
         self.overlay_renderer = OverlayRenderer(self.screen_width, self.screen_height)
 
     def _init_home_buttons(self) -> None:
@@ -697,6 +702,15 @@ class UIManager:
             btn_quit=self.btn_pause_menu,
             level_num=level_num,
             difficulty_name=level_name,
+            anim_time=self.anim_time,
+        )
+
+    def draw_exit_modal(self, surface: pygame.Surface) -> None:
+        """Render the 1:1 retro-pixel RPG exit game confirmation modal dialog."""
+        self.exit_dialog_renderer.draw(
+            surface=surface,
+            btn_exit_confirm=self.btn_exit_confirm,
+            btn_exit_cancel=self.btn_exit_cancel,
             anim_time=self.anim_time,
         )
 

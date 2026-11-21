@@ -24,6 +24,7 @@ from ui_manager import UIManager
 from sound_effects import SoundManager
 
 
+
 # Game State Identifiers
 STATE_SPLASH = "SPLASH"
 STATE_CREATE_ACCOUNT = "CREATE_ACCOUNT"
@@ -464,6 +465,31 @@ class GameEngine:
 
     def _handle_home_events(self, event: pygame.event.Event) -> None:
         """Handle inputs on the Main Menu parchment scroll."""
+        # 0. Handle Exit Confirmation Modal if open
+        if getattr(self.ui, "show_exit_modal", False):
+            if self.ui.btn_exit_confirm.handle_event(event):
+                self.is_running = False
+                return
+            if self.ui.btn_exit_cancel.handle_event(event) or (event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_n)):
+                self.ui.show_exit_modal = False
+                self.sound.play_step()
+                return
+            if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_y):
+                self.is_running = False
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                cx = self.screen_width // 2
+                card_w = min(564, self.screen_width - 32)
+                card_h = 388
+                card_y = 318 if self.screen_height >= 1000 else max(16, (self.screen_height - card_h) // 2)
+                card_x = cx - card_w // 2
+                card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
+                if not card_rect.collidepoint(event.pos):
+                    self.ui.show_exit_modal = False
+                    self.sound.play_step()
+                    return
+            return
+
         # 1. Handle Levels Modal clicks if open
         if getattr(self.ui, "show_levels_modal", False):
             if self.ui.btn_close_modal.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -599,9 +625,10 @@ class GameEngine:
             self.sound.play_step()
             return
 
-        # 10. "Exit" button
-        if hasattr(self.ui, "btn_exit") and self.ui.btn_exit.handle_event(event):
-            self.is_running = False
+        # 10. "Exit" button or ESC opens Exit Confirmation Modal
+        if (hasattr(self.ui, "btn_exit") and self.ui.btn_exit.handle_event(event)) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            self.ui.show_exit_modal = True
+            self.sound.play_step()
             return
 
         # 11. Switch User / Logout button returns to Login screen
@@ -1030,6 +1057,8 @@ class GameEngine:
 
         elif self.state == STATE_HOME:
             self.ui.draw_home_screen(self.screen, self.best_victory_steps, self.user_stats)
+            if getattr(self.ui, "show_exit_modal", False):
+                self.ui.draw_exit_modal(self.screen)
 
         elif self.state == STATE_SETTINGS:
             self.ui.draw_settings_screen(

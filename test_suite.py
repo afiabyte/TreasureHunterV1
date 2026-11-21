@@ -639,6 +639,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui, "PauseScreenRenderer"))
         self.assertTrue(hasattr(ui, "VictoryScreenRenderer"))
         self.assertTrue(hasattr(ui, "DefeatScreenRenderer"))
+        self.assertTrue(hasattr(ui, "ExitDialogRenderer"))
         self.assertTrue(hasattr(ui, "OverlayRenderer"))
 
     def test_victory_screen_rendering(self) -> None:
@@ -680,6 +681,45 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
             btn_menu=btn_menu,
             defeat_cause="CAPTURED BY HUNTER"
         )
+
+    def test_exit_dialog_rendering_and_interaction(self) -> None:
+        """Verify retro-pixel RPG exit confirmation modal renders cleanly and handles events."""
+        import ui
+        from ui.exit_dialog import ExitDialogRenderer
+        renderer = ExitDialogRenderer(764, 1024)
+        surf = pygame.Surface((764, 1024))
+        btn_confirm = ui.UIButton(pygame.Rect(0, 0, 200, 52), "YES, EXIT", pygame.font.SysFont("trebuchetms", 16))
+        btn_cancel = ui.UIButton(pygame.Rect(0, 0, 200, 52), "CANCEL", pygame.font.SysFont("trebuchetms", 16))
+        renderer.draw(
+            surface=surf,
+            btn_exit_confirm=btn_confirm,
+            btn_exit_cancel=btn_cancel,
+            anim_time=0.5
+        )
+
+        # Test interaction via GameEngine
+        test_db = "test_dungeon_records.db"
+        engine = GameEngine(db_path=test_db)
+        engine.state = STATE_HOME
+        self.assertFalse(engine.ui.show_exit_modal)
+
+        # Trigger exit modal via ESC
+        esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+        engine._handle_home_events(esc_event)
+        self.assertTrue(engine.ui.show_exit_modal)
+
+        # Render with modal active
+        engine.render()
+
+        # Cancel exit modal via ESC
+        engine._handle_home_events(esc_event)
+        self.assertFalse(engine.ui.show_exit_modal)
+
+        # Reopen and confirm quit via YES, EXIT button
+        engine.ui.show_exit_modal = True
+        confirm_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_exit_confirm.rect.center)
+        engine._handle_home_events(confirm_click)
+        self.assertFalse(engine.is_running)
 
 
 if __name__ == "__main__":

@@ -164,10 +164,18 @@ class HomeScreenRenderer:
     ) -> None:
         """Render identical Main Menu matching retro-pixel RPG adventure parchment design."""
         cx = self.screen_width // 2
-        card_w = 512
-        card_h = 595
-        card_x = cx - card_w // 2
-        card_y = 104
+        is_tall = (self.screen_height >= 950)
+
+        if is_tall:
+            card_w = 676
+            card_h = 890
+            card_x = cx - card_w // 2
+            card_y = 92
+        else:
+            card_w = 512
+            card_h = 595
+            card_x = cx - card_w // 2
+            card_y = 104
         card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
 
         # 1. Dungeon brick wall background with torch ambiance
@@ -212,59 +220,113 @@ class HomeScreenRenderer:
         user_level = max(1, min(50, 1 + victories))
         level_text = f"LEVEL: {user_level} / 50"
 
-        badge_w, badge_h = 180, 34
-        badge_y = 172
-        self._draw_trophy_badge(surface, pygame.Rect(cx - badge_w - 9, badge_y, badge_w, badge_h), best_text, font_badge)
-        self._draw_trophy_badge(surface, pygame.Rect(cx + 9, badge_y, badge_w, badge_h), level_text, font_badge)
+        if is_tall:
+            badge_w, badge_h = 220, 42
+            badge_y = 224
+            self._draw_trophy_badge(surface, pygame.Rect(cx - badge_w - 12, badge_y, badge_w, badge_h), best_text, font_badge)
+            self._draw_trophy_badge(surface, pygame.Rect(cx + 12, badge_y, badge_w, badge_h), level_text, font_badge)
 
-        # 5. PLAYER NAME Section
-        lbl_p = font_label.render("PLAYER NAME", True, (48, 20, 6))
-        surface.blit(lbl_p, lbl_p.get_rect(center=(cx, 218)))
-        input_player_name.rect = pygame.Rect(cx - 185, 234, 370, 44)
-        input_player_name.draw(surface)
+            # 5. PLAYER NAME Section
+            lbl_p = font_label.render("PLAYER NAME", True, (48, 20, 6))
+            surface.blit(lbl_p, lbl_p.get_rect(center=(cx, 288)))
+            input_player_name.rect = pygame.Rect(cx - 223, 312, 446, 68)
+            input_player_name.draw(surface)
 
-        # 6. GRID SIZE Section
-        lbl_g = font_label.render("GRID SIZE", True, (48, 20, 6))
-        surface.blit(lbl_g, lbl_g.get_rect(center=(cx, 292)))
-        btn_w, btn_h = 78, 54
-        gap = 12
-        start_x = cx - (4 * btn_w + 3 * gap) // 2
-        for i, btn in enumerate(grid_buttons):
-            btn.rect = pygame.Rect(start_x + i * (btn_w + gap), 308, btn_w, btn_h)
-            btn.draw(surface)
+            # 6. GRID SIZE Section
+            lbl_g = font_label.render("GRID SIZE", True, (48, 20, 6))
+            surface.blit(lbl_g, lbl_g.get_rect(center=(cx, 422)))
+            btn_w, btn_h = 126, 92
+            gap = 14
+            start_x = cx - (4 * btn_w + 3 * gap) // 2
+            for i, btn in enumerate(grid_buttons):
+                btn.rect = pygame.Rect(start_x + i * (btn_w + gap), 450, btn_w, btn_h)
+                btn.draw(surface)
 
-        # 7. DIFFICULTY Section
-        lbl_d = font_label.render("DIFFICULTY", True, (48, 20, 6))
-        surface.blit(lbl_d, lbl_d.get_rect(center=(cx, 376)))
-        diff_rect = pygame.Rect(cx - 190, 392, 380, 38)
-        seg_w = diff_rect.width // len(level_buttons)
-        for i, btn in enumerate(level_buttons):
-            btn.rect = pygame.Rect(diff_rect.x + i * seg_w, diff_rect.y, seg_w, diff_rect.height)
-        self._draw_difficulty_bar(surface, diff_rect, level_buttons, font_btn_bold)
+            # 7. DIFFICULTY Section
+            lbl_d = font_label.render("DIFFICULTY", True, (48, 20, 6))
+            surface.blit(lbl_d, lbl_d.get_rect(center=(cx, 586)))
+            diff_rect = pygame.Rect(cx - 276, 616, 552, 54)
+            seg_w = diff_rect.width // len(level_buttons)
+            for i, btn in enumerate(level_buttons):
+                btn.rect = pygame.Rect(diff_rect.x + i * seg_w, diff_rect.y, seg_w, diff_rect.height)
+            self._draw_difficulty_bar(surface, diff_rect, level_buttons, font_btn_bold)
 
-        # 8. Primary CTA START MISSION Button
-        btn_start_mission.rect = pygame.Rect(cx - 150, 448, 300, 48)
-        btn_start_mission.draw(surface)
+            # 8. Primary CTA START MISSION Button
+            btn_start_mission.rect = pygame.Rect(cx - 182, 748, 364, 76)
+            btn_start_mission.draw(surface)
 
-        # 9. 2x2 Secondary Buttons Grid
-        # Row 1: LEVELS (1-50) & HOW TO PLAY
-        btn_levels.rect = pygame.Rect(cx - 190, 512, 180, 42)
-        btn_levels.draw(surface)
+            # 9. 2x2 Secondary Buttons Grid matching Exit Mockup
+            # Row 1: LEVELS (1-50) & HOW TO PLAY
+            btn_levels.rect = pygame.Rect(cx - 264, 850, 252, 58)
+            btn_levels.draw(surface)
 
-        btn_how_to_play.rect = pygame.Rect(cx + 10, 512, 180, 42)
-        btn_how_to_play.draw(surface)
+            btn_how_to_play.rect = pygame.Rect(cx + 12, 850, 252, 58)
+            btn_how_to_play.draw(surface)
 
-        # Row 2: HISTORY & SETTINGS
-        if btn_history:
-            btn_history.rect = pygame.Rect(cx - 190, 566, 180, 42)
-            btn_history.draw(surface)
+            # Row 2: SETTINGS & EXIT (Side-by-side in 1024 mockup)
+            btn_settings.rect = pygame.Rect(cx - 220, 925, 210, 54)
+            btn_settings.draw(surface)
 
-        btn_settings.rect = pygame.Rect(cx + 10, 566, 180, 42)
-        btn_settings.draw(surface)
+            btn_exit.rect = pygame.Rect(cx + 10, 925, 210, 54)
+            btn_exit.draw(surface)
 
-        # 10. Bottom Centered EXIT Button
-        btn_exit.rect = pygame.Rect(cx - 85, 622, 170, 38)
-        btn_exit.draw(surface)
+            if btn_history:
+                # History button if available
+                btn_history.rect = pygame.Rect(cx - 264, 850, 252, 58)
+        else:
+            badge_w, badge_h = 180, 34
+            badge_y = 172
+            self._draw_trophy_badge(surface, pygame.Rect(cx - badge_w - 9, badge_y, badge_w, badge_h), best_text, font_badge)
+            self._draw_trophy_badge(surface, pygame.Rect(cx + 9, badge_y, badge_w, badge_h), level_text, font_badge)
+
+            # 5. PLAYER NAME Section
+            lbl_p = font_label.render("PLAYER NAME", True, (48, 20, 6))
+            surface.blit(lbl_p, lbl_p.get_rect(center=(cx, 218)))
+            input_player_name.rect = pygame.Rect(cx - 185, 234, 370, 44)
+            input_player_name.draw(surface)
+
+            # 6. GRID SIZE Section
+            lbl_g = font_label.render("GRID SIZE", True, (48, 20, 6))
+            surface.blit(lbl_g, lbl_g.get_rect(center=(cx, 292)))
+            btn_w, btn_h = 78, 54
+            gap = 12
+            start_x = cx - (4 * btn_w + 3 * gap) // 2
+            for i, btn in enumerate(grid_buttons):
+                btn.rect = pygame.Rect(start_x + i * (btn_w + gap), 308, btn_w, btn_h)
+                btn.draw(surface)
+
+            # 7. DIFFICULTY Section
+            lbl_d = font_label.render("DIFFICULTY", True, (48, 20, 6))
+            surface.blit(lbl_d, lbl_d.get_rect(center=(cx, 376)))
+            diff_rect = pygame.Rect(cx - 190, 392, 380, 38)
+            seg_w = diff_rect.width // len(level_buttons)
+            for i, btn in enumerate(level_buttons):
+                btn.rect = pygame.Rect(diff_rect.x + i * seg_w, diff_rect.y, seg_w, diff_rect.height)
+            self._draw_difficulty_bar(surface, diff_rect, level_buttons, font_btn_bold)
+
+            # 8. Primary CTA START MISSION Button
+            btn_start_mission.rect = pygame.Rect(cx - 150, 448, 300, 48)
+            btn_start_mission.draw(surface)
+
+            # 9. 2x2 Secondary Buttons Grid
+            # Row 1: LEVELS (1-50) & HOW TO PLAY
+            btn_levels.rect = pygame.Rect(cx - 190, 512, 180, 42)
+            btn_levels.draw(surface)
+
+            btn_how_to_play.rect = pygame.Rect(cx + 10, 512, 180, 42)
+            btn_how_to_play.draw(surface)
+
+            # Row 2: HISTORY & SETTINGS
+            if btn_history:
+                btn_history.rect = pygame.Rect(cx - 190, 566, 180, 42)
+                btn_history.draw(surface)
+
+            btn_settings.rect = pygame.Rect(cx + 10, 566, 180, 42)
+            btn_settings.draw(surface)
+
+            # 10. Bottom Centered EXIT Button
+            btn_exit.rect = pygame.Rect(cx - 85, 622, 170, 38)
+            btn_exit.draw(surface)
 
         # Version watermark in bottom right corner
         v_surf = self.font_version.render("v1.2.0", True, (65, 55, 58))
