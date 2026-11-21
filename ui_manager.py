@@ -20,52 +20,52 @@ from typing import Tuple, List, Dict, Any, Optional
 import pygame
 
 
-# Color Palette (Ultra-Premium Vibrant Neo-Cyberpunk)
-COLOR_BG = (12, 15, 26)               # Deep cyber midnight
-COLOR_GRID_BG = (17, 22, 38)          # Rich techno floor
-COLOR_GRID_LINE = (35, 52, 85)        # Electric blueprint grid
-COLOR_WALL = (24, 30, 48)             # Obsidian composite
-COLOR_WALL_BORDER = (0, 220, 255)     # Neon Cyan
-COLOR_WALL_ACCENT = (255, 60, 160)    # Vibrant Neon Magenta
+# Color Palette (Ancient Temple & Lost Ruins Adventure)
+COLOR_BG = (18, 20, 28)               # Deep subterranean sanctuary stone
+COLOR_GRID_BG = (28, 33, 46)          # Ancient temple flagstone floor
+COLOR_GRID_LINE = (48, 56, 75)        # Chiseled stone mortar line
+COLOR_WALL = (38, 42, 56)             # Carved basalt / granite monolith
+COLOR_WALL_BORDER = (225, 175, 55)    # Burnished Ancient Gold trim
+COLOR_WALL_ACCENT = (235, 80, 50)     # Glowing Runic Amber-Ruby Inlay
 
 COLOR_PLAYER_CORE = (255, 255, 255)
-COLOR_PLAYER_GLOW = (0, 240, 255)     # Luminous Electric Cyan
-COLOR_PLAYER_SHIELD = (0, 200, 255, 120)
+COLOR_PLAYER_GLOW = (255, 195, 45)    # Radiant Golden Torch Glow
+COLOR_PLAYER_SHIELD = (255, 210, 60, 120)
 
-COLOR_HUNTER_CORE = (255, 240, 240)
-COLOR_HUNTER_BODY = (255, 40, 80)     # Vivid Crimson Ruby
-COLOR_HUNTER_CONE = (255, 45, 65, 50)
-COLOR_HUNTER_GLOW = (255, 20, 60)
+COLOR_HUNTER_CORE = (255, 240, 220)
+COLOR_HUNTER_BODY = (225, 45, 65)     # Armored Crimson Guardian Plate
+COLOR_HUNTER_CONE = (240, 60, 40, 50) # Fiery Vigilance Sightline
+COLOR_HUNTER_GLOW = (255, 75, 40)     # Blazing Guardian Golem Core
 
-COLOR_KEY_CORE = (255, 255, 220)
-COLOR_KEY_GOLD = (255, 210, 30)       # Radiant Sun Gold
-COLOR_KEY_GLOW = (255, 230, 70, 120)
+COLOR_KEY_CORE = (255, 255, 230)
+COLOR_KEY_GOLD = (255, 210, 30)       # Gleaming Ancient Sun Gold
+COLOR_KEY_GLOW = (255, 235, 80, 130)
 
-COLOR_EXIT_CORE = (220, 255, 240)
-COLOR_EXIT_PORTAL = (0, 255, 150)     # Luminous Emerald Neon
-COLOR_EXIT_GLOW = (0, 220, 120, 100)
+COLOR_EXIT_CORE = (225, 255, 245)
+COLOR_EXIT_PORTAL = (0, 245, 155)     # Luminous Mystic Emerald Gateway
+COLOR_EXIT_GLOW = (0, 220, 130, 110)
 
-COLOR_BREADCRUMB_RING = (0, 255, 160) # Laser Mint Green
-COLOR_BREADCRUMB_FILL = (0, 160, 90, 140)
-COLOR_GUIDE_ARROW = (255, 225, 40)    # Electric Sunburst Yellow
+COLOR_BREADCRUMB_RING = (45, 240, 150)# Mystical Rune Step Ring
+COLOR_BREADCRUMB_FILL = (20, 120, 70, 140)
+COLOR_GUIDE_ARROW = (255, 215, 35)    # Radiant Compass Needle
 
-COLOR_HUD_BG = (14, 19, 33)
-COLOR_HUD_BORDER = (45, 75, 125)
-COLOR_TEXT_PRIMARY = (245, 250, 255)
-COLOR_TEXT_SECONDARY = (160, 185, 225)
-COLOR_TEXT_MUTED = (95, 115, 150)
-COLOR_TEXT_ACCENT_CYAN = (0, 235, 255)
-COLOR_TEXT_ACCENT_GREEN = (0, 255, 150)
-COLOR_TEXT_ACCENT_AMBER = (255, 195, 40)
-COLOR_TEXT_ACCENT_RED = (255, 65, 100)
-COLOR_TEXT_ACCENT_MAGENTA = (255, 60, 180) # Vibrant neon magenta
-COLOR_TEXT_ACCENT_PURPLE = (175, 90, 255)  # Vibrant violet
+COLOR_HUD_BG = (19, 23, 34)           # Carved basalt command plinth
+COLOR_HUD_BORDER = (65, 80, 110)      # Antique brass relief border
+COLOR_TEXT_PRIMARY = (248, 250, 255)
+COLOR_TEXT_SECONDARY = (175, 190, 220)
+COLOR_TEXT_MUTED = (110, 125, 150)
+COLOR_TEXT_ACCENT_CYAN = (65, 200, 255)   # Celestial Sapphire Blue
+COLOR_TEXT_ACCENT_GREEN = (40, 240, 140)  # Mystic Emerald
+COLOR_TEXT_ACCENT_AMBER = (255, 195, 40)  # Sun Amulet Gold
+COLOR_TEXT_ACCENT_RED = (255, 70, 90)     # Guardian Ruby
+COLOR_TEXT_ACCENT_MAGENTA = (235, 90, 160)# Arcane Amethyst
+COLOR_TEXT_ACCENT_PURPLE = (185, 110, 255)# Mystic Violet
 
-COLOR_BTN_NORMAL = (22, 32, 54)
-COLOR_BTN_HOVER = (36, 54, 90)
-COLOR_BTN_ACTIVE = (0, 160, 240)
-COLOR_BTN_BORDER = (55, 88, 140)
-COLOR_BTN_BORDER_HOVER = (0, 230, 255)
+COLOR_BTN_NORMAL = (28, 35, 52)
+COLOR_BTN_HOVER = (42, 55, 85)
+COLOR_BTN_ACTIVE = (220, 165, 50)     # Antique Gold
+COLOR_BTN_BORDER = (65, 85, 125)
+COLOR_BTN_BORDER_HOVER = (255, 205, 50)
 
 
 class UIButton:
@@ -253,9 +253,9 @@ class UIManager:
                 btn.is_selected = True
             self.grid_buttons.append(btn)
 
-        # Level selector buttons (Level 1: Recruit, Level 2: Tactical, Level 3: Nightmare)
+        # Level selector buttons (Level 1: Explorer, Level 2: Guardian, Level 3: Abyss)
         self.level_buttons: List[UIButton] = []
-        levels = [(1, "L1: Recruit"), (2, "L2: Tactical"), (3, "L3: Nightmare")]
+        levels = [(1, "L1: Explorer"), (2, "L2: Guardian"), (3, "L3: Abyss")]
         for i, (lvl, label) in enumerate(levels):
             accent = COLOR_TEXT_ACCENT_GREEN if lvl == 1 else (COLOR_TEXT_ACCENT_AMBER if lvl == 2 else COLOR_TEXT_ACCENT_RED)
             btn = UIButton(pygame.Rect(380 + i * 115, 310, 108, 34), label, self.font_badge, accent_color=accent, tag=str(lvl))
@@ -265,8 +265,8 @@ class UIManager:
 
         # Main Home Action Buttons (Polished labels)
         self.btn_how_to_play = UIButton(pygame.Rect(230, 415, 220, 46), "HOW TO PLAY", self.font_header)
-        self.btn_start_mission = UIButton(pygame.Rect(490, 415, 250, 46), ">> START MISSION <<", self.font_header,
-                                          accent_color=COLOR_TEXT_ACCENT_GREEN)
+        self.btn_start_mission = UIButton(pygame.Rect(490, 415, 250, 46), ">> COMMENCE EXPEDITION <<", self.font_header,
+                                          accent_color=COLOR_KEY_GOLD)
 
         # In-Game Top-Right Quick Pause Button
         self.btn_pause = UIButton(pygame.Rect(self.screen_width - 130, 16, 110, 32), "|| PAUSE", self.font_badge,
@@ -353,7 +353,7 @@ class UIManager:
         # Sweeping cyan radar beam
         beam_y = int((self.anim_time * 180.0) % self.screen_height)
         beam_surf = pygame.Surface((self.screen_width, 3), pygame.SRCALPHA)
-        beam_surf.fill((0, 220, 255, 45))
+        beam_surf.fill((255, 200, 50, 40))
         surface.blit(beam_surf, (0, beam_y))
 
         # 2. Central Tactical Crest / Logo
@@ -361,13 +361,13 @@ class UIManager:
         logo_y = cy - 130
 
         # Outer pulsing rings
-        pygame.draw.circle(surface, (0, 70, 110), (cx, logo_y), pulse_r + 14, 1)
-        pygame.draw.circle(surface, (0, 180, 230), (cx, logo_y), pulse_r, 2)
-        pygame.draw.circle(surface, (15, 24, 40), (cx, logo_y), pulse_r - 2)
+        pygame.draw.circle(surface, (120, 85, 25), (cx, logo_y), pulse_r + 14, 1)
+        pygame.draw.circle(surface, (225, 175, 55), (cx, logo_y), pulse_r, 2)
+        pygame.draw.circle(surface, (25, 28, 38), (cx, logo_y), pulse_r - 2)
 
         # Tactical Crosshairs
-        pygame.draw.line(surface, (0, 210, 255), (cx - pulse_r - 12, logo_y), (cx + pulse_r + 12, logo_y), 1)
-        pygame.draw.line(surface, (0, 210, 255), (cx, logo_y - pulse_r - 12), (cx, logo_y + pulse_r + 12), 1)
+        pygame.draw.line(surface, (225, 175, 55), (cx - pulse_r - 12, logo_y), (cx + pulse_r + 12, logo_y), 1)
+        pygame.draw.line(surface, (225, 175, 55), (cx, logo_y - pulse_r - 12), (cx, logo_y + pulse_r + 12), 1)
 
         # Central Golden Diamond (Treasure Key symbol)
         kd_sz = 16
@@ -377,29 +377,29 @@ class UIManager:
         pygame.draw.circle(surface, (255, 255, 255), (cx, logo_y), 3)
 
         # 3. Main Titles
-        cat_badge = self.font_badge.render("// TACTICAL DEFENSE SIMULATION ENGINE //", True, COLOR_TEXT_ACCENT_CYAN)
+        cat_badge = self.font_badge.render("// THE LOST TEMPLE EXPEDITION //", True, COLOR_TEXT_ACCENT_AMBER)
         surface.blit(cat_badge, cat_badge.get_rect(center=(cx, logo_y + pulse_r + 26)))
 
-        main_title = self.font_title.render("TREASURE HUNTER", True, (0, 235, 255))
-        sh_title = self.font_title.render("TREASURE HUNTER", True, (0, 60, 100))
+        main_title = self.font_title.render("TREASURE HUNTER", True, COLOR_KEY_GOLD)
+        sh_title = self.font_title.render("TREASURE HUNTER", True, (90, 60, 15))
         surface.blit(sh_title, sh_title.get_rect(center=(cx + 2, logo_y + pulse_r + 58)))
         surface.blit(main_title, main_title.get_rect(center=(cx, logo_y + pulse_r + 56)))
 
-        sub_title = self.font_bold.render("TACTICAL STEALTH & EVASION PROTOCOL", True, (155, 185, 220))
+        sub_title = self.font_bold.render("ANCIENT SANCTUARY & RELIC EXTRACTION PROTOCOL", True, (215, 205, 180))
         surface.blit(sub_title, sub_title.get_rect(center=(cx, logo_y + pulse_r + 86)))
 
         # 4. Animated Boot Sequence Console
         boot_box = pygame.Rect(cx - 250, cy + 80, 500, 120)
         pygame.draw.rect(surface, (8, 12, 20), boot_box, border_radius=6)
         pygame.draw.rect(surface, (30, 48, 72), boot_box, width=1, border_radius=6)
-        pygame.draw.rect(surface, (0, 180, 230), (boot_box.x, boot_box.y, 500, 20), border_radius=4)
-        surface.blit(self.font_small.render("SYSTEM DIAGNOSTICS & SUBSYSTEM INITIALIZATION", True, (10, 16, 26)), (boot_box.x + 10, boot_box.y + 3))
+        pygame.draw.rect(surface, (220, 165, 50), (boot_box.x, boot_box.y, 500, 20), border_radius=4)
+        surface.blit(self.font_small.render("EXPEDITION JOURNAL & SUBSYSTEM INITIALIZATION", True, (18, 20, 28)), (boot_box.x + 10, boot_box.y + 3))
 
         boot_logs = [
-            (0.2, "[01] PYGAME GRAPHICS & NUMPY SYNTHESIZER ... [ READY ]", COLOR_TEXT_PRIMARY),
-            (0.7, "[02] SQLITE3 PERSISTENT REPOSITORY ......... [ CONNECTED ]", COLOR_TEXT_ACCENT_GREEN),
-            (1.2, "[03] SENSOR RADAR & 60 FPS GRID MATRIX ...... [ CALIBRATED ]", COLOR_TEXT_ACCENT_CYAN),
-            (1.7, "[04] TACTICAL PURSUIT & FLANKING ENGINE ..... [ ONLINE ]", COLOR_TEXT_ACCENT_AMBER),
+            (0.2, "[01] EXPEDITION ENGINE & NUMPY SYNTHESIZER ... [ READY ]", COLOR_TEXT_PRIMARY),
+            (0.7, "[02] SQLITE3 GUILD DOSSIER ARCHIVE ......... [ CONNECTED ]", COLOR_TEXT_ACCENT_GREEN),
+            (1.2, "[03] CELESTIAL COMPASS & CHAMBER MATRIX ..... [ CALIBRATED ]", COLOR_TEXT_ACCENT_CYAN),
+            (1.7, "[04] TEMPLE GUARDIAN EVASION TRACKER ....... [ ONLINE ]", COLOR_TEXT_ACCENT_AMBER),
         ]
         log_y = boot_box.y + 28
         for threshold, text, color in boot_logs:
@@ -421,16 +421,16 @@ class UIManager:
         fill_w = int(bar_w * pct)
         if fill_w > 0:
             fill_rect = pygame.Rect(bar_x + 1, bar_y + 1, fill_w - 2, bar_h - 2)
-            pygame.draw.rect(surface, (0, 210, 255), fill_rect, border_radius=2)
+            pygame.draw.rect(surface, (245, 195, 45), fill_rect, border_radius=2)
             pygame.draw.circle(surface, (255, 255, 255), (bar_x + fill_w - 2, bar_y + bar_h // 2), 3)
 
-        prog_txt = self.font_small.render(f"INITIALIZING SYSTEM ... {int(pct * 100)}%", True, COLOR_TEXT_SECONDARY)
+        prog_txt = self.font_small.render(f"INITIALIZING EXPEDITION ... {int(pct * 100)}%", True, COLOR_TEXT_SECONDARY)
         surface.blit(prog_txt, prog_txt.get_rect(center=(cx, bar_y + 24)))
 
         # 6. Pulsing Skip/Continue Prompt
         blink = (math.sin(self.anim_time * 6.0) + 1.0) * 0.5
         col = (int(100 + 155 * blink), int(160 + 95 * blink), int(200 + 55 * blink))
-        cont_surf = self.font_bold.render(">> PRESS SPACE / ENTER OR CLICK TO CONTINUE <<", True, col)
+        cont_surf = self.font_bold.render(">> PRESS SPACE / ENTER OR CLICK TO COMMENCE EXPEDITION <<", True, col)
         surface.blit(cont_surf, cont_surf.get_rect(center=(cx, self.screen_height - 35)))
 
     def draw_login_screen(
@@ -453,15 +453,15 @@ class UIManager:
             pygame.draw.line(surface, (14, 20, 32), (0, y), (self.screen_width, y), 1)
 
         # 2. Header
-        cat_badge = self.font_badge.render("// SECURITY CLEARANCE :: OPERATIVE LOGIN //", True, COLOR_TEXT_ACCENT_CYAN)
+        cat_badge = self.font_badge.render("// EXPLORER GUILD DOSSIER :: REGISTRATION //", True, COLOR_TEXT_ACCENT_AMBER)
         surface.blit(cat_badge, cat_badge.get_rect(center=(cx, 32)))
 
-        main_title = self.font_title.render("OPERATIVE AUTHENTICATION", True, (0, 230, 255))
-        sh_title = self.font_title.render("OPERATIVE AUTHENTICATION", True, (0, 60, 100))
+        main_title = self.font_title.render("EXPLORER AUTHENTICATION", True, COLOR_KEY_GOLD)
+        sh_title = self.font_title.render("EXPLORER AUTHENTICATION", True, (90, 60, 15))
         surface.blit(sh_title, sh_title.get_rect(center=(cx + 2, 68)))
         surface.blit(main_title, main_title.get_rect(center=(cx, 66)))
 
-        sub_title = self.font_bold.render("LINK PERSISTENT DOSSIER & VICTORY METRICS IN SQLITE DATABASE", True, (155, 180, 215))
+        sub_title = self.font_bold.render("LINK PERSISTENT EXPEDITION RECORDS & RELIC VICTORIES IN SQLITE ARCHIVES", True, (215, 205, 180))
         surface.blit(sub_title, sub_title.get_rect(center=(cx, 100)))
 
         # 3. Main Glassmorphic Login Dossier Chassis
@@ -494,21 +494,22 @@ class UIManager:
 
         # Top Card Ribbon
         pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 34), (card_x + card_w - 20, card_y + 34), 1)
-        ribbon_txt = self.font_badge.render("// TERMINAL ACCESS :: SECURITY CLEARANCE LEVEL-1", True, COLOR_TEXT_SECONDARY)
+        ribbon_txt = self.font_badge.render("// GUILD ARCHIVES :: EXPEDITION REGISTRATION //", True, COLOR_TEXT_SECONDARY)
         surface.blit(ribbon_txt, (card_x + 24, card_y + 12))
 
         # Operative Icon in Card
         avatar_cx = cx
         avatar_cy = card_y + 68
         pygame.draw.circle(surface, (16, 26, 42), (avatar_cx, avatar_cy), 24)
-        pygame.draw.circle(surface, (0, 180, 230), (avatar_cx, avatar_cy), 24, 2)
-        # Visor
-        pygame.draw.ellipse(surface, (0, 230, 255), pygame.Rect(avatar_cx - 12, avatar_cy - 6, 24, 10))
+        pygame.draw.circle(surface, (225, 175, 55), (avatar_cx, avatar_cy), 24, 2)
+        # Fedora / Explorer Headgear
+        pygame.draw.ellipse(surface, (140, 85, 45), pygame.Rect(avatar_cx - 16, avatar_cy - 8, 32, 14))
+        pygame.draw.ellipse(surface, (225, 175, 55), pygame.Rect(avatar_cx - 10, avatar_cy - 12, 20, 8))
         pygame.draw.circle(surface, (255, 255, 255), (avatar_cx - 4, avatar_cy - 2), 2)
         pygame.draw.circle(surface, (255, 255, 255), (avatar_cx + 4, avatar_cy - 2), 2)
 
         # Prompt
-        lbl = self.font_bold.render("ENTER OPERATIVE CALLSIGN / USERNAME:", True, COLOR_TEXT_PRIMARY)
+        lbl = self.font_bold.render("ENTER EXPLORER CALLSIGN / NAME:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl, lbl.get_rect(center=(cx, card_y + 112)))
 
         # Text Input Box
@@ -527,7 +528,7 @@ class UIManager:
         pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 320), (card_x + card_w - 20, card_y + 320), 1)
 
         # Recent Profiles Header
-        rec_title = self.font_badge.render("// REGISTERED PROFILES IN DATABASE:", True, COLOR_TEXT_ACCENT_AMBER)
+        rec_title = self.font_badge.render("// REGISTERED EXPLORERS IN GUILD ARCHIVES:", True, COLOR_TEXT_ACCENT_AMBER)
         surface.blit(rec_title, (card_x + 24, card_y + 332))
 
         if recent_operatives and len(recent_operatives) > 0:
@@ -540,10 +541,10 @@ class UIManager:
                 surface.blit(self.font_small.render(info_line, True, COLOR_TEXT_PRIMARY), (card_x + 30, ry))
                 ry += 20
         else:
-            surface.blit(self.font_small.render("No previous profiles detected. Enter your callsign above.", True, COLOR_TEXT_MUTED), (card_x + 30, card_y + 360))
+            surface.blit(self.font_small.render("No previous explorers detected. Enter your callsign above.", True, COLOR_TEXT_MUTED), (card_x + 30, card_y + 360))
 
         # Bottom Dock Note
-        note_surf = self.font_small.render("[ All gameplay progress is automatically saved to SQLite dungeon_records.db ]", True, COLOR_TEXT_MUTED)
+        note_surf = self.font_small.render("[ All expedition progress is automatically saved to SQLite dungeon_records.db ]", True, COLOR_TEXT_MUTED)
         surface.blit(note_surf, note_surf.get_rect(center=(cx, self.screen_height - 30)))
 
     # =========================================================================
@@ -566,25 +567,25 @@ class UIManager:
 
         # Ambient central atmospheric glow
         glow_surf = pygame.Surface((720, 320), pygame.SRCALPHA)
-        glow_surf.fill((0, 110, 180, 16))
+        glow_surf.fill((210, 140, 35, 16))
         surface.blit(glow_surf, (120, 172))
 
         # 2. TOP HEADER
-        cat_badge = self.font_badge.render("// TACTICAL STEALTH & EVASION SIMULATION //", True, COLOR_TEXT_ACCENT_CYAN)
+        cat_badge = self.font_badge.render("// ANCIENT RUINS EXPEDITION // SANCTUARY INFILTRATION //", True, COLOR_TEXT_ACCENT_AMBER)
         cat_rect = cat_badge.get_rect(center=(self.screen_width // 2, 24))
         surface.blit(cat_badge, cat_rect)
 
         # Grand Title with 3D drop-shadow
         title_text = "TREASURE HUNTER"
-        shadow_title = self.font_title.render(title_text, True, (0, 60, 100))
-        main_title = self.font_title.render(title_text, True, (0, 230, 255))
+        shadow_title = self.font_title.render(title_text, True, (90, 60, 15))
+        main_title = self.font_title.render(title_text, True, COLOR_KEY_GOLD)
         title_x = self.screen_width // 2 - main_title.get_width() // 2
         surface.blit(shadow_title, (title_x + 2, 50))
         surface.blit(main_title, (title_x, 48))
 
         # Subtitle
-        sub_text = "GRID EVASION PROTOCOL // TACTICAL RECONNAISSANCE"
-        sub_surf = self.font_bold.render(sub_text, True, (155, 180, 215))
+        sub_text = "THE LOST TEMPLE EXPEDITION // TACTICAL EVASION PROTOCOL"
+        sub_surf = self.font_bold.render(sub_text, True, (215, 205, 180))
         surface.blit(sub_surf, (self.screen_width // 2 - sub_surf.get_width() // 2, 88))
 
         # Cyber Divider Line with Pulsing Center Diamond
@@ -596,7 +597,7 @@ class UIManager:
 
         # All-Time Best Victory Record Badge
         rec_val = f"{best_victory_steps} STEPS" if best_victory_steps is not None else "UNCLAIMED (NO RECORD YET)"
-        rec_text = f"BEST SECTOR RECORD: {rec_val}"
+        rec_text = f"ALL-TIME SANCTUARY RECORD: {rec_val}"
         rec_surf = self.font_bold.render(rec_text, True, COLOR_KEY_GOLD)
         rw = rec_surf.get_width() + 32
         rh = 30
@@ -646,7 +647,7 @@ class UIManager:
         # Chassis Top Ribbon
         ribbon_rect = pygame.Rect(chassis_x + 8, chassis_y + 8, chassis_w - 16, 24)
         pygame.draw.rect(surface, (18, 27, 44), ribbon_rect, border_radius=4)
-        ribbon_txt = self.font_badge.render("// SECTOR DEPLOYMENT CONSOLE // MISSION CONFIGURATION", True, COLOR_TEXT_SECONDARY)
+        ribbon_txt = self.font_badge.render("// TEMPLE EXPEDITION DISPATCH // SANCTUARY CONFIGURATION", True, COLOR_TEXT_SECONDARY)
         surface.blit(ribbon_txt, (ribbon_rect.x + 12, ribbon_rect.y + 4))
         # Status LED
         pygame.draw.circle(surface, COLOR_TEXT_ACCENT_GREEN, (ribbon_rect.right - 20, ribbon_rect.centery), 4)
@@ -657,11 +658,11 @@ class UIManager:
         scan_offset = int((self.anim_time * 65.0) % (chassis_h - 40))
         scan_y = chassis_y + 35 + scan_offset
         scan_surf = pygame.Surface((chassis_w - 16, 2), pygame.SRCALPHA)
-        scan_surf.fill((0, 220, 255, 28))
+        scan_surf.fill((255, 195, 45, 24))
         surface.blit(scan_surf, (chassis_x + 8, scan_y))
 
         # Form Section Labels
-        lbl_name = self.font_bold.render("OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
+        lbl_name = self.font_bold.render("EXPLORER CALLSIGN:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_name, (150, 208))
         self.input_player_name.draw(surface)
         self.btn_logout.draw(surface)
@@ -672,12 +673,12 @@ class UIManager:
             st_text = f"AUTHENTICATED  •  TOTAL: {total}  •  WINS: {wins}"
             surface.blit(self.font_small.render(st_text, True, COLOR_TEXT_ACCENT_GREEN), (380, 240))
 
-        lbl_grid = self.font_bold.render("ARENA GRID MATRIX:", True, COLOR_TEXT_PRIMARY)
+        lbl_grid = self.font_bold.render("CHAMBER MATRIX:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_grid, (150, 262))
         for btn in self.grid_buttons:
             btn.draw(surface)
 
-        lbl_lvl = self.font_bold.render("THREAT DIFFICULTY:", True, COLOR_TEXT_PRIMARY)
+        lbl_lvl = self.font_bold.render("TEMPLE HAZARD:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_lvl, (150, 318))
         for btn in self.level_buttons:
             btn.draw(surface)
@@ -711,12 +712,12 @@ class UIManager:
         pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (dock_x + 20, dock_y), (dock_x + dock_w - 20, dock_y), 2)
 
         # Line 1: In-game Status
-        tech_line = "[ SECTOR PROTOCOL: ACTIVE ]   |   [ THREAT SCANNER: ONLINE ]   |   [ FRAME RATE: 60 FPS ]"
+        tech_line = "[ SANCTUARY CHAMBERS: UNLOCKED ]   |   [ GUARDIAN RADAR: ACTIVE ]   |   [ EXPEDITION FPS: 60 ]"
         t_line_surf = self.font_bold.render(tech_line, True, COLOR_TEXT_ACCENT_GREEN)
         surface.blit(t_line_surf, t_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 18)))
 
         # Line 2: Signature
-        sig_line = "TREASURE HUNTER  •  ALL SYSTEMS OPERATIONAL  •  READY FOR DEPLOYMENT"
+        sig_line = "TREASURE HUNTER  •  ANCIENT SANCTUARY EXPEDITION  •  READY FOR EXPLORATION"
         s_line_surf = self.font_small.render(sig_line, True, COLOR_TEXT_MUTED)
         surface.blit(s_line_surf, s_line_surf.get_rect(center=(self.screen_width // 2, dock_y + 40)))
 
@@ -829,14 +830,14 @@ class UIManager:
             for c in range(grid_size):
                 cell_rect = pygame.Rect(origin_x + c * cell_size, origin_y + r * cell_size, cell_size, cell_size)
                 # Alternating color between deep cyber blue-indigo and dark obsidian
-                tile_col = (19, 26, 46) if (r + c) % 2 == 0 else (15, 20, 36)
+                tile_col = (34, 40, 54) if (r + c) % 2 == 0 else (26, 30, 42)
                 pygame.draw.rect(surface, tile_col, cell_rect)
 
                 if (r, c) not in walls:
                     cx_t = origin_x + c * cell_size
                     cy_t = origin_y + r * cell_size
                     # Floor plate illuminated neon corner pins
-                    pin_col = (38, 70, 115)
+                    pin_col = (110, 100, 75)
                     pygame.draw.circle(surface, pin_col, (int(cx_t + 4), int(cy_t + 4)), 1)
                     pygame.draw.circle(surface, pin_col, (int(cx_t + cell_size - 4), int(cy_t + 4)), 1)
                     pygame.draw.circle(surface, pin_col, (int(cx_t + 4), int(cy_t + cell_size - 4)), 1)
@@ -844,7 +845,7 @@ class UIManager:
                     # Subtle center micro-crosshair
                     c_mid_x = int(cx_t + cell_size / 2)
                     c_mid_y = int(cy_t + cell_size / 2)
-                    pygame.draw.circle(surface, (30, 55, 90), (c_mid_x, c_mid_y), 1)
+                    pygame.draw.circle(surface, (85, 75, 55), (c_mid_x, c_mid_y), 1)
 
         # Dynamic Wall Relocation Visual Pulse Alert
         if wall_shift_alert > 0:
@@ -862,8 +863,8 @@ class UIManager:
             pygame.draw.line(surface, COLOR_GRID_LINE, (px, origin_y), (px, origin_y + grid_h), 1)
 
         # Outer Tactical Grid Frame with Double Neon Rim (Cyan & Magenta)
-        pygame.draw.rect(surface, (0, 210, 255), grid_rect, width=2, border_radius=6)
-        pygame.draw.rect(surface, (255, 60, 170), grid_rect.inflate(4, 4), width=1, border_radius=8)
+        pygame.draw.rect(surface, (225, 175, 55), grid_rect, width=2, border_radius=6)
+        pygame.draw.rect(surface, (65, 175, 245), grid_rect.inflate(4, 4), width=1, border_radius=8)
 
         # 1. PREMIUM CYBERNETIC ENERGIZED BLAST BARRIERS (WALLS)
         for (wr, wc) in walls:
@@ -879,12 +880,12 @@ class UIManager:
             pygame.draw.rect(surface, (6, 8, 14), shadow_rect, border_radius=4)
 
             # Heavy energized obsidian composite hull plate
-            pygame.draw.rect(surface, (24, 30, 48), w_rect, border_radius=4)
+            pygame.draw.rect(surface, (38, 42, 56), w_rect, border_radius=4)
 
             # 3D Chiseled Bevel:
             # Top & Left specular highlight line (Cyan tint)
-            pygame.draw.line(surface, (80, 130, 190), (w_rect.left + 1, w_rect.top + 1), (w_rect.right - 2, w_rect.top + 1), 1)
-            pygame.draw.line(surface, (80, 130, 190), (w_rect.left + 1, w_rect.top + 1), (w_rect.left + 1, w_rect.bottom - 2), 1)
+            pygame.draw.line(surface, (120, 130, 155), (w_rect.left + 1, w_rect.top + 1), (w_rect.right - 2, w_rect.top + 1), 1)
+            pygame.draw.line(surface, (120, 130, 155), (w_rect.left + 1, w_rect.top + 1), (w_rect.left + 1, w_rect.bottom - 2), 1)
             # Bottom & Right dark ambient occlusion shadow
             pygame.draw.line(surface, (10, 14, 22), (w_rect.left + 1, w_rect.bottom - 1), (w_rect.right - 1, w_rect.bottom - 1), 1)
             pygame.draw.line(surface, (10, 14, 22), (w_rect.right - 1, w_rect.top + 1), (w_rect.right - 1, w_rect.bottom - 1), 1)
@@ -892,8 +893,8 @@ class UIManager:
             # Inset reinforced armor plate (Deep Indigo)
             inset_m = max(3.0, cell_size * 0.14)
             inset_rect = pygame.Rect(wx + inset_m, wy + inset_m, cell_size - inset_m * 2, cell_size - inset_m * 2)
-            pygame.draw.rect(surface, (16, 22, 38), inset_rect, border_radius=2)
-            pygame.draw.rect(surface, (45, 75, 120), inset_rect, width=1, border_radius=2)
+            pygame.draw.rect(surface, (25, 29, 40), inset_rect, border_radius=2)
+            pygame.draw.rect(surface, (215, 165, 45), inset_rect, width=1, border_radius=2)
 
             # 4 Corner Heavy Industrial Rivets with Specular Gleams
             r_inset = inset_m * 0.52
@@ -905,8 +906,8 @@ class UIManager:
                 (wx + cell_size - pad - r_inset, wy + cell_size - pad - r_inset)
             ]:
                 pygame.draw.circle(surface, (8, 12, 18), (int(rx + 0.5), int(ry + 0.5)), int(rivet_r + 0.5))
-                pygame.draw.circle(surface, (140, 180, 225), (int(rx), int(ry)), int(rivet_r))
-                pygame.draw.circle(surface, (230, 250, 255), (int(rx - 0.5), int(ry - 0.5)), max(1, int(rivet_r * 0.5)))
+                pygame.draw.circle(surface, (225, 175, 55), (int(rx), int(ry)), int(rivet_r))
+                pygame.draw.circle(surface, (255, 235, 160), (int(rx - 0.5), int(ry - 0.5)), max(1, int(rivet_r * 0.5)))
 
             # Central Cybernetic Plasma Node & Conduits
             c_cx = wx + cell_size / 2.0
@@ -918,8 +919,8 @@ class UIManager:
                 h_col = (255, 160, 30)
                 v_col = (255, 100, 20)
             else:
-                h_col = (0, 220, 255)     # Glowing Cyan conduit
-                v_col = (255, 60, 180)    # Glowing Magenta conduit
+                h_col = (235, 185, 50)    # Glowing Ancient Gold Rune
+                v_col = (225, 75, 45)     # Glowing Ruby Arcane Rune
 
             pygame.draw.line(surface, h_col, (c_cx - core_half * 1.5, c_cy), (c_cx + core_half * 1.5, c_cy), 1)
             pygame.draw.line(surface, v_col, (c_cx, c_cy - core_half * 1.5), (c_cx, c_cy + core_half * 1.5), 1)
@@ -931,8 +932,8 @@ class UIManager:
                 p_glow = (255, 240, 140)
             else:
                 p_rate = 3.6
-                p_core = (0, 235, 255)
-                p_glow = (235, 255, 255)
+                p_core = (255, 195, 40)
+                p_glow = (255, 245, 180)
 
             p_factor = 0.82 + 0.18 * math.sin(self.anim_time * p_rate + (wr * 3 + wc * 7))
             cur_r = core_half * p_factor
@@ -946,7 +947,7 @@ class UIManager:
             ]
             pygame.draw.polygon(surface, p_core, core_pts)
             # Outer neon corona ring
-            pygame.draw.circle(surface, (255, 60, 180), (int(c_cx), int(c_cy)), int(cur_r * 1.25), 1)
+            pygame.draw.circle(surface, (225, 175, 55), (int(c_cx), int(c_cy)), int(cur_r * 1.25), 1)
             # Hotspot Core
             hot_r = cur_r * 0.45
             hot_pts = [
@@ -978,13 +979,13 @@ class UIManager:
             core_r = max(2, int(portal_radius * 0.58))
             pygame.draw.circle(surface, (20, 180, 95), (int(ex_x), int(ex_y)), core_r)
             pygame.draw.circle(surface, (210, 255, 235), (int(ex_x), int(ex_y)), max(1, int(core_r * 0.4)))
-            exit_label = self.font_bold.render("EXTRACT", True, (255, 255, 255))
+            exit_label = self.font_bold.render("ESCAPE", True, (255, 255, 255))
         else:
             # Standby Locked Security Grid (Amber / Slate)
             pygame.draw.circle(surface, (220, 140, 30), (int(ex_x), int(ex_y)), p_r, width=2)
             core_r = max(2, int(portal_radius * 0.52))
             pygame.draw.circle(surface, (45, 38, 25), (int(ex_x), int(ex_y)), core_r)
-            exit_label = self.font_badge.render("LOCKED", True, (255, 190, 60))
+            exit_label = self.font_badge.render("SEALED", True, (255, 185, 45))
 
         surface.blit(exit_label, exit_label.get_rect(center=(int(ex_x), int(ex_y))))
 
@@ -1022,7 +1023,7 @@ class UIManager:
                 (kx - d_half * 0.5, ky)
             ]
             pygame.draw.polygon(surface, (255, 250, 180), facet_pts)
-            k_lbl = self.font_badge.render("KEY", True, (25, 20, 10))
+            k_lbl = self.font_badge.render("RELIC", True, (25, 20, 10))
             surface.blit(k_lbl, k_lbl.get_rect(center=(int(kx), int(ky))))
 
         # 4. Green Gemini Safe-Route Breadcrumbs (Strictly No A*)
@@ -1117,9 +1118,9 @@ class UIManager:
         # 2. Tactician Tactical Aura Ring (Cyan pulse)
         pulse = 1.0 + 0.08 * math.sin(self.anim_time * 5.0)
         ring_r = int(cell_size * 0.36 * pulse)
-        pygame.draw.circle(surface, (0, 220, 255), (int(px), int(py)), ring_r, width=1)
-        # Inner subtle stealth ring
-        pygame.draw.circle(surface, (0, 140, 190), (int(px), int(py)), max(2, ring_r - 3), width=1)
+        pygame.draw.circle(surface, (255, 195, 45), (int(px), int(py)), ring_r, width=1)
+        # Inner golden aura
+        pygame.draw.circle(surface, (180, 130, 25), (int(px), int(py)), max(2, ring_r - 3), width=1)
 
         # 3. Animated Combat Boots with Cyan Heel Stabilizer LEDs
         walk_stride = math.sin(self.anim_time * 9.0) * (4.2 * scale)
@@ -1129,13 +1130,13 @@ class UIManager:
         lfx = px + perp_x * (-foot_spread) + cos_a * walk_stride
         lfy = py + perp_y * (-foot_spread) + sin_a * walk_stride
         pygame.draw.circle(surface, (18, 25, 36), (int(lfx), int(lfy)), max(2, int(3.5 * scale)))
-        pygame.draw.circle(surface, (0, 180, 235), (int(lfx - cos_a * (1.2 * scale)), int(lfy - sin_a * (1.2 * scale))), max(1, int(1.8 * scale)))
+        pygame.draw.circle(surface, (215, 165, 45), (int(lfx - cos_a * (1.2 * scale)), int(lfy - sin_a * (1.2 * scale))), max(1, int(1.8 * scale)))
 
         # Right Foot
         rfx = px + perp_x * (foot_spread) - cos_a * walk_stride
         rfy = py + perp_y * (foot_spread) - sin_a * walk_stride
         pygame.draw.circle(surface, (18, 25, 36), (int(rfx), int(rfy)), max(2, int(3.5 * scale)))
-        pygame.draw.circle(surface, (0, 180, 235), (int(rfx - cos_a * (1.2 * scale)), int(rfy - sin_a * (1.2 * scale))), max(1, int(1.8 * scale)))
+        pygame.draw.circle(surface, (215, 165, 45), (int(rfx - cos_a * (1.2 * scale)), int(rfy - sin_a * (1.2 * scale))), max(1, int(1.8 * scale)))
 
         # 4. Human Torso & Tactical Operative Exo-Armor
         sh_w = 8.8 * scale
@@ -1156,41 +1157,42 @@ class UIManager:
         p_bp2 = (px + perp_x * (sh_w * 0.8) + cos_a * (chest_len * 0.85), py + perp_y * (sh_w * 0.8) + sin_a * (chest_len * 0.85))
         p_bp3 = (px + perp_x * (hip_w * 0.75) - cos_a * (hip_back * 0.35), py + perp_y * (hip_w * 0.75) - sin_a * (hip_back * 0.35))
         p_bp4 = (px + perp_x * (-hip_w * 0.75) - cos_a * (hip_back * 0.35), py + perp_y * (-hip_w * 0.75) - sin_a * (hip_back * 0.35))
-        pygame.draw.polygon(surface, (0, 135, 195), [p_bp1, p_bp2, p_bp3, p_bp4])
-        pygame.draw.polygon(surface, (0, 205, 255), [p_bp1, p_bp2, p_bp3, p_bp4], width=1)
+        pygame.draw.polygon(surface, (145, 85, 42), [p_bp1, p_bp2, p_bp3, p_bp4])
+        pygame.draw.polygon(surface, (225, 175, 55), [p_bp1, p_bp2, p_bp3, p_bp4], width=1)
 
         # Tactical harness straps & ammo webbing
         pygame.draw.line(surface, (25, 40, 60), p_l_shoulder, p_r_hip, max(1, int(1.8 * scale)))
         pygame.draw.line(surface, (25, 40, 60), p_r_shoulder, p_l_hip, max(1, int(1.8 * scale)))
 
-        # Central Aegis Operative Chest Crest (Pulsing Cyan Emissive Node)
+        # Explorer Leather Harness Buckle & Golden Amulet Medallion
         crest_x = px + cos_a * (1.2 * scale)
         crest_y = py + sin_a * (1.2 * scale)
         crest_r = max(2, int(2.4 * scale))
-        pygame.draw.circle(surface, (0, 220, 255), (int(crest_x), int(crest_y)), crest_r)
-        pygame.draw.circle(surface, (220, 250, 255), (int(crest_x), int(crest_y)), max(1, int(crest_r * 0.5)))
+        pygame.draw.circle(surface, (225, 175, 50), (int(crest_x), int(crest_y)), crest_r)
+        pygame.draw.circle(surface, (255, 240, 160), (int(crest_x), int(crest_y)), max(1, int(crest_r * 0.5)))
 
-        # Armored shoulder pauldrons with cyan trim
-        pygame.draw.circle(surface, (0, 110, 165), (int(p_l_shoulder[0]), int(p_l_shoulder[1])), max(2, int(3.2 * scale)))
-        pygame.draw.circle(surface, (0, 220, 255), (int(p_l_shoulder[0]), int(p_l_shoulder[1])), max(1, int(1.8 * scale)))
-        pygame.draw.circle(surface, (0, 110, 165), (int(p_r_shoulder[0]), int(p_r_shoulder[1])), max(2, int(3.2 * scale)))
-        pygame.draw.circle(surface, (0, 220, 255), (int(p_r_shoulder[0]), int(p_r_shoulder[1])), max(1, int(1.8 * scale)))
+        # Sturdy explorer leather shoulder pauldrons with brass rivets
+        pygame.draw.circle(surface, (115, 65, 32), (int(p_l_shoulder[0]), int(p_l_shoulder[1])), max(2, int(3.2 * scale)))
+        pygame.draw.circle(surface, (225, 175, 50), (int(p_l_shoulder[0]), int(p_l_shoulder[1])), max(1, int(1.8 * scale)))
+        pygame.draw.circle(surface, (115, 65, 32), (int(p_r_shoulder[0]), int(p_r_shoulder[1])), max(2, int(3.2 * scale)))
+        pygame.draw.circle(surface, (225, 175, 50), (int(p_r_shoulder[0]), int(p_r_shoulder[1])), max(1, int(1.8 * scale)))
 
-        # 5. Articulated Arms, Left Wrist PDA & Right Hand Tactical Scanner
+        # 5. Articulated Arms, Left Wrist Compass & Right Hand Explorer Lantern/Torch
         arm_reach = 9.5 * scale
         hand_r_x = px + perp_x * (sh_w * 0.8) + cos_a * arm_reach
         hand_r_y = py + perp_y * (sh_w * 0.8) + sin_a * arm_reach
         hand_l_x = px + perp_x * (-sh_w * 0.8) + cos_a * (arm_reach * 0.65)
         hand_l_y = py + perp_y * (-sh_w * 0.8) + sin_a * (arm_reach * 0.65)
 
-        # Arm sleeves
-        pygame.draw.line(surface, (0, 125, 185), p_r_shoulder, (hand_r_x, hand_r_y), max(2, int(3.6 * scale)))
-        pygame.draw.line(surface, (0, 125, 185), p_l_shoulder, (hand_l_x, hand_l_y), max(2, int(3.6 * scale)))
+        # Explorer canvas sleeves
+        pygame.draw.line(surface, (130, 75, 36), p_r_shoulder, (hand_r_x, hand_r_y), max(2, int(3.6 * scale)))
+        pygame.draw.line(surface, (130, 75, 36), p_l_shoulder, (hand_l_x, hand_l_y), max(2, int(3.6 * scale)))
 
-        # Left Wrist Holographic Comms PDA
+        # Left Wrist Golden Expedition Compass
         pda_x = (p_l_shoulder[0] + hand_l_x) * 0.5
         pda_y = (p_l_shoulder[1] + hand_l_y) * 0.5
-        pygame.draw.circle(surface, (0, 240, 255), (int(pda_x), int(pda_y)), max(1, int(2.0 * scale)))
+        pygame.draw.circle(surface, (225, 175, 50), (int(pda_x), int(pda_y)), max(1, int(2.2 * scale)))
+        pygame.draw.circle(surface, (255, 245, 180), (int(pda_x), int(pda_y)), max(1, int(1.0 * scale)))
 
         # Human Skin Hands with tactical fingerless gloves
         pygame.draw.circle(surface, (245, 195, 158), (int(hand_r_x), int(hand_r_y)), max(1, int(2.5 * scale)))
@@ -1200,7 +1202,7 @@ class UIManager:
         scanner_tip_x = hand_r_x + cos_a * (5.0 * scale)
         scanner_tip_y = hand_r_y + sin_a * (5.0 * scale)
         pygame.draw.line(surface, (45, 58, 78), (hand_r_x, hand_r_y), (scanner_tip_x, scanner_tip_y), max(2, int(3.0 * scale)))
-        pygame.draw.circle(surface, (0, 240, 255), (int(scanner_tip_x), int(scanner_tip_y)), max(1, int(2.2 * scale)))
+        pygame.draw.circle(surface, (255, 210, 50), (int(scanner_tip_x), int(scanner_tip_y)), max(1, int(2.2 * scale)))
 
         # Multi-Stage Volumetric Flashlight Beam
         light_len = cell_size * 0.85
@@ -1211,13 +1213,13 @@ class UIManager:
         half_fov = math.radians(24)
         p_l = (scanner_tip_x + math.cos(angle - half_fov) * light_len, scanner_tip_y + math.sin(angle - half_fov) * light_len)
         p_r = (scanner_tip_x + math.cos(angle + half_fov) * light_len, scanner_tip_y + math.sin(angle + half_fov) * light_len)
-        pygame.draw.polygon(light_surf, (0, 220, 255, 20), [p_apex, p_l, p_r])
+        pygame.draw.polygon(light_surf, (255, 205, 60, 26), [p_apex, p_l, p_r])
 
         # Focused core penetrating beam
         narrow_fov = math.radians(11)
         p_nl = (scanner_tip_x + math.cos(angle - narrow_fov) * (light_len * 1.05), scanner_tip_y + math.sin(angle - narrow_fov) * (light_len * 1.05))
         p_nr = (scanner_tip_x + math.cos(angle + narrow_fov) * (light_len * 1.05), scanner_tip_y + math.sin(angle + narrow_fov) * (light_len * 1.05))
-        pygame.draw.polygon(light_surf, (140, 245, 255, 45), [p_apex, p_nl, p_nr])
+        pygame.draw.polygon(light_surf, (255, 235, 130, 48), [p_apex, p_nl, p_nr])
         surface.blit(light_surf, (0, 0))
 
         # 6. Human Head, Modern Hairstyle & Smart Cybernetic Retinal Visor
@@ -1237,30 +1239,20 @@ class UIManager:
         pygame.draw.circle(hair_surf, (0, 0, 0, 0), (face_cut_x, face_cut_y), int(head_r * 0.78))
         surface.blit(hair_surf, (int(head_cx - head_r - 3), int(head_cy - head_r - 3)))
 
-        # SMART CYBERNETIC RETINAL VISOR (Glowing Cyan with Animated Scanline)
-        v_dist = 3.6 * scale
-        v_span = 4.2 * scale
-        v_left = (head_cx + perp_x * (-v_span) + cos_a * v_dist, head_cy + perp_y * (-v_span) + sin_a * v_dist)
-        v_right = (head_cx + perp_x * (v_span) + cos_a * v_dist, head_cy + perp_y * (v_span) + sin_a * v_dist)
+        # CLASSIC EXPLORER FEDORA HAT & HEADGEAR
+        # Hat brim (wide leather brim)
+        brim_cx = head_cx + cos_a * (0.8 * scale)
+        brim_cy = head_cy + sin_a * (0.8 * scale)
+        brim_r = head_r * 1.15
+        pygame.draw.circle(surface, (105, 60, 28), (int(brim_cx), int(brim_cy)), int(brim_r))
 
-        # Visor outer neon glow
-        pygame.draw.line(surface, (0, 240, 255), v_left, v_right, max(2, int(3.2 * scale)))
-        # Visor core laser streak
-        pygame.draw.line(surface, (220, 255, 255), v_left, v_right, max(1, int(1.6 * scale)))
+        # Hat crown (tan felt)
+        crown_cx = head_cx - cos_a * (0.8 * scale)
+        crown_cy = head_cy - sin_a * (0.8 * scale)
+        pygame.draw.circle(surface, (145, 90, 45), (int(crown_cx), int(crown_cy)), int(head_r * 0.85))
 
-        # Animated mini scanline traveling across visor
-        scan_t = (math.sin(self.anim_time * 6.0) + 1.0) * 0.5
-        scan_x = v_left[0] + (v_right[0] - v_left[0]) * scan_t
-        scan_y = v_left[1] + (v_right[1] - v_left[1]) * scan_t
-        pygame.draw.circle(surface, (255, 255, 255), (int(scan_x), int(scan_y)), max(1, int(1.8 * scale)))
-
-        # Tactical Headset Comms with Boom Microphone
-        ear_x = head_cx + perp_x * (-head_r * 0.95)
-        ear_y = head_cy + perp_y * (-head_r * 0.95)
-        pygame.draw.circle(surface, (0, 240, 255), (int(ear_x), int(ear_y)), max(1, int(2.2 * scale)))
-        mic_tip_x = ear_x + cos_a * (head_r * 0.8) + perp_x * (head_r * 0.4)
-        mic_tip_y = ear_y + sin_a * (head_r * 0.8) + perp_y * (head_r * 0.4)
-        pygame.draw.line(surface, (40, 50, 65), (ear_x, ear_y), (mic_tip_x, mic_tip_y), max(1, int(1.5 * scale)))
+        # Golden hat ribbon band
+        pygame.draw.circle(surface, (225, 175, 50), (int(crown_cx), int(crown_cy)), int(head_r * 0.85), width=1)
 
         # 7. Secured Golden Cipher Artifact on Backpack (if collected)
         if has_key:
@@ -1278,7 +1270,7 @@ class UIManager:
                 pygame.draw.circle(surface, (255, 240, 160), (int(sp_x), int(sp_y)), max(1, int(1.4 * scale)))
 
         # 8. Floating Tactical Operative Callsign Pill
-        lbl = self.font_small.render("OPERATIVE", True, (0, 220, 255))
+        lbl = self.font_small.render("HUNTER", True, COLOR_KEY_GOLD)
         pill_rect = lbl.get_rect(center=(int(px), int(py - cell_size * 0.44)))
         pill_bg = pill_rect.inflate(8, 2)
         pygame.draw.rect(surface, (10, 16, 26), pill_bg, border_radius=3)
@@ -1450,7 +1442,7 @@ class UIManager:
         pygame.draw.circle(surface, (255, 235, 240), (int(c_nvg_x), int(c_nvg_y)), 1)
 
         # 7. Floating Tactical Hunter Callsign Pill
-        h_tag = self.font_small.render(f"HUNTER-0{hunter_id}", True, (255, 80, 100))
+        h_tag = self.font_small.render(f"SENTINEL-0{hunter_id}", True, (255, 85, 95))
         h_rect = h_tag.get_rect(center=(int(hx), int(hy - cell_size * 0.44)))
         h_pill = h_rect.inflate(8, 2)
         pygame.draw.rect(surface, (24, 12, 16), h_pill, border_radius=3)
@@ -1508,11 +1500,11 @@ class UIManager:
         surface.blit(self.font_body.render(step_str, True, COLOR_TEXT_PRIMARY), (c1_rect.x, y))
         y += 20
         # Best Record
-        best_str = f"★ BEST RECORD: {best_steps} STEPS" if best_steps is not None else "★ BEST RECORD: UNCLAIMED"
+        best_str = f"BEST RECORD: {best_steps} STEPS" if best_steps is not None else "★ BEST RECORD: UNCLAIMED"
         surface.blit(self.font_small.render(best_str, True, COLOR_KEY_GOLD), (c1_rect.x, y))
         y += 22
         # Key Status Badge
-        key_label = "KEY: SECURED [EXTRACTION ACTIVE]" if has_key else "KEY: NOT SECURED [SEARCHING]"
+        key_label = "RELIC: SECURED [GATEWAY OPEN]" if has_key else "RELIC: REQUIRED [EXPLORING]"
         key_color = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_TEXT_ACCENT_RED
         k_bg_fill = (16, 42, 28) if has_key else (38, 16, 24)
         k_surf = self.font_bold.render(key_label, True, key_color)
@@ -1528,7 +1520,7 @@ class UIManager:
         surface.blit(h2, (c2_rect.x, c2_rect.y))
 
         y2 = c2_rect.y + 22
-        surface.blit(self.font_small.render("RADAR STATUS: MULTI-BAND ACTIVE", True, COLOR_TEXT_ACCENT_CYAN), (c2_rect.x, y2))
+        surface.blit(self.font_small.render("SANCTUARY RADAR: MULTI-CHAMBER ACTIVE", True, COLOR_TEXT_ACCENT_CYAN), (c2_rect.x, y2))
         y2 += 18
 
         surface.blit(self.font_body.render("ESCAPE ROUTE: COMPUTED", True, COLOR_TEXT_ACCENT_GREEN), (c2_rect.x, y2))
@@ -1539,15 +1531,15 @@ class UIManager:
         led_pulse = 1.0 + 0.25 * math.sin(self.anim_time * 8.0)
         pygame.draw.circle(surface, led_color, (c2_rect.x + 8, y2 + 8), int(5 * led_pulse))
 
-        surface.blit(self.font_bold.render("ENEMY TRACKING: ACTIVE (60 FPS)", True, led_color), (c2_rect.x + 22, y2))
+        surface.blit(self.font_bold.render("SENTINEL TRACKING: ACTIVE (60 FPS)", True, led_color), (c2_rect.x + 22, y2))
         y2 += 22
 
-        surface.blit(self.font_small.render("SIGHTLINE EVASION: ENGAGED", True, COLOR_TEXT_MUTED), (c2_rect.x, y2))
+        surface.blit(self.font_small.render("GUARDIAN EVASION: ENGAGED", True, COLOR_TEXT_MUTED), (c2_rect.x, y2))
 
         # ---------------------------------------------------------------------
         # COLUMN 3: LIVE TACTICAL COMMANDER TRANSMISSION
         # ---------------------------------------------------------------------
-        h3 = self.font_badge.render("// TACTICAL COMMAND TRANSMISSION", True, COLOR_TEXT_ACCENT_AMBER)
+        h3 = self.font_badge.render("// EXPEDITION COMMAND DISPATCH", True, COLOR_TEXT_ACCENT_AMBER)
         surface.blit(h3, (c3_rect.x, c3_rect.y))
 
         # Transmission Terminal Box
@@ -1556,16 +1548,16 @@ class UIManager:
         pygame.draw.rect(surface, (45, 68, 105), box_rect, width=1, border_radius=4)
 
         # Terminal Comms Header
-        radio_icon = self.font_small.render("[COMMS ACTIVE]", True, COLOR_TEXT_ACCENT_GREEN)
+        radio_icon = self.font_small.render("[DISPATCH ACTIVE]", True, COLOR_TEXT_ACCENT_GREEN)
         surface.blit(radio_icon, (box_rect.x + 8, box_rect.y + 6))
 
         # Order Content (Tense transmission under 12 words)
-        clean_order = commander_order.strip() if commander_order else "Observing battlefield telemetry..."
+        clean_order = commander_order.strip() if commander_order else "Observing sanctuary chamber telemetry..."
         order_surf = self.font_header.render(f'"{clean_order}"', True, COLOR_TEXT_PRIMARY)
         surface.blit(order_surf, (box_rect.x + 8, box_rect.y + 28))
 
         # Subtext / Instruction hint
-        hint_surf = self.font_small.render("[WASD: Move | P/ESC: Pause | H: Spawn Hunter | B: Shift Barrier]", True, COLOR_TEXT_MUTED)
+        hint_surf = self.font_small.render("[WASD: Move | P/ESC: Pause | H: Summon Sentinel | B: Shift Walls]", True, COLOR_TEXT_MUTED)
         surface.blit(hint_surf, (box_rect.x + 8, box_rect.y + 62))
 
     # =========================================================================
@@ -1597,12 +1589,12 @@ class UIManager:
         pygame.draw.rect(surface, accent_color, modal_rect, width=2, border_radius=8)
 
         if is_victory:
-            title_text = "MISSION ACCOMPLISHED"
-            sub_text = f"Operative successfully extracted in {steps} steps!"
+            title_text = "EXPEDITION ACCOMPLISHED"
+            sub_text = f"Treasure Hunter successfully extracted in {steps} steps!"
             title_color = COLOR_TEXT_ACCENT_GREEN
         else:
-            title_text = "TACTICAL CASUALTY"
-            sub_text = f"Operative intercepted by Hunter Drone after {steps} steps."
+            title_text = "SANCTUARY CASUALTY"
+            sub_text = f"Explorer intercepted by Temple Sentinel after {steps} steps."
             title_color = COLOR_TEXT_ACCENT_RED
 
         t_surf = self.font_title.render(title_text, True, title_color)
@@ -1612,7 +1604,7 @@ class UIManager:
         surface.blit(s_surf, s_surf.get_rect(center=(cx, cy - 80)))
 
         if is_victory and is_new_best:
-            rec_surf = self.font_header.render("★ NEW BEST VICTORY RECORD! ★", True, COLOR_TEXT_ACCENT_AMBER)
+            rec_surf = self.font_header.render("NEW BEST EXPEDITION RECORD!", True, COLOR_TEXT_ACCENT_AMBER)
             surface.blit(rec_surf, rec_surf.get_rect(center=(cx, cy - 45)))
         elif is_victory:
             adv_txt = "Next difficulty available for selection." if current_level < 3 else "Maximum difficulty conquered!"
@@ -1674,7 +1666,7 @@ class UIManager:
         surface.blit(top_glass, top_rect.topleft)
         pygame.draw.rect(surface, (0, 180, 230), top_rect, width=1, border_radius=4)
 
-        banner_title = self.font_bold.render("PAUSED // TACTICAL INSPECTION MODE", True, COLOR_TEXT_ACCENT_CYAN)
+        banner_title = self.font_bold.render("PAUSED // TEMPLE EXPEDITION INSPECTION MODE", True, COLOR_KEY_GOLD)
         surface.blit(banner_title, banner_title.get_rect(center=(self.screen_width // 2, top_y + 16)))
 
         # 3. Right-Margin Control Dock (x=778 to 952 - leaves 100% of the game arena open)
@@ -1693,7 +1685,7 @@ class UIManager:
         pygame.draw.rect(surface, (0, 180, 230), dock_rect.inflate(-4, -4), width=1, border_radius=4)
 
         # Header Title in dock
-        dock_title = self.font_badge.render("// PAUSE MENU", True, COLOR_TEXT_ACCENT_AMBER)
+        dock_title = self.font_badge.render("// EXPEDITION PAUSED", True, COLOR_KEY_GOLD)
         surface.blit(dock_title, (dock_x + 12, dock_y + 10))
         pygame.draw.line(surface, (28, 48, 75), (dock_x + 10, dock_y + 26), (dock_x + dock_w - 10, dock_y + 26), 1)
 
@@ -1710,7 +1702,7 @@ class UIManager:
         sec_surf = self.font_small.render(f"LEVEL: {level_name.upper()}", True, COLOR_TEXT_SECONDARY)
         surface.blit(sec_surf, (dock_x + 12, info_y))
         info_y += 16
-        k_txt = "KEY: SECURED" if has_key else "KEY: REQUIRED"
+        k_txt = "RELIC: SECURED" if has_key else "RELIC: REQUIRED"
         k_col = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_KEY_GOLD
         key_info = self.font_badge.render(k_txt, True, k_col)
         surface.blit(key_info, (dock_x + 12, info_y))
