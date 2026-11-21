@@ -24,6 +24,8 @@ from sound_effects import SoundManager
 
 
 # Game State Identifiers
+STATE_SPLASH = "SPLASH"
+STATE_LOGIN = "LOGIN"
 STATE_HOME = "HOME"
 STATE_HOW_TO_PLAY = "HOW_TO_PLAY"
 STATE_PLAYING = "PLAYING"
@@ -55,9 +57,15 @@ class GameEngine:
         self.clock = pygame.time.Clock()
         self.is_running = True
 
-        # State Machine Initialization
-        self.state = STATE_HOME
+        # State Machine Initialization (Begins with Splash Intro, then User Login)
+        self.state = STATE_SPLASH
         self.return_state = STATE_HOME
+        self.splash_timer: float = 0.0
+        self.splash_duration: float = 2.5
+        self.current_user: str = "afiabyte"
+        self.user_stats: Optional[Dict[str, Any]] = None
+        self.login_status: str = "AWAITING CREDENTIALS"
+        self.recent_operatives: List[Dict[str, Any]] = []
 
         # Subsystem Managers (Clean zero-circular dependency architecture)
         self.db = DatabaseManager("dungeon_records.db")
@@ -65,10 +73,13 @@ class GameEngine:
         self.ui = UIManager(self.screen_width, self.screen_height)
         self.sound = SoundManager()
 
+        # Query recent operatives from SQLite
+        self.recent_operatives = self.db.get_recent_operatives(3)
+
         # Configurable Game Parameters (set from Home screen)
         self.selected_grid_size: int = 7
         self.selected_level: int = 2
-        self.player_name: str = "OPERATIVE-01"
+        self.player_name: str = "afiabyte"
 
         # Active Environment Simulation
         self.env: Optional[GridEnvironment] = None
@@ -164,11 +175,12 @@ class GameEngine:
         self.is_victory = True
         self.sound.play_victory()
 
-        # Save match result to SQLite
+        # Save match result to SQLite on the basis of active operative
         steps_taken = self.env.steps if self.env else 0
         self.db.save_match_result(self.player_name, steps_taken, "VICTORY")
+        self.user_stats = self.db.get_operative(self.player_name)
 
-        # Evaluate if this run sets a new all-time best record
+        # Evaluate if this run sets a new personal best record
         prev_best = self.best_victory_steps
         if prev_best is None or steps_taken < prev_best:
             self.is_new_best_record = True
@@ -184,9 +196,10 @@ class GameEngine:
         self.is_new_best_record = False
         self.sound.play_defeat()
 
-        # Save match result to SQLite
+        # Save match result to SQLite on the basis of active operative
         steps_taken = self.env.steps if self.env else 0
         self.db.save_match_result(self.player_name, steps_taken, "DEFEAT")
+        self.user_stats = self.db.get_operative(self.player_name)
 
         self.state = STATE_GAME_OVER
 
@@ -200,7 +213,11 @@ class GameEngine:
                 self.is_running = False
                 return
 
-            if self.state == STATE_HOME:
+            if self.state == STATE_SPLASH:
+                self._handle_splash_events(event)
+            elif self.state == STATE_LOGIN:
+                self._handle_login_events(event)
+            elif self.state == STATE_HOME:
                 self._handle_home_events(event)
             elif self.state == STATE_HOW_TO_PLAY:
                 self._handle_how_to_play_events(event)
@@ -211,10 +228,78 @@ class GameEngine:
             elif self.state == STATE_GAME_OVER:
                 self._handle_game_over_events(event)
 
+    def _handle_splash_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the Splash Screen (Space/Enter/Click transitions to Login)."""
+        if event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+            self.state = STATE_LOGIN
+            self.ui.input_login_username.is_active = True
+            self.recent_operatives = self.db.get_recent_operatives(3)
+
+    def _handle_login_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the Operative Login Screen."""
+        self.ui.input_login_username.handle_event(event)
+
+        # 1. Check quick-select click on recent operatives in card
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mx, my = event.pos
+            card_x = self.screen_width // 2 - 280
+            card_y = 125
+            if self.recent_operatives and len(self.recent_operatives) > 0:
+                ry = card_y + 372
+                for op in self.recent_operatives[:3]:
+                    op_rect = pygame.Rect(card_x + 25, ry - 2, 500, 20)
+                    if op_rect.collidepoint(mx, my):
+                        self.ui.input_login_username.text = op["username"]
+                        self.login_status = f"SELECTED: {op['username']}"
+                        break
+                    ry += 20
+
+        # 2. Check Login Submit button or Enter Key
+        do_login = False
+        target_name = self.ui.input_login_username.text.strip()
+
+        if self.ui.btn_login_submit.handle_event(event):
+            do_login = True
+        elif event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+            do_login = True
+
+        if do_login:
+            if not target_name:
+                target_name = "afiabyte"
+            op = self.db.login_or_register_operative(target_name)
+            self.current_user = op["username"]
+            self.player_name = self.current_user
+            self.ui.input_player_name.text = self.current_user
+            self.user_stats = op
+            self.best_victory_steps = self.db.get_best_victory_steps(self.current_user)
+            self.sound.play_key()
+            self.state = STATE_HOME
+            return
+
+        # 3. Check Guest Login Button
+        if self.ui.btn_login_guest.handle_event(event):
+            op = self.db.login_or_register_operative("GUEST-01")
+            self.current_user = op["username"]
+            self.player_name = self.current_user
+            self.ui.input_player_name.text = self.current_user
+            self.user_stats = op
+            self.best_victory_steps = self.db.get_best_victory_steps(self.current_user)
+            self.sound.play_key()
+            self.state = STATE_HOME
+            return
+
     def _handle_home_events(self, event: pygame.event.Event) -> None:
         """Handle inputs on the Home Screen."""
         # Text input field for player callsign
         self.ui.input_player_name.handle_event(event)
+
+        # Switch User / Logout button returns to Login screen
+        if self.ui.btn_logout.handle_event(event):
+            self.recent_operatives = self.db.get_recent_operatives(3)
+            self.login_status = f"SWITCHING FROM {self.current_user}"
+            self.ui.input_login_username.is_active = True
+            self.state = STATE_LOGIN
+            return
 
         # Grid size selector buttons (5x5, 7x7 default, 9x9, 11x11)
         for btn in self.ui.grid_buttons:
@@ -239,10 +324,13 @@ class GameEngine:
 
         # "Start Mission" button
         if self.ui.btn_start_mission.handle_event(event):
+            callsign = self.ui.input_player_name.text.strip()
+            if not callsign:
+                callsign = self.current_user
             self.start_mission(
                 grid_size=self.selected_grid_size,
                 level=self.selected_level,
-                player_name=self.ui.input_player_name.text,
+                player_name=callsign,
             )
 
     def _handle_how_to_play_events(self, event: pygame.event.Event) -> None:
@@ -420,6 +508,17 @@ class GameEngine:
         """
         self.ui.update(dt)
 
+        if self.state == STATE_SPLASH:
+            self.splash_timer += dt
+            if self.splash_timer >= self.splash_duration:
+                self.state = STATE_LOGIN
+                self.ui.input_login_username.is_active = True
+                self.recent_operatives = self.db.get_recent_operatives(3)
+            return
+
+        if self.state == STATE_LOGIN:
+            return
+
         if self.state == STATE_PAUSED:
             # Complete simulation freeze while paused
             return
@@ -491,8 +590,14 @@ class GameEngine:
         """Render the complete scene based on the current state."""
         self.screen.fill((11, 15, 23))
 
-        if self.state == STATE_HOME:
-            self.ui.draw_home_screen(self.screen, self.best_victory_steps)
+        if self.state == STATE_SPLASH:
+            self.ui.draw_splash_screen(self.screen, self.splash_timer, self.splash_duration)
+
+        elif self.state == STATE_LOGIN:
+            self.ui.draw_login_screen(self.screen, self.recent_operatives, self.login_status)
+
+        elif self.state == STATE_HOME:
+            self.ui.draw_home_screen(self.screen, self.best_victory_steps, self.user_stats)
 
         elif self.state == STATE_HOW_TO_PLAY:
             self.ui.draw_how_to_play_screen(self.screen)

@@ -222,6 +222,19 @@ class UIManager:
 
         # Home Screen widgets
         self.input_player_name = TextInputBox(pygame.Rect(380, 200, 260, 36), self.font_body)
+        self.btn_logout = UIButton(pygame.Rect(655, 201, 135, 34), "SWITCH USER", self.font_small,
+                                   accent_color=COLOR_TEXT_ACCENT_AMBER)
+
+        # Login Screen widgets
+        cx = self.screen_width // 2
+        self.input_login_username = TextInputBox(pygame.Rect(cx - 150, 252, 300, 40), self.font_body)
+        self.input_login_username.text = "afiabyte"
+        self.input_login_username.is_active = True
+        self.btn_login_submit = UIButton(pygame.Rect(cx - 150, 338, 300, 42), ">> ACCESS SYSTEM <<", self.font_header,
+                                         accent_color=COLOR_TEXT_ACCENT_GREEN)
+        self.btn_login_guest = UIButton(pygame.Rect(cx - 150, 388, 300, 36), "DEPLOY AS GUEST", self.font_body,
+                                        accent_color=COLOR_TEXT_ACCENT_AMBER)
+
         self._init_home_buttons()
         self._init_overlay_buttons()
 
@@ -290,6 +303,7 @@ class UIManager:
         """Update animation timers and interactive text fields."""
         self.anim_time += dt
         self.input_player_name.update(dt)
+        self.input_login_username.update(dt)
 
     def compute_grid_geometry(self, grid_size: int) -> Tuple[float, float, float]:
         """
@@ -317,9 +331,228 @@ class UIManager:
         return (origin_x, origin_y, float(cell_size))
 
     # =========================================================================
+    # SPLASH & LOGIN SCREEN RENDERING
+    # =========================================================================
+    def draw_splash_screen(self, surface: pygame.Surface, splash_timer: float, splash_duration: float = 2.5) -> None:
+        """
+        Render the cinematic sci-fi intro splash screen.
+        Displays an animated boot sequence, pulsing logo, and system loading progress bar.
+        """
+        surface.fill(COLOR_BG)
+        cx = self.screen_width // 2
+        cy = self.screen_height // 2
+
+        # 1. Dark Blueprint Background Grid
+        for x in range(0, self.screen_width, 48):
+            pygame.draw.line(surface, (14, 22, 34), (x, 0), (x, self.screen_height), 1)
+        for y in range(0, self.screen_height, 48):
+            pygame.draw.line(surface, (14, 22, 34), (0, y), (self.screen_width, y), 1)
+
+        # Sweeping cyan radar beam
+        beam_y = int((self.anim_time * 180.0) % self.screen_height)
+        beam_surf = pygame.Surface((self.screen_width, 3), pygame.SRCALPHA)
+        beam_surf.fill((0, 220, 255, 45))
+        surface.blit(beam_surf, (0, beam_y))
+
+        # 2. Central Tactical Crest / Logo
+        pulse_r = int(54 + 4 * math.sin(self.anim_time * 5.0))
+        logo_y = cy - 130
+
+        # Outer pulsing rings
+        pygame.draw.circle(surface, (0, 70, 110), (cx, logo_y), pulse_r + 14, 1)
+        pygame.draw.circle(surface, (0, 180, 230), (cx, logo_y), pulse_r, 2)
+        pygame.draw.circle(surface, (15, 24, 40), (cx, logo_y), pulse_r - 2)
+
+        # Tactical Crosshairs
+        pygame.draw.line(surface, (0, 210, 255), (cx - pulse_r - 12, logo_y), (cx + pulse_r + 12, logo_y), 1)
+        pygame.draw.line(surface, (0, 210, 255), (cx, logo_y - pulse_r - 12), (cx, logo_y + pulse_r + 12), 1)
+
+        # Central Golden Diamond (Treasure Key symbol)
+        kd_sz = 16
+        k_pts = [(cx, logo_y - kd_sz), (cx + kd_sz, logo_y), (cx, logo_y + kd_sz), (cx - kd_sz, logo_y)]
+        pygame.draw.polygon(surface, COLOR_KEY_GOLD, k_pts)
+        pygame.draw.polygon(surface, (255, 240, 140), k_pts, 2)
+        pygame.draw.circle(surface, (255, 255, 255), (cx, logo_y), 3)
+
+        # 3. Main Titles
+        cat_badge = self.font_badge.render("// TACTICAL DEFENSE SIMULATION ENGINE //", True, COLOR_TEXT_ACCENT_CYAN)
+        surface.blit(cat_badge, cat_badge.get_rect(center=(cx, logo_y + pulse_r + 26)))
+
+        main_title = self.font_title.render("TREASURE HUNTER", True, (0, 235, 255))
+        sh_title = self.font_title.render("TREASURE HUNTER", True, (0, 60, 100))
+        surface.blit(sh_title, sh_title.get_rect(center=(cx + 2, logo_y + pulse_r + 58)))
+        surface.blit(main_title, main_title.get_rect(center=(cx, logo_y + pulse_r + 56)))
+
+        sub_title = self.font_bold.render("TACTICAL STEALTH & EVASION PROTOCOL", True, (155, 185, 220))
+        surface.blit(sub_title, sub_title.get_rect(center=(cx, logo_y + pulse_r + 86)))
+
+        # 4. Animated Boot Sequence Console
+        boot_box = pygame.Rect(cx - 250, cy + 80, 500, 120)
+        pygame.draw.rect(surface, (8, 12, 20), boot_box, border_radius=6)
+        pygame.draw.rect(surface, (30, 48, 72), boot_box, width=1, border_radius=6)
+        pygame.draw.rect(surface, (0, 180, 230), (boot_box.x, boot_box.y, 500, 20), border_radius=4)
+        surface.blit(self.font_small.render("SYSTEM DIAGNOSTICS & SUBSYSTEM INITIALIZATION", True, (10, 16, 26)), (boot_box.x + 10, boot_box.y + 3))
+
+        boot_logs = [
+            (0.2, "[01] PYGAME GRAPHICS & NUMPY SYNTHESIZER ... [ READY ]", COLOR_TEXT_PRIMARY),
+            (0.7, "[02] SQLITE3 PERSISTENT REPOSITORY ......... [ CONNECTED ]", COLOR_TEXT_ACCENT_GREEN),
+            (1.2, "[03] SENSOR RADAR & 60 FPS GRID MATRIX ...... [ CALIBRATED ]", COLOR_TEXT_ACCENT_CYAN),
+            (1.7, "[04] TACTICAL PURSUIT & FLANKING ENGINE ..... [ ONLINE ]", COLOR_TEXT_ACCENT_AMBER),
+        ]
+        log_y = boot_box.y + 28
+        for threshold, text, color in boot_logs:
+            if splash_timer >= threshold:
+                surface.blit(self.font_small.render(text, True, color), (boot_box.x + 14, log_y))
+            else:
+                surface.blit(self.font_small.render("...", True, COLOR_TEXT_MUTED), (boot_box.x + 14, log_y))
+            log_y += 20
+
+        # 5. Cyber Loading Progress Bar
+        pct = min(1.0, max(0.0, splash_timer / splash_duration))
+        bar_w = 460
+        bar_h = 14
+        bar_x = cx - bar_w // 2
+        bar_y = cy + 218
+
+        pygame.draw.rect(surface, (12, 18, 30), (bar_x, bar_y, bar_w, bar_h), border_radius=3)
+        pygame.draw.rect(surface, (36, 60, 95), (bar_x, bar_y, bar_w, bar_h), width=1, border_radius=3)
+        fill_w = int(bar_w * pct)
+        if fill_w > 0:
+            fill_rect = pygame.Rect(bar_x + 1, bar_y + 1, fill_w - 2, bar_h - 2)
+            pygame.draw.rect(surface, (0, 210, 255), fill_rect, border_radius=2)
+            pygame.draw.circle(surface, (255, 255, 255), (bar_x + fill_w - 2, bar_y + bar_h // 2), 3)
+
+        prog_txt = self.font_small.render(f"INITIALIZING SYSTEM ... {int(pct * 100)}%", True, COLOR_TEXT_SECONDARY)
+        surface.blit(prog_txt, prog_txt.get_rect(center=(cx, bar_y + 24)))
+
+        # 6. Pulsing Skip/Continue Prompt
+        blink = (math.sin(self.anim_time * 6.0) + 1.0) * 0.5
+        col = (int(100 + 155 * blink), int(160 + 95 * blink), int(200 + 55 * blink))
+        cont_surf = self.font_bold.render(">> PRESS SPACE / ENTER OR CLICK TO CONTINUE <<", True, col)
+        surface.blit(cont_surf, cont_surf.get_rect(center=(cx, self.screen_height - 35)))
+
+    def draw_login_screen(
+        self,
+        surface: pygame.Surface,
+        recent_operatives: List[Dict[str, Any]] = None,
+        status_msg: str = "AWAITING CREDENTIALS"
+    ) -> None:
+        """
+        Render the Operative Authentication and Login screen.
+        All match outcomes and telemetry are persisted based on this identity.
+        """
+        surface.fill(COLOR_BG)
+        cx = self.screen_width // 2
+
+        # 1. Subtle Background Grid
+        for x in range(0, self.screen_width, 60):
+            pygame.draw.line(surface, (14, 20, 32), (x, 0), (x, self.screen_height), 1)
+        for y in range(0, self.screen_height, 60):
+            pygame.draw.line(surface, (14, 20, 32), (0, y), (self.screen_width, y), 1)
+
+        # 2. Header
+        cat_badge = self.font_badge.render("// SECURITY CLEARANCE :: OPERATIVE LOGIN //", True, COLOR_TEXT_ACCENT_CYAN)
+        surface.blit(cat_badge, cat_badge.get_rect(center=(cx, 32)))
+
+        main_title = self.font_title.render("OPERATIVE AUTHENTICATION", True, (0, 230, 255))
+        sh_title = self.font_title.render("OPERATIVE AUTHENTICATION", True, (0, 60, 100))
+        surface.blit(sh_title, sh_title.get_rect(center=(cx + 2, 68)))
+        surface.blit(main_title, main_title.get_rect(center=(cx, 66)))
+
+        sub_title = self.font_bold.render("LINK PERSISTENT DOSSIER & VICTORY METRICS IN SQLITE DATABASE", True, (155, 180, 215))
+        surface.blit(sub_title, sub_title.get_rect(center=(cx, 100)))
+
+        # 3. Main Glassmorphic Login Dossier Chassis
+        card_w = 560
+        card_h = 440
+        card_x = cx - card_w // 2
+        card_y = 118
+        card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
+
+        # Drop shadow & Translucent Glass
+        pygame.draw.rect(surface, (5, 8, 14), card_rect.move(0, 4), border_radius=8)
+        glass_surf = pygame.Surface((card_w, card_h), pygame.SRCALPHA)
+        glass_surf.fill((12, 18, 30, 235))
+        surface.blit(glass_surf, card_rect.topleft)
+
+        # Cybernetic neon borders
+        pygame.draw.rect(surface, (36, 60, 95), card_rect, width=1, border_radius=8)
+        pygame.draw.rect(surface, (0, 180, 230), card_rect.inflate(-4, -4), width=1, border_radius=6)
+
+        # Corner ticks
+        t_sz = 12
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y), (card_x + t_sz, card_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y), (card_x, card_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y), (card_x + card_w - 1 - t_sz, card_y), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y), (card_x + card_w - 1, card_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y + card_h - 1), (card_x + t_sz, card_y + card_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y + card_h - 1), (card_x, card_y + card_h - 1 - t_sz), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1 - t_sz, card_y + card_h - 1), 2)
+        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1, card_y + card_h - 1 - t_sz), 2)
+
+        # Top Card Ribbon
+        pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 34), (card_x + card_w - 20, card_y + 34), 1)
+        ribbon_txt = self.font_badge.render("// TERMINAL ACCESS :: SECURITY CLEARANCE LEVEL-1", True, COLOR_TEXT_SECONDARY)
+        surface.blit(ribbon_txt, (card_x + 24, card_y + 12))
+
+        # Operative Icon in Card
+        avatar_cx = cx
+        avatar_cy = card_y + 68
+        pygame.draw.circle(surface, (16, 26, 42), (avatar_cx, avatar_cy), 24)
+        pygame.draw.circle(surface, (0, 180, 230), (avatar_cx, avatar_cy), 24, 2)
+        # Visor
+        pygame.draw.ellipse(surface, (0, 230, 255), pygame.Rect(avatar_cx - 12, avatar_cy - 6, 24, 10))
+        pygame.draw.circle(surface, (255, 255, 255), (avatar_cx - 4, avatar_cy - 2), 2)
+        pygame.draw.circle(surface, (255, 255, 255), (avatar_cx + 4, avatar_cy - 2), 2)
+
+        # Prompt
+        lbl = self.font_bold.render("ENTER OPERATIVE CALLSIGN / USERNAME:", True, COLOR_TEXT_PRIMARY)
+        surface.blit(lbl, lbl.get_rect(center=(cx, card_y + 112)))
+
+        # Text Input Box
+        self.input_login_username.draw(surface)
+
+        # Status text below input (generously padded)
+        stat_color = COLOR_TEXT_ACCENT_GREEN if "SUCCESS" in status_msg.upper() or "AUTHENTICATED" in status_msg.upper() else COLOR_TEXT_MUTED
+        st_surf = self.font_small.render(f"STATUS: {status_msg}", True, stat_color)
+        surface.blit(st_surf, st_surf.get_rect(center=(cx, card_y + 192)))
+
+        # Action Buttons
+        self.btn_login_submit.draw(surface)
+        self.btn_login_guest.draw(surface)
+
+        # Divider for Recent Operatives
+        pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 320), (card_x + card_w - 20, card_y + 320), 1)
+
+        # Recent Profiles Header
+        rec_title = self.font_badge.render("// REGISTERED PROFILES IN DATABASE:", True, COLOR_TEXT_ACCENT_AMBER)
+        surface.blit(rec_title, (card_x + 24, card_y + 332))
+
+        if recent_operatives and len(recent_operatives) > 0:
+            ry = card_y + 354
+            for op in recent_operatives[:3]:
+                uname = op.get("username", "OPERATIVE")
+                wins = op.get("victories", 0)
+                best = f"{op.get('best_steps')} steps" if op.get("best_steps") is not None else "No win yet"
+                info_line = f"• {uname:<14} | Wins: {wins:<3} | Best: {best}"
+                surface.blit(self.font_small.render(info_line, True, COLOR_TEXT_PRIMARY), (card_x + 30, ry))
+                ry += 20
+        else:
+            surface.blit(self.font_small.render("No previous profiles detected. Enter your callsign above.", True, COLOR_TEXT_MUTED), (card_x + 30, card_y + 360))
+
+        # Bottom Dock Note
+        note_surf = self.font_small.render("[ All gameplay progress is automatically saved to SQLite dungeon_records.db ]", True, COLOR_TEXT_MUTED)
+        surface.blit(note_surf, note_surf.get_rect(center=(cx, self.screen_height - 30)))
+
+    # =========================================================================
     # HOME SCREEN RENDERING
     # =========================================================================
-    def draw_home_screen(self, surface: pygame.Surface, best_victory_steps: Optional[int]) -> None:
+    def draw_home_screen(
+        self,
+        surface: pygame.Surface,
+        best_victory_steps: Optional[int],
+        user_stats: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Render the complete interactive Home Screen with ultra-premium cybernetics."""
         surface.fill(COLOR_BG)
 
@@ -429,6 +662,13 @@ class UIManager:
         lbl_name = self.font_bold.render("OPERATIVE CALLSIGN:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_name, (150, 208))
         self.input_player_name.draw(surface)
+        self.btn_logout.draw(surface)
+
+        if user_stats:
+            wins = user_stats.get("victories", 0)
+            total = user_stats.get("total_missions", 0)
+            st_text = f"AUTHENTICATED  •  TOTAL: {total}  •  WINS: {wins}"
+            surface.blit(self.font_small.render(st_text, True, COLOR_TEXT_ACCENT_GREEN), (380, 240))
 
         lbl_grid = self.font_bold.render("ARENA GRID MATRIX:", True, COLOR_TEXT_PRIMARY)
         surface.blit(lbl_grid, (150, 262))
