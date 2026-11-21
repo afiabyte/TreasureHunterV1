@@ -56,12 +56,14 @@ from ui.art_helpers import (
 from ui.login_screen import LoginScreenRenderer
 from ui.create_account_screen import CreateAccountScreenRenderer
 from ui.settings_screen import SettingsScreenRenderer
+from ui.history_screen import HistoryScreenRenderer
 
 __all__ = [
     "UIManager",
     "LoginScreenRenderer",
     "CreateAccountScreenRenderer",
     "SettingsScreenRenderer",
+    "HistoryScreenRenderer",
     "UIButton",
     "TextInputBox",
     "UIToggleSwitch",

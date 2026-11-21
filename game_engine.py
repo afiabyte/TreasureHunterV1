@@ -30,6 +30,7 @@ STATE_CREATE_ACCOUNT = "CREATE_ACCOUNT"
 STATE_LOGIN = "LOGIN"
 STATE_HOME = "HOME"
 STATE_SETTINGS = "SETTINGS"
+STATE_HISTORY = "HISTORY"
 STATE_HOW_TO_PLAY = "HOW_TO_PLAY"
 STATE_LEVEL_SELECT = "LEVEL_SELECT"
 STATE_PLAYING = "PLAYING"
@@ -254,6 +255,8 @@ class GameEngine:
                 self._handle_home_events(event)
             elif self.state == STATE_SETTINGS:
                 self._handle_settings_events(event)
+            elif self.state == STATE_HISTORY:
+                self._handle_history_events(event)
             elif self.state == STATE_LEVEL_SELECT:
                 self._handle_level_select_events(event)
             elif self.state == STATE_HOW_TO_PLAY:
@@ -567,6 +570,14 @@ class GameEngine:
                 self.sound.play_step()
                 return
 
+            # 7c. Click on BEST TROPHY badge on Parchment Header -> Opens Dungeon Records
+            trophy_badge_rect = pygame.Rect(cx - 183, card_y + 115, 175, 36)
+            if trophy_badge_rect.collidepoint(mx, my):
+                self.return_state = STATE_HOME
+                self.state = STATE_HISTORY
+                self.sound.play_step()
+                return
+
         # 8. "How to Play" button
         if self.ui.btn_how_to_play.handle_event(event):
             self.return_state = STATE_HOME
@@ -661,6 +672,18 @@ class GameEngine:
 
         # 6. "BACK TO MENU" button
         if self.ui.btn_settings_back.handle_event(event):
+            self.state = getattr(self, "return_state", STATE_HOME)
+            self.sound.play_step()
+            return
+
+    def _handle_history_events(self, event: pygame.event.Event) -> None:
+        """Handle inputs on the Dungeon Records Screen."""
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.state = getattr(self, "return_state", STATE_HOME)
+            self.sound.play_step()
+            return
+
+        if self.ui.btn_history_back.handle_event(event):
             self.state = getattr(self, "return_state", STATE_HOME)
             self.sound.play_step()
             return
@@ -996,6 +1019,15 @@ class GameEngine:
                 is_smooth_selected=(getattr(self, "settings_move_animation", "SMOOTH") == "SMOOTH"),
                 is_api_connected=getattr(self, "is_api_connected", True),
                 status_message=getattr(self, "settings_status", ""),
+            )
+
+        elif self.state == STATE_HISTORY:
+            summary = self.db.get_dungeon_records_summary()
+            self.ui.draw_history_screen(
+                self.screen,
+                win_rate=summary["win_rate"],
+                best_steps=summary["best_steps"],
+                records=summary["records"],
             )
 
         elif self.state == STATE_HOW_TO_PLAY:

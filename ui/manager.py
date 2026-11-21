@@ -63,6 +63,7 @@ from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
 from .how_to_play_screen import HowToPlayScreenRenderer
 from .settings_screen import SettingsScreenRenderer
+from .history_screen import HistoryScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .overlays import OverlayRenderer
@@ -176,6 +177,9 @@ class UIManager:
         self.btn_settings_save = UIButton(pygame.Rect(cx - 145, card_y + 406, 290, 48), "SAVE & APPLY", self.font_btn_bold, style="green_cta")
         self.btn_settings_back = UIButton(pygame.Rect(cx - 145, card_y + 472, 290, 48), "BACK TO MENU", self.font_btn_bold, style="wood_pill")
 
+        # Dungeon Records Screen widgets
+        self.btn_history_back = UIButton(pygame.Rect(cx - 135, 642, 270, 48), "BACK TO MENU", self.font_btn_bold, style="wood_pill")
+
         self._init_home_buttons()
         self._init_overlay_buttons()
         self._init_level_select_ui()
@@ -188,6 +192,7 @@ class UIManager:
         self.level_select_renderer = LevelSelectScreenRenderer(self.screen_width, self.screen_height)
         self.how_to_play_renderer = HowToPlayScreenRenderer(self.screen_width, self.screen_height)
         self.settings_renderer = SettingsScreenRenderer(self.screen_width, self.screen_height)
+        self.history_renderer = HistoryScreenRenderer(self.screen_width, self.screen_height)
         self.game_view_renderer = GameViewRenderer(self.screen_width, self.screen_height)
         self.hud_renderer = HUDConsoleRenderer(self.screen_width, self.screen_height, self.hud_height)
         self.overlay_renderer = OverlayRenderer(self.screen_width, self.screen_height)
@@ -484,6 +489,22 @@ class UIManager:
             btn_back=self.btn_settings_back,
             anim_time=self.anim_time,
             status_message=status_message,
+        )
+
+    def draw_history_screen(
+        self,
+        surface: pygame.Surface,
+        win_rate: int = 75,
+        best_steps: int = 12,
+        records: Optional[List[Dict[str, Any]]] = None,
+    ) -> None:
+        """Render the exact retro-pixel RPG Dungeon Records screen."""
+        self.history_renderer.draw_history_screen(
+            surface,
+            win_rate=win_rate,
+            best_steps=best_steps,
+            records=records or [],
+            btn_back=self.btn_history_back,
         )
 
     def draw_grid_environment(

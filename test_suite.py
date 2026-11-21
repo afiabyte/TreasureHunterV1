@@ -485,6 +485,48 @@ class TestGameEngineIntegration(unittest.TestCase):
         engine._handle_settings_events(click_back)
         self.assertEqual(engine.state, STATE_HOME)
 
+    def test_dungeon_records_screen_and_summary(self) -> None:
+        """Verify Dungeon Records match history summary, navigation transition, and rendering."""
+        from game_engine import STATE_HISTORY
+        engine = GameEngine(db_path=self.test_db_path)
+        engine.state = STATE_HOME
+
+        # Save test records into test database
+        engine.db.save_match_result("Bravo42", 12, "VICTORY")
+        engine.db.save_match_result("Bravo42", 14, "VICTORY")
+        engine.db.save_match_result("Aria_99", 15, "VICTORY")
+        engine.db.save_match_result("Bravo42", 9, "DEFEAT")
+        engine.db.save_match_result("Kazi_07", 18, "VICTORY")
+
+        # Test summary statistics
+        summary = engine.db.get_dungeon_records_summary()
+        self.assertEqual(summary["win_rate"], 80)
+        self.assertEqual(summary["best_steps"], 12)
+        self.assertEqual(len(summary["records"]), 5)
+        self.assertEqual(summary["records"][0]["player_name"], "Kazi_07")
+
+        # Click trophy badge on Home Screen -> transitions to STATE_HISTORY
+        cx = engine.screen_width // 2
+        card_y = 30
+        trophy_badge_center = (cx - 183 + 175 // 2, card_y + 115 + 36 // 2)
+        click_trophy = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=trophy_badge_center)
+        engine._handle_home_events(click_trophy)
+        self.assertEqual(engine.state, STATE_HISTORY)
+
+        # Headless render verification in STATE_HISTORY
+        engine.render()
+
+        # Click BACK TO MENU button -> transitions back to STATE_HOME
+        click_back = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_history_back.rect.center)
+        engine._handle_history_events(click_back)
+        self.assertEqual(engine.state, STATE_HOME)
+
+        # Test ESCAPE key returns to STATE_HOME
+        engine.state = STATE_HISTORY
+        esc_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+        engine._handle_history_events(esc_event)
+        self.assertEqual(engine.state, STATE_HOME)
+
     def test_procedural_sound_effects_and_bgm(self) -> None:
         """Verify SoundManager synthesizes all retro RPG SFX and BGM tracks without exceptions."""
         from sound_effects import SoundManager
@@ -555,6 +597,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         import ui.level_select_screen
         import ui.how_to_play_screen
         import ui.settings_screen
+        import ui.history_screen
         import ui.game_view
         import ui.hud_console
         import ui.overlays
@@ -580,6 +623,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         self.assertTrue(hasattr(ui, "LevelSelectScreenRenderer"))
         self.assertTrue(hasattr(ui, "HowToPlayScreenRenderer"))
         self.assertTrue(hasattr(ui, "SettingsScreenRenderer"))
+        self.assertTrue(hasattr(ui, "HistoryScreenRenderer"))
         self.assertTrue(hasattr(ui, "GameViewRenderer"))
         self.assertTrue(hasattr(ui, "HUDConsoleRenderer"))
         self.assertTrue(hasattr(ui, "OverlayRenderer"))

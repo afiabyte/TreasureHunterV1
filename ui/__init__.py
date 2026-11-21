@@ -73,6 +73,7 @@ from .home_screen import HomeScreenRenderer
 from .level_select_screen import LevelSelectScreenRenderer
 from .how_to_play_screen import HowToPlayScreenRenderer
 from .settings_screen import SettingsScreenRenderer
+from .history_screen import HistoryScreenRenderer
 from .game_view import GameViewRenderer
 from .hud_console import HUDConsoleRenderer
 from .overlays import OverlayRenderer
@@ -136,6 +137,7 @@ __all__ = [
     "LevelSelectScreenRenderer",
     "HowToPlayScreenRenderer",
     "SettingsScreenRenderer",
+    "HistoryScreenRenderer",
     "GameViewRenderer",
     "HUDConsoleRenderer",
     "OverlayRenderer",
