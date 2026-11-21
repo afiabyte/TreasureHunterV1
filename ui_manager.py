@@ -20,50 +20,52 @@ from typing import Tuple, List, Dict, Any, Optional
 import pygame
 
 
-# Color Palette (High-Tech Tactical Cyberpunk)
-COLOR_BG = (11, 15, 23)
-COLOR_GRID_BG = (16, 22, 34)
-COLOR_GRID_LINE = (28, 38, 56)
-COLOR_WALL = (32, 45, 68)
-COLOR_WALL_BORDER = (55, 140, 220)
-COLOR_WALL_ACCENT = (70, 180, 255)
+# Color Palette (Ultra-Premium Vibrant Neo-Cyberpunk)
+COLOR_BG = (12, 15, 26)               # Deep cyber midnight
+COLOR_GRID_BG = (17, 22, 38)          # Rich techno floor
+COLOR_GRID_LINE = (35, 52, 85)        # Electric blueprint grid
+COLOR_WALL = (24, 30, 48)             # Obsidian composite
+COLOR_WALL_BORDER = (0, 220, 255)     # Neon Cyan
+COLOR_WALL_ACCENT = (255, 60, 160)    # Vibrant Neon Magenta
 
 COLOR_PLAYER_CORE = (255, 255, 255)
-COLOR_PLAYER_GLOW = (0, 225, 255)
-COLOR_PLAYER_SHIELD = (0, 150, 200, 100)
+COLOR_PLAYER_GLOW = (0, 240, 255)     # Luminous Electric Cyan
+COLOR_PLAYER_SHIELD = (0, 200, 255, 120)
 
-COLOR_HUNTER_CORE = (255, 230, 230)
-COLOR_HUNTER_BODY = (255, 45, 85)
-COLOR_HUNTER_CONE = (255, 50, 50, 45)
-COLOR_HUNTER_GLOW = (200, 20, 60)
+COLOR_HUNTER_CORE = (255, 240, 240)
+COLOR_HUNTER_BODY = (255, 40, 80)     # Vivid Crimson Ruby
+COLOR_HUNTER_CONE = (255, 45, 65, 50)
+COLOR_HUNTER_GLOW = (255, 20, 60)
 
-COLOR_KEY_CORE = (255, 255, 200)
-COLOR_KEY_GOLD = (255, 195, 25)
-COLOR_KEY_GLOW = (255, 220, 50, 80)
+COLOR_KEY_CORE = (255, 255, 220)
+COLOR_KEY_GOLD = (255, 210, 30)       # Radiant Sun Gold
+COLOR_KEY_GLOW = (255, 230, 70, 120)
 
-COLOR_EXIT_CORE = (200, 255, 230)
-COLOR_EXIT_PORTAL = (35, 230, 125)
-COLOR_EXIT_GLOW = (20, 180, 90, 80)
+COLOR_EXIT_CORE = (220, 255, 240)
+COLOR_EXIT_PORTAL = (0, 255, 150)     # Luminous Emerald Neon
+COLOR_EXIT_GLOW = (0, 220, 120, 100)
 
-COLOR_BREADCRUMB_RING = (40, 240, 120)
-COLOR_BREADCRUMB_FILL = (20, 100, 50, 120)
-COLOR_GUIDE_ARROW = (255, 220, 40)
+COLOR_BREADCRUMB_RING = (0, 255, 160) # Laser Mint Green
+COLOR_BREADCRUMB_FILL = (0, 160, 90, 140)
+COLOR_GUIDE_ARROW = (255, 225, 40)    # Electric Sunburst Yellow
 
-COLOR_HUD_BG = (14, 18, 28)
-COLOR_HUD_BORDER = (35, 50, 75)
-COLOR_TEXT_PRIMARY = (235, 240, 250)
-COLOR_TEXT_SECONDARY = (130, 145, 175)
-COLOR_TEXT_MUTED = (85, 100, 125)
-COLOR_TEXT_ACCENT_CYAN = (0, 220, 255)
-COLOR_TEXT_ACCENT_GREEN = (40, 240, 120)
-COLOR_TEXT_ACCENT_AMBER = (255, 185, 30)
-COLOR_TEXT_ACCENT_RED = (255, 60, 90)
+COLOR_HUD_BG = (14, 19, 33)
+COLOR_HUD_BORDER = (45, 75, 125)
+COLOR_TEXT_PRIMARY = (245, 250, 255)
+COLOR_TEXT_SECONDARY = (160, 185, 225)
+COLOR_TEXT_MUTED = (95, 115, 150)
+COLOR_TEXT_ACCENT_CYAN = (0, 235, 255)
+COLOR_TEXT_ACCENT_GREEN = (0, 255, 150)
+COLOR_TEXT_ACCENT_AMBER = (255, 195, 40)
+COLOR_TEXT_ACCENT_RED = (255, 65, 100)
+COLOR_TEXT_ACCENT_MAGENTA = (255, 60, 180) # Vibrant neon magenta
+COLOR_TEXT_ACCENT_PURPLE = (175, 90, 255)  # Vibrant violet
 
-COLOR_BTN_NORMAL = (22, 30, 48)
-COLOR_BTN_HOVER = (32, 45, 72)
-COLOR_BTN_ACTIVE = (0, 120, 180)
-COLOR_BTN_BORDER = (45, 65, 100)
-COLOR_BTN_BORDER_HOVER = (0, 200, 255)
+COLOR_BTN_NORMAL = (22, 32, 54)
+COLOR_BTN_HOVER = (36, 54, 90)
+COLOR_BTN_ACTIVE = (0, 160, 240)
+COLOR_BTN_BORDER = (55, 88, 140)
+COLOR_BTN_BORDER_HOVER = (0, 230, 255)
 
 
 class UIButton:
@@ -743,7 +745,7 @@ class UIManager:
             "• INFILTRATION: You enter the sector at Start coordinate (0, 0).",
             "• KEY ACQUISITION: Locate and collect the Golden Cipher Key [K] on the grid.",
             "• EXTRACTION: Reach the Exit Portal [E] at (N-1, N-1) only AFTER securing the key.",
-            "• EVASION: Evade hostile Hunter Drones [H]. One collision results in casualty."
+            "• EVASION: Evade Gemini-controlled Hunter Drones [H]. One collision results in casualty."
         ]
         for line in lines1:
             txt = self.font_body.render(line, True, COLOR_TEXT_PRIMARY)
@@ -774,7 +776,7 @@ class UIManager:
         surface.blit(h3, (150, y))
         y += 30
         lines3 = [
-            "• GREEN BREADCRUMBS : Next 3 safe coordinates computed by tactical radar, dodging",
+            "• GREEN BREADCRUMBS : Next 3 safe coordinates computed by Gemini 2.5 Flash, dodging",
             "                      Hunter visual cones and exploiting blind spots behind them.",
             "• PULSING YELLOW ARROW : Dynamic directional beacon pointing to current objective.",
             "• DYNAMIC BARRIERS  : Obstacles shift dynamically every 2.5s (scaled by difficulty)."
@@ -816,31 +818,42 @@ class UIManager:
         grid_w = cell_size * grid_size
         grid_h = cell_size * grid_size
 
-        # Grid Base Background
+        # Grid Base Background (Rich Alternating Cyberpunk Techno Tiles)
         grid_rect = pygame.Rect(origin_x, origin_y, grid_w, grid_h)
-        pygame.draw.rect(surface, (13, 18, 28), grid_rect)
+        # Drop shadow for whole grid
+        pygame.draw.rect(surface, (6, 8, 16), grid_rect.move(0, 5), border_radius=6)
+        pygame.draw.rect(surface, (14, 18, 32), grid_rect, border_radius=6)
 
-        # High-Tech Floor Seam Markers & Registration Ticks on walkable cells
-        cross_len = max(2, int(cell_size * 0.08))
+        # Alternating high-tech floor tiles for rich visual depth & color
         for r in range(grid_size):
             for c in range(grid_size):
+                cell_rect = pygame.Rect(origin_x + c * cell_size, origin_y + r * cell_size, cell_size, cell_size)
+                # Alternating color between deep cyber blue-indigo and dark obsidian
+                tile_col = (19, 26, 46) if (r + c) % 2 == 0 else (15, 20, 36)
+                pygame.draw.rect(surface, tile_col, cell_rect)
+
                 if (r, c) not in walls:
-                    cx = origin_x + c * cell_size
-                    cy = origin_y + r * cell_size
-                    # Floor plate subtle seam dots at cell corners
-                    pygame.draw.circle(surface, (22, 32, 48), (int(cx + 4), int(cy + 4)), 1)
-                    pygame.draw.circle(surface, (22, 32, 48), (int(cx + cell_size - 4), int(cy + 4)), 1)
-                    pygame.draw.circle(surface, (22, 32, 48), (int(cx + 4), int(cy + cell_size - 4)), 1)
-                    pygame.draw.circle(surface, (22, 32, 48), (int(cx + cell_size - 4), int(cy + cell_size - 4)), 1)
+                    cx_t = origin_x + c * cell_size
+                    cy_t = origin_y + r * cell_size
+                    # Floor plate illuminated neon corner pins
+                    pin_col = (38, 70, 115)
+                    pygame.draw.circle(surface, pin_col, (int(cx_t + 4), int(cy_t + 4)), 1)
+                    pygame.draw.circle(surface, pin_col, (int(cx_t + cell_size - 4), int(cy_t + 4)), 1)
+                    pygame.draw.circle(surface, pin_col, (int(cx_t + 4), int(cy_t + cell_size - 4)), 1)
+                    pygame.draw.circle(surface, pin_col, (int(cx_t + cell_size - 4), int(cy_t + cell_size - 4)), 1)
+                    # Subtle center micro-crosshair
+                    c_mid_x = int(cx_t + cell_size / 2)
+                    c_mid_y = int(cy_t + cell_size / 2)
+                    pygame.draw.circle(surface, (30, 55, 90), (c_mid_x, c_mid_y), 1)
 
         # Dynamic Wall Relocation Visual Pulse Alert
         if wall_shift_alert > 0:
-            alpha = int(min(1.0, wall_shift_alert * 2.0) * 85)
+            alpha = int(min(1.0, wall_shift_alert * 2.0) * 95)
             alert_surf = pygame.Surface((grid_w, grid_h), pygame.SRCALPHA)
-            alert_surf.fill((0, 210, 255, alpha))
+            alert_surf.fill((0, 230, 255, alpha))
             surface.blit(alert_surf, (origin_x, origin_y))
 
-        # Grid Coordinate Lines
+        # Grid Coordinate Lines (Electric Blueprint)
         for r in range(grid_size + 1):
             py = origin_y + r * cell_size
             pygame.draw.line(surface, COLOR_GRID_LINE, (origin_x, py), (origin_x + grid_w, py), 1)
@@ -848,11 +861,11 @@ class UIManager:
             px = origin_x + c * cell_size
             pygame.draw.line(surface, COLOR_GRID_LINE, (px, origin_y), (px, origin_y + grid_h), 1)
 
-        # Outer Tactical Grid Frame with Specular Rim
-        pygame.draw.rect(surface, (45, 110, 180), grid_rect, width=2)
-        pygame.draw.rect(surface, (18, 30, 48), grid_rect.inflate(4, 4), width=1)
+        # Outer Tactical Grid Frame with Double Neon Rim (Cyan & Magenta)
+        pygame.draw.rect(surface, (0, 210, 255), grid_rect, width=2, border_radius=6)
+        pygame.draw.rect(surface, (255, 60, 170), grid_rect.inflate(4, 4), width=1, border_radius=8)
 
-        # 1. PREMIUM CYBERNETIC BLAST BARRIERS (WALLS)
+        # 1. PREMIUM CYBERNETIC ENERGIZED BLAST BARRIERS (WALLS)
         for (wr, wc) in walls:
             wx = origin_x + wc * cell_size
             wy = origin_y + wr * cell_size
@@ -863,26 +876,26 @@ class UIManager:
 
             # Ambient drop shadow under barrier
             shadow_rect = pygame.Rect(wx + pad, wy + pad + 3, w_w, w_h)
-            pygame.draw.rect(surface, (8, 12, 18), shadow_rect, border_radius=4)
+            pygame.draw.rect(surface, (6, 8, 14), shadow_rect, border_radius=4)
 
-            # Heavy carbon composite hull plate
-            pygame.draw.rect(surface, (22, 28, 42), w_rect, border_radius=4)
+            # Heavy energized obsidian composite hull plate
+            pygame.draw.rect(surface, (24, 30, 48), w_rect, border_radius=4)
 
             # 3D Chiseled Bevel:
-            # Top & Left specular highlight line
-            pygame.draw.line(surface, (68, 96, 138), (w_rect.left + 1, w_rect.top + 1), (w_rect.right - 2, w_rect.top + 1), 1)
-            pygame.draw.line(surface, (68, 96, 138), (w_rect.left + 1, w_rect.top + 1), (w_rect.left + 1, w_rect.bottom - 2), 1)
+            # Top & Left specular highlight line (Cyan tint)
+            pygame.draw.line(surface, (80, 130, 190), (w_rect.left + 1, w_rect.top + 1), (w_rect.right - 2, w_rect.top + 1), 1)
+            pygame.draw.line(surface, (80, 130, 190), (w_rect.left + 1, w_rect.top + 1), (w_rect.left + 1, w_rect.bottom - 2), 1)
             # Bottom & Right dark ambient occlusion shadow
             pygame.draw.line(surface, (10, 14, 22), (w_rect.left + 1, w_rect.bottom - 1), (w_rect.right - 1, w_rect.bottom - 1), 1)
             pygame.draw.line(surface, (10, 14, 22), (w_rect.right - 1, w_rect.top + 1), (w_rect.right - 1, w_rect.bottom - 1), 1)
 
-            # Inset reinforced armor plate
+            # Inset reinforced armor plate (Deep Indigo)
             inset_m = max(3.0, cell_size * 0.14)
             inset_rect = pygame.Rect(wx + inset_m, wy + inset_m, cell_size - inset_m * 2, cell_size - inset_m * 2)
-            pygame.draw.rect(surface, (16, 21, 32), inset_rect, border_radius=2)
-            pygame.draw.rect(surface, (38, 54, 80), inset_rect, width=1, border_radius=2)
+            pygame.draw.rect(surface, (16, 22, 38), inset_rect, border_radius=2)
+            pygame.draw.rect(surface, (45, 75, 120), inset_rect, width=1, border_radius=2)
 
-            # 4 Corner Heavy Industrial Rivets/Bolts with Specular Gleam
+            # 4 Corner Heavy Industrial Rivets with Specular Gleams
             r_inset = inset_m * 0.52
             rivet_r = max(1.5, cell_size * 0.035)
             for rx, ry in [
@@ -892,33 +905,39 @@ class UIManager:
                 (wx + cell_size - pad - r_inset, wy + cell_size - pad - r_inset)
             ]:
                 pygame.draw.circle(surface, (8, 12, 18), (int(rx + 0.5), int(ry + 0.5)), int(rivet_r + 0.5))
-                pygame.draw.circle(surface, (130, 160, 195), (int(rx), int(ry)), int(rivet_r))
-                pygame.draw.circle(surface, (220, 240, 255), (int(rx - 0.5), int(ry - 0.5)), max(1, int(rivet_r * 0.5)))
+                pygame.draw.circle(surface, (140, 180, 225), (int(rx), int(ry)), int(rivet_r))
+                pygame.draw.circle(surface, (230, 250, 255), (int(rx - 0.5), int(ry - 0.5)), max(1, int(rivet_r * 0.5)))
 
-            # Central Cybernetic Reactor Node
+            # Central Cybernetic Plasma Node & Conduits
             c_cx = wx + cell_size / 2.0
             c_cy = wy + cell_size / 2.0
             core_half = max(3.0, cell_size * 0.14)
 
-            # Circuit Conduits (connecting core to armor edge midpoints)
-            trace_col = (255, 140, 20) if wall_shift_alert > 0 else (36, 62, 92)
-            pygame.draw.line(surface, trace_col, (c_cx - core_half * 1.5, c_cy), (c_cx + core_half * 1.5, c_cy), 1)
-            pygame.draw.line(surface, trace_col, (c_cx, c_cy - core_half * 1.5), (c_cx, c_cy + core_half * 1.5), 1)
+            # Vibrant Multi-Color Circuit Conduits
+            if wall_shift_alert > 0:
+                h_col = (255, 160, 30)
+                v_col = (255, 100, 20)
+            else:
+                h_col = (0, 220, 255)     # Glowing Cyan conduit
+                v_col = (255, 60, 180)    # Glowing Magenta conduit
 
-            # Dynamic Reactor Core Pulse
+            pygame.draw.line(surface, h_col, (c_cx - core_half * 1.5, c_cy), (c_cx + core_half * 1.5, c_cy), 1)
+            pygame.draw.line(surface, v_col, (c_cx, c_cy - core_half * 1.5), (c_cx, c_cy + core_half * 1.5), 1)
+
+            # Dynamic Plasma Core Pulse
             if wall_shift_alert > 0:
                 p_rate = 14.0
                 p_core = (255, 160, 30)
-                p_glow = (255, 230, 120)
+                p_glow = (255, 240, 140)
             else:
                 p_rate = 3.6
-                p_core = (0, 215, 255)
-                p_glow = (220, 250, 255)
+                p_core = (0, 235, 255)
+                p_glow = (235, 255, 255)
 
             p_factor = 0.82 + 0.18 * math.sin(self.anim_time * p_rate + (wr * 3 + wc * 7))
             cur_r = core_half * p_factor
 
-            # Chamfered / Diamond Energy Core
+            # Chamfered / Diamond Energy Crystal Core
             core_pts = [
                 (c_cx, c_cy - cur_r),
                 (c_cx + cur_r, c_cy),
@@ -926,6 +945,8 @@ class UIManager:
                 (c_cx - cur_r, c_cy)
             ]
             pygame.draw.polygon(surface, p_core, core_pts)
+            # Outer neon corona ring
+            pygame.draw.circle(surface, (255, 60, 180), (int(c_cx), int(c_cy)), int(cur_r * 1.25), 1)
             # Hotspot Core
             hot_r = cur_r * 0.45
             hot_pts = [
@@ -1487,26 +1508,27 @@ class UIManager:
         surface.blit(self.font_body.render(step_str, True, COLOR_TEXT_PRIMARY), (c1_rect.x, y))
         y += 20
         # Best Record
-        best_str = f"BEST RECORD: {best_steps} STEPS" if best_steps is not None else "BEST RECORD: NONE"
-        surface.blit(self.font_small.render(best_str, True, COLOR_TEXT_ACCENT_AMBER), (c1_rect.x, y))
+        best_str = f"★ BEST RECORD: {best_steps} STEPS" if best_steps is not None else "★ BEST RECORD: UNCLAIMED"
+        surface.blit(self.font_small.render(best_str, True, COLOR_KEY_GOLD), (c1_rect.x, y))
         y += 22
         # Key Status Badge
-        key_label = "KEY: SECURED [EXIT OPEN]" if has_key else "KEY: NOT SECURED"
+        key_label = "KEY: SECURED [EXTRACTION ACTIVE]" if has_key else "KEY: NOT SECURED [SEARCHING]"
         key_color = COLOR_TEXT_ACCENT_GREEN if has_key else COLOR_TEXT_ACCENT_RED
+        k_bg_fill = (16, 42, 28) if has_key else (38, 16, 24)
         k_surf = self.font_bold.render(key_label, True, key_color)
         k_bg = pygame.Rect(c1_rect.x, y, k_surf.get_width() + 10, 22)
-        pygame.draw.rect(surface, (20, 28, 38), k_bg, border_radius=3)
+        pygame.draw.rect(surface, k_bg_fill, k_bg, border_radius=3)
         pygame.draw.rect(surface, key_color, k_bg, width=1, border_radius=3)
         surface.blit(k_surf, (c1_rect.x + 5, y + 2))
 
         # ---------------------------------------------------------------------
         # COLUMN 2: TACTICAL SENSOR TELEMETRY
         # ---------------------------------------------------------------------
-        h2 = self.font_badge.render("// SENSOR TELEMETRY", True, COLOR_TEXT_ACCENT_CYAN)
+        h2 = self.font_badge.render("// SENSOR TELEMETRY", True, COLOR_TEXT_ACCENT_MAGENTA)
         surface.blit(h2, (c2_rect.x, c2_rect.y))
 
         y2 = c2_rect.y + 22
-        surface.blit(self.font_small.render("RADAR STATUS: MULTI-BAND ACTIVE", True, COLOR_TEXT_SECONDARY), (c2_rect.x, y2))
+        surface.blit(self.font_small.render("RADAR STATUS: MULTI-BAND ACTIVE", True, COLOR_TEXT_ACCENT_CYAN), (c2_rect.x, y2))
         y2 += 18
 
         surface.blit(self.font_body.render("ESCAPE ROUTE: COMPUTED", True, COLOR_TEXT_ACCENT_GREEN), (c2_rect.x, y2))
@@ -1514,13 +1536,13 @@ class UIManager:
 
         # Status indicator with LED pip
         led_color = COLOR_TEXT_ACCENT_GREEN
-        led_pulse = 1.0 + 0.2 * math.sin(self.anim_time * 8.0)
+        led_pulse = 1.0 + 0.25 * math.sin(self.anim_time * 8.0)
         pygame.draw.circle(surface, led_color, (c2_rect.x + 8, y2 + 8), int(5 * led_pulse))
 
-        surface.blit(self.font_bold.render("ENEMY TRACKING: ACTIVE", True, led_color), (c2_rect.x + 22, y2))
+        surface.blit(self.font_bold.render("ENEMY TRACKING: ACTIVE (60 FPS)", True, led_color), (c2_rect.x + 22, y2))
         y2 += 22
 
-        surface.blit(self.font_small.render("GRID REFRESH: REAL-TIME (60 FPS)", True, COLOR_TEXT_MUTED), (c2_rect.x, y2))
+        surface.blit(self.font_small.render("SIGHTLINE EVASION: ENGAGED", True, COLOR_TEXT_MUTED), (c2_rect.x, y2))
 
         # ---------------------------------------------------------------------
         # COLUMN 3: LIVE TACTICAL COMMANDER TRANSMISSION
@@ -1531,7 +1553,7 @@ class UIManager:
         # Transmission Terminal Box
         box_rect = pygame.Rect(c3_rect.x, c3_rect.y + 20, c3_rect.width, self.hud_height - 50)
         pygame.draw.rect(surface, (18, 24, 36), box_rect, border_radius=4)
-        pygame.draw.rect(surface, (38, 52, 76), box_rect, width=1, border_radius=4)
+        pygame.draw.rect(surface, (45, 68, 105), box_rect, width=1, border_radius=4)
 
         # Terminal Comms Header
         radio_icon = self.font_small.render("[COMMS ACTIVE]", True, COLOR_TEXT_ACCENT_GREEN)
@@ -1543,7 +1565,7 @@ class UIManager:
         surface.blit(order_surf, (box_rect.x + 8, box_rect.y + 28))
 
         # Subtext / Instruction hint
-        hint_surf = self.font_small.render("[WASD: Move | P/ESC: Pause | H: Spawn | B: Shift Barrier]", True, COLOR_TEXT_MUTED)
+        hint_surf = self.font_small.render("[WASD: Move | P/ESC: Pause | H: Spawn Hunter | B: Shift Barrier]", True, COLOR_TEXT_MUTED)
         surface.blit(hint_surf, (box_rect.x + 8, box_rect.y + 62))
 
     # =========================================================================
@@ -1597,7 +1619,7 @@ class UIManager:
             adv_surf = self.font_small.render(adv_txt, True, COLOR_TEXT_SECONDARY)
             surface.blit(adv_surf, adv_surf.get_rect(center=(cx, cy - 45)))
         else:
-            tip_surf = self.font_small.render("Tip: Follow green tactical breadcrumbs to exploit hunter blind spots.", True, COLOR_TEXT_SECONDARY)
+            tip_surf = self.font_small.render("Tip: Follow Gemini green breadcrumbs to exploit hunter blind spots.", True, COLOR_TEXT_SECONDARY)
             surface.blit(tip_surf, tip_surf.get_rect(center=(cx, cy - 45)))
 
         # Draw Action Buttons
@@ -1695,7 +1717,6 @@ class UIManager:
         info_y += 18
         hint_surf = self.font_small.render("[P / SPACE to Resume]", True, COLOR_TEXT_MUTED)
         surface.blit(hint_surf, (dock_x + 12, info_y))
-
     def draw_standby_banner(self, surface: pygame.Surface, seconds_remaining: float) -> None:
         """
         Render a prominent tactical reconnaissance banner on mission start.
