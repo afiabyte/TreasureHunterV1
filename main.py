@@ -2,7 +2,7 @@
 Main: Entry point for the Treasure Hunter Tactical Evasion game.
 
 Launches the GameEngine with full Pygame 60 FPS loop, SQLite persistence,
-and Google Gemini 2.5 Flash neural guidance.
+and Google Gemini 3.8 Flash neural guidance.
 """
 
 import sys

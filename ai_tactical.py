@@ -2,7 +2,7 @@
 GeminiTacticalAI: Non-blocking asynchronous AI coordinator powered by Google Gemini.
 
 This module coordinates tactical decision-making using the google-genai SDK
-with gemini-2.5-flash and ThinkingConfig(thinking_budget=0) for ultra-low-latency
+with gemini-3.8-flash and ThinkingConfig(thinking_budget=0) for ultra-low-latency
 inference. All Hunter pursuit decisions, flanking tactics, and player escape guidance
 are derived directly from structured JSON outputs.
 
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 class TacticalDecision(BaseModel):
     """
-    Structured Pydantic schema for Gemini 2.5 Flash responses.
+    Structured Pydantic schema for Gemini 3.8 Flash responses.
     Guarantees strict JSON schema compliance from the model.
     """
     hunter_moves: List[str] = Field(
@@ -77,6 +77,13 @@ class GeminiTacticalAI:
         self.latency_ms: int = 0
         self.ai_status: str = "INITIALIZING"
         self.is_gemini_active: bool = False
+        self.model_name: str = "gemini-3.8-flash"
+        self.candidate_models: List[str] = [
+            "gemini-3.8-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+        ]
 
         # Latest cached decision
         self.latest_decision: Dict[str, Any] = {
@@ -126,7 +133,7 @@ class GeminiTacticalAI:
         try:
             # Instantiate google-genai client
             self.client = genai.Client(api_key=self.api_key)
-            self.ai_status = "ONLINE [gemini-2.5-flash]"
+            self.ai_status = f"ONLINE [{self.model_name}]"
             self.is_gemini_active = True
         except Exception as e:
             logger.warning(f"Failed to initialize google-genai Client: {e}")
@@ -162,7 +169,7 @@ class GeminiTacticalAI:
     ) -> None:
         """
         Initiate an asynchronous background tactical calculation.
-        Spawns a daemon thread calling gemini-2.5-flash without blocking the main 60 FPS loop.
+        Spawns a daemon thread calling gemini-3.8-flash without blocking the main 60 FPS loop.
 
         Args:
             grid_size: Dimension N of the N x N grid.
@@ -237,20 +244,48 @@ Tactical Directive:
 3. commander_order: A tense tactical commander transmission strictly under 12 words.
 """
 
-            # Configure ultra-low-latency generation with thinking_budget=0
+            # Configure ultra-low-latency generation with thinking_budget=0 and AFC disabled to suppress warning
+            afc_config = (
+                types.AutomaticFunctionCallingConfig(disable=True)
+                if hasattr(types, "AutomaticFunctionCallingConfig")
+                else None
+            )
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=TacticalDecision,
                 thinking_config=types.ThinkingConfig(thinking_budget=0),
                 temperature=0.2,
+                automatic_function_calling=afc_config,
             )
 
-            # Direct SDK call to gemini-2.5-flash
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=config,
-            )
+            # Direct SDK call to Gemini model with dynamic candidate fallback
+            response = None
+            last_err = None
+            models_to_try = [self.model_name] + [m for m in self.candidate_models if m != self.model_name]
+
+            for cand_model in models_to_try:
+                try:
+                    response = self.client.models.generate_content(
+                        model=cand_model,
+                        contents=prompt,
+                        config=config,
+                    )
+                    if cand_model != self.model_name:
+                        self.model_name = cand_model
+                    break
+                except Exception as ex:
+                    last_err = ex
+                    err_str = str(ex).lower()
+                    if "404" in err_str or "not_found" in err_str or "not found" in err_str:
+                        logger.info(f"Model {cand_model} returned 404, attempting fallback candidate...")
+                        continue
+                    else:
+                        raise ex
+
+            if response is None:
+                if last_err:
+                    raise last_err
+                raise RuntimeError("No candidate Gemini model succeeded.")
 
             # Parse structured JSON output
             raw_text = response.text or "{}"
