@@ -229,13 +229,13 @@ class UIManager:
 
         # Login Screen widgets
         cx = self.screen_width // 2
-        self.input_login_username = TextInputBox(pygame.Rect(cx - 150, 252, 300, 40), self.font_body)
+        self.input_login_username = TextInputBox(pygame.Rect(cx - 160, 265, 320, 42), self.font_body)
         self.input_login_username.text = "afiabyte"
         self.input_login_username.is_active = True
-        self.btn_login_submit = UIButton(pygame.Rect(cx - 150, 338, 300, 42), ">> ACCESS SYSTEM <<", self.font_header,
-                                         accent_color=COLOR_TEXT_ACCENT_GREEN)
-        self.btn_login_guest = UIButton(pygame.Rect(cx - 150, 388, 300, 36), "DEPLOY AS GUEST", self.font_body,
-                                        accent_color=COLOR_TEXT_ACCENT_AMBER)
+        self.btn_login_submit = UIButton(pygame.Rect(cx - 160, 345, 320, 44), ">> ENTER SANCTUARY <<", self.font_header,
+                                         accent_color=COLOR_KEY_GOLD)
+        self.btn_login_guest = UIButton(pygame.Rect(cx - 160, 400, 320, 38), "EXPLORE AS GUEST", self.font_body,
+                                        accent_color=COLOR_TEXT_SECONDARY)
 
         self._init_home_buttons()
         self._init_overlay_buttons()
@@ -464,43 +464,43 @@ class UIManager:
         sub_title = self.font_bold.render("LINK PERSISTENT EXPEDITION RECORDS & RELIC VICTORIES IN SQLITE ARCHIVES", True, (215, 205, 180))
         surface.blit(sub_title, sub_title.get_rect(center=(cx, 100)))
 
-        # 3. Main Glassmorphic Login Dossier Chassis
-        card_w = 560
-        card_h = 440
+        # 3. Main Glassmorphic Login Dossier Chassis (Focused & Clean without profile lists)
+        card_w = 540
+        card_h = 350
         card_x = cx - card_w // 2
-        card_y = 118
+        card_y = 135
         card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
 
         # Drop shadow & Translucent Glass
-        pygame.draw.rect(surface, (5, 8, 14), card_rect.move(0, 4), border_radius=8)
+        pygame.draw.rect(surface, (6, 8, 14), card_rect.move(0, 4), border_radius=8)
         glass_surf = pygame.Surface((card_w, card_h), pygame.SRCALPHA)
-        glass_surf.fill((12, 18, 30, 235))
+        glass_surf.fill((16, 20, 30, 240))
         surface.blit(glass_surf, card_rect.topleft)
 
-        # Cybernetic neon borders
-        pygame.draw.rect(surface, (36, 60, 95), card_rect, width=1, border_radius=8)
-        pygame.draw.rect(surface, (0, 180, 230), card_rect.inflate(-4, -4), width=1, border_radius=6)
+        # Ancient Gold & Stone borders
+        pygame.draw.rect(surface, (65, 80, 110), card_rect, width=1, border_radius=8)
+        pygame.draw.rect(surface, (225, 175, 55), card_rect.inflate(-4, -4), width=1, border_radius=6)
 
         # Corner ticks
         t_sz = 12
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y), (card_x + t_sz, card_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y), (card_x, card_y + t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y), (card_x + card_w - 1 - t_sz, card_y), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y), (card_x + card_w - 1, card_y + t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y + card_h - 1), (card_x + t_sz, card_y + card_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x, card_y + card_h - 1), (card_x, card_y + card_h - 1 - t_sz), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1 - t_sz, card_y + card_h - 1), 2)
-        pygame.draw.line(surface, COLOR_TEXT_ACCENT_CYAN, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1, card_y + card_h - 1 - t_sz), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x, card_y), (card_x + t_sz, card_y), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x, card_y), (card_x, card_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x + card_w - 1, card_y), (card_x + card_w - 1 - t_sz, card_y), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x + card_w - 1, card_y), (card_x + card_w - 1, card_y + t_sz), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x, card_y + card_h - 1), (card_x + t_sz, card_y + card_h - 1), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x, card_y + card_h - 1), (card_x, card_y + card_h - 1 - t_sz), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1 - t_sz, card_y + card_h - 1), 2)
+        pygame.draw.line(surface, COLOR_KEY_GOLD, (card_x + card_w - 1, card_y + card_h - 1), (card_x + card_w - 1, card_y + card_h - 1 - t_sz), 2)
 
         # Top Card Ribbon
-        pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 34), (card_x + card_w - 20, card_y + 34), 1)
+        pygame.draw.line(surface, (45, 55, 78), (card_x + 20, card_y + 34), (card_x + card_w - 20, card_y + 34), 1)
         ribbon_txt = self.font_badge.render("// GUILD ARCHIVES :: EXPEDITION REGISTRATION //", True, COLOR_TEXT_SECONDARY)
         surface.blit(ribbon_txt, (card_x + 24, card_y + 12))
 
-        # Operative Icon in Card
+        # Explorer Fedora Emblem in Card
         avatar_cx = cx
-        avatar_cy = card_y + 68
-        pygame.draw.circle(surface, (16, 26, 42), (avatar_cx, avatar_cy), 24)
+        avatar_cy = card_y + 70
+        pygame.draw.circle(surface, (25, 20, 24), (avatar_cx, avatar_cy), 24)
         pygame.draw.circle(surface, (225, 175, 55), (avatar_cx, avatar_cy), 24, 2)
         # Fedora / Explorer Headgear
         pygame.draw.ellipse(surface, (140, 85, 45), pygame.Rect(avatar_cx - 16, avatar_cy - 8, 32, 14))
@@ -510,42 +510,23 @@ class UIManager:
 
         # Prompt
         lbl = self.font_bold.render("ENTER EXPLORER CALLSIGN / NAME:", True, COLOR_TEXT_PRIMARY)
-        surface.blit(lbl, lbl.get_rect(center=(cx, card_y + 112)))
+        surface.blit(lbl, lbl.get_rect(center=(cx, card_y + 116)))
 
         # Text Input Box
         self.input_login_username.draw(surface)
 
-        # Status text below input (generously padded)
+        # Status text below input
         stat_color = COLOR_TEXT_ACCENT_GREEN if "SUCCESS" in status_msg.upper() or "AUTHENTICATED" in status_msg.upper() else COLOR_TEXT_MUTED
         st_surf = self.font_small.render(f"STATUS: {status_msg}", True, stat_color)
-        surface.blit(st_surf, st_surf.get_rect(center=(cx, card_y + 192)))
+        surface.blit(st_surf, st_surf.get_rect(center=(cx, card_y + 195)))
 
         # Action Buttons
         self.btn_login_submit.draw(surface)
         self.btn_login_guest.draw(surface)
 
-        # Divider for Recent Operatives
-        pygame.draw.line(surface, (28, 48, 75), (card_x + 20, card_y + 320), (card_x + card_w - 20, card_y + 320), 1)
-
-        # Recent Profiles Header
-        rec_title = self.font_badge.render("// REGISTERED EXPLORERS IN GUILD ARCHIVES:", True, COLOR_TEXT_ACCENT_AMBER)
-        surface.blit(rec_title, (card_x + 24, card_y + 332))
-
-        if recent_operatives and len(recent_operatives) > 0:
-            ry = card_y + 354
-            for op in recent_operatives[:3]:
-                uname = op.get("username", "OPERATIVE")
-                wins = op.get("victories", 0)
-                best = f"{op.get('best_steps')} steps" if op.get("best_steps") is not None else "No win yet"
-                info_line = f"• {uname:<14} | Wins: {wins:<3} | Best: {best}"
-                surface.blit(self.font_small.render(info_line, True, COLOR_TEXT_PRIMARY), (card_x + 30, ry))
-                ry += 20
-        else:
-            surface.blit(self.font_small.render("No previous explorers detected. Enter your callsign above.", True, COLOR_TEXT_MUTED), (card_x + 30, card_y + 360))
-
         # Bottom Dock Note
         note_surf = self.font_small.render("[ All expedition progress is automatically saved to SQLite dungeon_records.db ]", True, COLOR_TEXT_MUTED)
-        surface.blit(note_surf, note_surf.get_rect(center=(cx, self.screen_height - 30)))
+        surface.blit(note_surf, note_surf.get_rect(center=(cx, self.screen_height - 35)))
 
     # =========================================================================
     # HOME SCREEN RENDERING

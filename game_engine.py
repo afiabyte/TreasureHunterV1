@@ -39,13 +39,14 @@ class GameEngine:
     rendering pipeline, and AI thread communication.
     """
 
-    def __init__(self, screen_width: int = 960, screen_height: int = 780) -> None:
+    def __init__(self, screen_width: int = 960, screen_height: int = 780, db_path: str = "dungeon_records.db") -> None:
         """
         Initialize Pygame, display surfaces, sound mixer, and modular sub-components.
 
         Args:
             screen_width: Window width in pixels (default: 960).
             screen_height: Window height in pixels (default: 780).
+            db_path: Path to SQLite persistence database file.
         """
         # Initialize Pygame core modules
         pygame.init()
@@ -68,7 +69,7 @@ class GameEngine:
         self.recent_operatives: List[Dict[str, Any]] = []
 
         # Subsystem Managers (Clean zero-circular dependency architecture)
-        self.db = DatabaseManager("dungeon_records.db")
+        self.db = DatabaseManager(db_path)
         self.ai = GeminiTacticalAI()
         self.ui = UIManager(self.screen_width, self.screen_height)
         self.sound = SoundManager()

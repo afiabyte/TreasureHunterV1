@@ -204,9 +204,18 @@ class TestGridEnvironment(unittest.TestCase):
 class TestGameEngineIntegration(unittest.TestCase):
     """Test suite for full GameEngine loop and state transitions."""
 
+    def setUp(self) -> None:
+        self.test_db_path = "test_dungeon_records.db"
+        if os.path.exists(self.test_db_path):
+            os.remove(self.test_db_path)
+
+    def tearDown(self) -> None:
+        if os.path.exists(self.test_db_path):
+            os.remove(self.test_db_path)
+
     def test_full_mission_lifecycle(self) -> None:
         """Verify engine transitions, splash, login, frame updates, and rendering without exceptions."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         self.assertEqual(engine.state, "SPLASH")
         engine.render()
 
@@ -246,7 +255,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
     def test_how_to_play_transition(self) -> None:
         """Verify navigation to How to Play and back to Home."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         engine.state = STATE_HOW_TO_PLAY
         engine.render()
         self.assertEqual(engine.state, STATE_HOW_TO_PLAY)
@@ -258,7 +267,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
     def test_level_progression(self) -> None:
         """Verify smooth progression: Recruit (L1) -> Tactical (L2) -> Nightmare (L3)."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         engine.start_mission(grid_size=7, level=1, player_name="TEST_AGENT")
         self.assertEqual(engine.selected_level, 1)
 
@@ -274,7 +283,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
     def test_standby_countdown_reconnaissance(self) -> None:
         """Verify the 3-second tactical standby prevents game from starting abruptly."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         engine.start_mission(grid_size=7, level=2, player_name="STANDBY_TEST")
         self.assertEqual(engine.state, STATE_PLAYING)
         self.assertEqual(engine.standby_timer, 3.0)
@@ -292,7 +301,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
     def test_pause_and_resume_controls(self) -> None:
         """Verify tactical pause button, state freeze, and resume controls."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         engine.start_mission(grid_size=7, level=2, player_name="PAUSE_TEST")
         engine.standby_timer = 0.0  # Skip standby for this test
 
@@ -322,7 +331,7 @@ class TestGameEngineIntegration(unittest.TestCase):
 
     def test_humanoid_sprites_rendering(self) -> None:
         """Verify human player and human hunter render across cardinal facings and cell sizes."""
-        engine = GameEngine()
+        engine = GameEngine(db_path=self.test_db_path)
         engine.start_mission(grid_size=7, level=2, player_name="HERO_AGENT")
         test_surf = pygame.Surface((960, 780))
 
