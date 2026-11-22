@@ -105,7 +105,7 @@ class UIManager:
         self.show_settings_modal: bool = False
         self.show_exit_modal: bool = False
         self.sound_enabled: bool = True
-        self.selected_chamber_level: int = 12
+        self.selected_chamber_level: int = 1
 
         # Modal Action Buttons
         self.btn_close_modal = UIButton(pygame.Rect(0, 0, 140, 38), "CLOSE", self.font_btn_bold, style="wood_pill")
@@ -253,7 +253,7 @@ class UIManager:
         )
         self.btn_levels = UIButton(
             pygame.Rect(cx - 190, 512, 180, 42),
-            "LEVELS (1-50)", self.font_btn_bold, style="blue_pill"
+            "LEVELS (1-10)", self.font_btn_bold, style="blue_pill"
         )
         self.btn_how_to_play = UIButton(
             pygame.Rect(cx + 10, 512, 180, 42),
@@ -279,18 +279,19 @@ class UIManager:
                                          "<< RETURN", self.font_header)
 
     def _init_level_select_ui(self) -> None:
-        """Initialize widgets for the 1-50 Select Level Screen."""
+        """Initialize widgets for the 1-10 Select Level Screen."""
         cx = self.screen_width // 2
-        card_y = 30
-        self.selected_chamber_level: int = 12
+        card_h = 450
+        card_y = max(24, (self.screen_height - card_h) // 2)
+        self.selected_chamber_level: int = 1
 
         self.level_tile_buttons: List[UIButton] = []
         cols = 5
-        rows = 7
-        btn_w = 72
-        btn_h = 54
+        rows = 2
+        btn_w = 84
+        btn_h = 66
         gap_x = 18
-        gap_y = 12
+        gap_y = 16
         grid_w = cols * btn_w + (cols - 1) * gap_x
         start_grid_x = cx - grid_w // 2
         start_grid_y = card_y + 115
@@ -302,14 +303,14 @@ class UIManager:
                 btn = UIButton(pygame.Rect(bx, by, btn_w, btn_h), "", self.font_btn_bold)
                 self.level_tile_buttons.append(btn)
 
-        st_y = start_grid_y + rows * (btn_h + gap_y) + 8
+        st_y = start_grid_y + rows * (btn_h + gap_y) + 12
         btn_play_w = 260
         btn_back_w = 160
         btn_act_h = 48
         btn_gap = 18
         total_btn_w = btn_play_w + btn_back_w + btn_gap
         btn_start_x = cx - total_btn_w // 2
-        btn_act_y = st_y + 24
+        btn_act_y = st_y + 36
 
         self.btn_level_play = UIButton(
             pygame.Rect(btn_start_x, btn_act_y, btn_play_w, btn_act_h),

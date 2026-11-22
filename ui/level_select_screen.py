@@ -93,9 +93,9 @@ class LevelSelectScreenRenderer:
         """Render the exact retro-pixel RPG Select Level parchment screen."""
         cx = self.screen_width // 2
         card_w = 560
-        card_h = 715
+        card_h = 450
         card_x = cx - card_w // 2
-        card_y = 30
+        card_y = max(24, (self.screen_height - card_h) // 2)
         card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
 
         # 1. Dark dungeon stone brick wall background
@@ -108,16 +108,13 @@ class LevelSelectScreenRenderer:
         draw_royal_crown(surface, cx, card_y + 26)
         draw_adventure_title(surface, "SELECT LEVEL", card_y + 48, font_title_top, cx)
 
-        # Calculate max unlocked level from user stats
-        victories = user_stats.get("victories", 0) if user_stats else 11
-        unlocked_max = max(1, min(50, 1 + victories))
+        # Calculate max unlocked level from user stats (10 total levels)
+        victories = user_stats.get("victories", 0) if user_stats else 0
+        unlocked_max = max(1, min(10, 1 + victories))
 
-        # Check page offset based on selected level
-        base_offset = 15 if selected_chamber_level > 35 else 0
-
-        # Draw the 35 level tiles (5x7)
-        for i, btn in enumerate(level_tile_buttons):
-            lvl = base_offset + i + 1
+        # Draw the 10 level tiles (5x2)
+        for i, btn in enumerate(level_tile_buttons[:10]):
+            lvl = i + 1
             btn.tag = str(lvl)
 
             if lvl == selected_chamber_level:
@@ -129,9 +126,9 @@ class LevelSelectScreenRenderer:
 
             self._draw_level_tile(surface, btn.rect, lvl, st, font_input)
 
-        # 4. Status Footer: "UNLOCKED: {unlocked_max} / 50"
-        st_y = card_y + 115 + 7 * 66 + 8
-        status_txt = font_label.render(f"UNLOCKED: {unlocked_max} / 50", True, (54, 24, 6))
+        # 4. Status Footer: "UNLOCKED: {unlocked_max} / 10"
+        st_y = card_y + 115 + 2 * (68 + 16) + 12
+        status_txt = font_label.render(f"UNLOCKED: {unlocked_max} / 10", True, (54, 24, 6))
         surface.blit(status_txt, status_txt.get_rect(center=(cx, st_y)))
 
         # 5. Bottom Action Buttons: [ PLAY LEVEL {N} ] and [ BACK ]

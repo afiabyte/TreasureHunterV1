@@ -288,37 +288,45 @@ class TestGameEngineIntegration(unittest.TestCase):
         engine.render()
 
     def test_level_select_screen_transition_and_selection(self) -> None:
-        """Verify navigation to 1-50 Select Level screen, chamber picking, and mission start."""
+        """Verify navigation to 1-10 Select Level screen, chamber picking, and mission start."""
         engine = GameEngine(db_path=self.test_db_path)
-        engine.user_stats = {"username": "afiabyte", "victories": 11, "total_missions": 12, "best_steps": 14}
+        engine.user_stats = {"username": "afiabyte", "victories": 4, "total_missions": 6, "best_steps": 14}
         engine.state = STATE_HOME
 
-        # 1. Click "LEVELS (1-50)" button on Main Menu
+        # 1. Click "LEVELS (1-10)" button on Main Menu
         click_levels = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_levels.rect.center)
         engine._handle_home_events(click_levels)
         self.assertEqual(engine.state, STATE_LEVEL_SELECT)
+        self.assertEqual(len(engine.ui.level_tile_buttons), 10)
 
         # 2. Render level select screen
         engine.render()
 
-        # 3. Click an unlocked chamber (e.g. tile 5)
+        # 3. Click an unlocked chamber (e.g. tile 3 -> Recruit)
+        tile_3 = engine.ui.level_tile_buttons[2]
+        click_t3 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_3.rect.center)
+        engine._handle_level_select_events(click_t3)
+        self.assertEqual(engine.ui.selected_chamber_level, 3)
+        self.assertEqual(engine.selected_level, 1)  # Level 1-3 maps to Recruit (1)
+
+        # 4. Click an unlocked tactical chamber (e.g. tile 5 -> Tactical)
         tile_5 = engine.ui.level_tile_buttons[4]
         click_t5 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_5.rect.center)
         engine._handle_level_select_events(click_t5)
         self.assertEqual(engine.ui.selected_chamber_level, 5)
-        self.assertEqual(engine.selected_level, 1)  # Levels 1-15 map to difficulty 1 (Recruit)
+        self.assertEqual(engine.selected_level, 2)  # Level 4-7 maps to Tactical (2)
 
-        # 4. Attempt to click a locked chamber (e.g. tile 20 while victories=11 -> max unlocked=12)
-        tile_20 = engine.ui.level_tile_buttons[19]
-        click_t20 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_20.rect.center)
-        engine._handle_level_select_events(click_t20)
+        # 5. Attempt to click a locked chamber (e.g. tile 9 while victories=4 -> max unlocked=5)
+        tile_9 = engine.ui.level_tile_buttons[8]
+        click_t9 = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=tile_9.rect.center)
+        engine._handle_level_select_events(click_t9)
         self.assertEqual(engine.ui.selected_chamber_level, 5)  # Should remain unchanged
 
-        # 5. Click "PLAY LEVEL 5" button to launch mission
+        # 6. Click "PLAY LEVEL 5" button to launch mission
         click_play = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_level_play.rect.center)
         engine._handle_level_select_events(click_play)
         self.assertEqual(engine.state, STATE_PLAYING)
-        self.assertEqual(engine.selected_level, 1)
+        self.assertEqual(engine.selected_level, 2)
 
     def test_how_to_play_transition(self) -> None:
         """Verify navigation to How to Play and back to Home."""

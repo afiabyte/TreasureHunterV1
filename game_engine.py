@@ -498,24 +498,27 @@ class GameEngine:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mx, my = event.pos
                 cx = self.screen_width // 2
-                cols = 10
-                cell_sz = 38
-                gap = 8
-                grid_w = cols * cell_sz + (cols - 1) * gap
+                cols = 5
+                cell_w = 66
+                cell_h = 52
+                gap = 14
+                grid_w = cols * cell_w + (cols - 1) * gap
                 grid_start_x = cx - grid_w // 2
-                grid_start_y = 140 + 60
-                victories = self.user_stats.get("victories", 0) if self.user_stats else 11
-                user_level = max(1, min(50, 1 + victories))
-                for lvl in range(1, 51):
+                mh = 270
+                my_card = max(20, (self.screen_height - mh) // 2)
+                grid_start_y = my_card + 65
+                victories = self.user_stats.get("victories", 0) if self.user_stats else 0
+                user_level = max(1, min(10, 1 + victories))
+                for lvl in range(1, 11):
                     idx = lvl - 1
                     r = idx // cols
                     c = idx % cols
-                    cell_x = grid_start_x + c * (cell_sz + gap)
-                    cell_y = grid_start_y + r * (cell_sz + gap)
-                    c_rect = pygame.Rect(cell_x, cell_y, cell_sz, cell_sz)
+                    cell_x = grid_start_x + c * (cell_w + gap)
+                    cell_y = grid_start_y + r * (cell_h + gap)
+                    c_rect = pygame.Rect(cell_x, cell_y, cell_w, cell_h)
                     if c_rect.collidepoint(mx, my) and lvl <= user_level:
                         self.ui.selected_chamber_level = lvl
-                        diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+                        diff = 1 if lvl <= 3 else (2 if lvl <= 7 else 3)
                         self.selected_level = diff
                         for b in self.ui.level_buttons:
                             b.is_selected = (int(b.tag) == diff)
@@ -734,8 +737,8 @@ class GameEngine:
             return
 
         # 2. Check clicks on Level Tiles
-        victories = self.user_stats.get("victories", 0) if self.user_stats else 11
-        unlocked_max = max(1, min(50, 1 + victories))
+        victories = self.user_stats.get("victories", 0) if self.user_stats else 0
+        unlocked_max = max(1, min(10, 1 + victories))
 
         for btn in getattr(self.ui, "level_tile_buttons", []):
             if btn.handle_event(event):
@@ -743,7 +746,7 @@ class GameEngine:
                     lvl = int(btn.tag)
                     if lvl <= unlocked_max:
                         self.ui.selected_chamber_level = lvl
-                        diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+                        diff = 1 if lvl <= 3 else (2 if lvl <= 7 else 3)
                         self.selected_level = diff
                         for b in self.ui.level_buttons:
                             b.is_selected = (int(b.tag) == diff)
@@ -755,7 +758,7 @@ class GameEngine:
         # 3. Play Level Button launches mission with corresponding difficulty
         if hasattr(self.ui, "btn_level_play") and self.ui.btn_level_play.handle_event(event):
             lvl = getattr(self.ui, "selected_chamber_level", 1)
-            diff = 1 if lvl <= 15 else (2 if lvl <= 35 else 3)
+            diff = 1 if lvl <= 3 else (2 if lvl <= 7 else 3)
             self.selected_level = diff
             callsign = self.ui.input_player_name.text.strip() if hasattr(self.ui, "input_player_name") else self.current_user
             if not callsign:
@@ -911,10 +914,11 @@ class GameEngine:
                     self.sound.play_music("menu")
                     return
 
-            # Advance to Next Level (Seamless progression: Recruit -> Tactical -> Nightmare)
+            # Advance to Next Level (Seamless progression: Recruit -> Tactical -> Nightmare & Chamber 1-10)
             if self.ui.btn_next_level.handle_event(event):
                 next_lvl = self.selected_level + 1 if self.selected_level < 3 else self.selected_level
                 self.selected_level = next_lvl
+                self.ui.selected_chamber_level = min(10, getattr(self.ui, "selected_chamber_level", 1) + 1)
                 # Update level button highlights on home screen
                 for b in self.ui.level_buttons:
                     b.is_selected = (int(b.tag) == next_lvl)
@@ -1143,7 +1147,7 @@ class GameEngine:
                     ai_latency_ms=latency_ms,
                     ai_status=status_text,
                     level_name=level_name,
-                    level_num=getattr(self, "selected_chamber_level", 12),
+                    level_num=getattr(self.ui, "selected_chamber_level", 1),
                 )
 
             # 6. Draw Game Over Overlay if in GAME_OVER state

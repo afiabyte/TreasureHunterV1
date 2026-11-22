@@ -217,8 +217,8 @@ class HomeScreenRenderer:
         # 4. Trophies & Stats Badges (Side-by-side)
         best_text = f"BEST: {best_victory_steps} STEPS" if best_victory_steps is not None else "BEST: 14 STEPS"
         victories = user_stats.get("victories", 0) if user_stats else 11
-        user_level = max(1, min(50, 1 + victories))
-        level_text = f"LEVEL: {user_level} / 50"
+        user_level = max(1, min(10, 1 + victories))
+        level_text = f"LEVEL: {user_level} / 10"
 
         if is_tall:
             badge_w, badge_h = 220, 42
@@ -256,8 +256,9 @@ class HomeScreenRenderer:
             btn_start_mission.draw(surface)
 
             # 9. 2x2 Secondary Buttons Grid matching Exit Mockup
-            # Row 1: LEVELS (1-50) & HOW TO PLAY
+            # Row 1: LEVELS (1-10) & HOW TO PLAY
             btn_levels.rect = pygame.Rect(cx - 264, 850, 252, 58)
+            btn_levels.text = "LEVELS (1-10)"
             btn_levels.draw(surface)
 
             btn_how_to_play.rect = pygame.Rect(cx + 12, 850, 252, 58)
@@ -309,8 +310,9 @@ class HomeScreenRenderer:
             btn_start_mission.draw(surface)
 
             # 9. 2x2 Secondary Buttons Grid
-            # Row 1: LEVELS (1-50) & HOW TO PLAY
+            # Row 1: LEVELS (1-10) & HOW TO PLAY
             btn_levels.rect = pygame.Rect(cx - 190, 512, 180, 42)
+            btn_levels.text = "LEVELS (1-10)"
             btn_levels.draw(surface)
 
             btn_how_to_play.rect = pygame.Rect(cx + 10, 512, 180, 42)
@@ -347,36 +349,37 @@ class HomeScreenRenderer:
         font_label: pygame.font.Font,
         font_small: pygame.font.Font
     ) -> None:
-        """Render interactive Levels (1-50) Browser Modal."""
+        """Render interactive Levels (1-10) Browser Modal."""
         dim_surf = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
         dim_surf.fill((0, 0, 0, 180))
         surface.blit(dim_surf, (0, 0))
 
         cx = self.screen_width // 2
-        mw, mh = 500, 480
-        mx, my = cx - mw // 2, 140
+        mw, mh = 480, 270
+        mx, my = cx - mw // 2, max(20, (self.screen_height - mh) // 2)
         modal_rect = pygame.Rect(mx, my, mw, mh)
         draw_parchment_chassis(surface, modal_rect)
 
         # Title
-        t_surf = font_label.render("EXPEDITION CHAMBERS (LEVELS 1 - 50)", True, (54, 24, 6))
+        t_surf = font_label.render("EXPEDITION CHAMBERS (LEVELS 1 - 10)", True, (54, 24, 6))
         surface.blit(t_surf, t_surf.get_rect(center=(cx, my + 30)))
 
-        # 5x10 Chamber Grid
-        cols = 10
-        cell_sz = 38
-        gap = 8
-        grid_w = cols * cell_sz + (cols - 1) * gap
+        # 2x5 Chamber Grid
+        cols = 5
+        cell_w = 66
+        cell_h = 52
+        gap = 14
+        grid_w = cols * cell_w + (cols - 1) * gap
         grid_start_x = cx - grid_w // 2
-        grid_start_y = my + 60
+        grid_start_y = my + 65
 
-        for lvl in range(1, 51):
+        for lvl in range(1, 11):
             idx = lvl - 1
             r = idx // cols
             c = idx % cols
-            cell_x = grid_start_x + c * (cell_sz + gap)
-            cell_y = grid_start_y + r * (cell_sz + gap)
-            c_rect = pygame.Rect(cell_x, cell_y, cell_sz, cell_sz)
+            cell_x = grid_start_x + c * (cell_w + gap)
+            cell_y = grid_start_y + r * (cell_h + gap)
+            c_rect = pygame.Rect(cell_x, cell_y, cell_w, cell_h)
 
             is_unlocked = (lvl <= user_level)
             is_active = (lvl == selected_chamber_level)
@@ -396,7 +399,7 @@ class HomeScreenRenderer:
 
             surface.blit(txt, txt.get_rect(center=c_rect.center))
 
-        btn_close_modal.rect = pygame.Rect(cx - 70, my + mh - 50, 140, 36)
+        btn_close_modal.rect = pygame.Rect(cx - 70, my + mh - 48, 140, 36)
         btn_close_modal.draw(surface)
 
     def _draw_settings_modal(
