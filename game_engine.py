@@ -205,9 +205,18 @@ class GameEngine:
         self.is_victory = True
         self.sound.play_victory()
 
-        # Save match result to SQLite on the basis of active operative
+        # Save match result to SQLite on the basis of active operative with chamber level and grid metadata
         steps_taken = self.env.steps if self.env else 0
-        self.db.save_match_result(self.player_name, steps_taken, "VICTORY")
+        current_chamber = getattr(self.ui, "selected_chamber_level", 1)
+        mode_name = self.env.config["name"] if self.env and "name" in self.env.config else "TACTICAL"
+        self.db.save_match_result(
+            self.player_name,
+            steps_taken,
+            "VICTORY",
+            level_num=current_chamber,
+            grid_size=self.selected_grid_size,
+            difficulty=mode_name,
+        )
         self.user_stats = self.db.get_operative(self.player_name)
 
         # Evaluate if this run sets a new personal best record
@@ -226,9 +235,18 @@ class GameEngine:
         self.is_new_best_record = False
         self.sound.play_defeat()
 
-        # Save match result to SQLite on the basis of active operative
+        # Save match result to SQLite on the basis of active operative with chamber level and grid metadata
         steps_taken = self.env.steps if self.env else 0
-        self.db.save_match_result(self.player_name, steps_taken, "DEFEAT")
+        current_chamber = getattr(self.ui, "selected_chamber_level", 1)
+        mode_name = self.env.config["name"] if self.env and "name" in self.env.config else "TACTICAL"
+        self.db.save_match_result(
+            self.player_name,
+            steps_taken,
+            "DEFEAT",
+            level_num=current_chamber,
+            grid_size=self.selected_grid_size,
+            difficulty=mode_name,
+        )
         self.user_stats = self.db.get_operative(self.player_name)
 
         self.state = STATE_GAME_OVER

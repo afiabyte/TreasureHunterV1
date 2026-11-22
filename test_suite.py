@@ -120,6 +120,37 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertFalse(bad_ok)
         self.assertIn("INCORRECT", bad_msg)
 
+    def test_level_progress_and_campaign_unlock(self) -> None:
+        """Verify per-level progression, stars, and campaign unlock sequence (1-10)."""
+        op = self.db.login_or_register_operative("Explorer")
+        self.assertEqual(op["unlocked_level"], 1)
+
+        # Initial progress: Level 1 UNLOCKED, Levels 2-10 LOCKED
+        prog = self.db.get_level_progress("Explorer")
+        self.assertEqual(prog[1]["status"], "UNLOCKED")
+        self.assertEqual(prog[2]["status"], "LOCKED")
+        self.assertEqual(self.db.get_unlocked_level("Explorer"), 1)
+
+        # Complete Level 1 in 12 steps (3 stars)
+        self.db.save_match_result("Explorer", 12, "VICTORY", level_num=1, grid_size=7, difficulty="RECRUIT")
+        op_up = self.db.get_operative("Explorer")
+        self.assertEqual(op_up["unlocked_level"], 2)
+
+        prog2 = self.db.get_level_progress("Explorer")
+        self.assertEqual(prog2[1]["status"], "COMPLETED")
+        self.assertEqual(prog2[1]["best_steps"], 12)
+        self.assertEqual(prog2[1]["stars"], 3)
+        self.assertEqual(prog2[2]["status"], "UNLOCKED")
+        self.assertEqual(prog2[3]["status"], "LOCKED")
+        self.assertEqual(self.db.get_unlocked_level("Explorer"), 2)
+
+        # Defeat on Level 2 does not unlock Level 3
+        self.db.save_match_result("Explorer", 9, "DEFEAT", level_num=2, grid_size=7, difficulty="RECRUIT")
+        self.assertEqual(self.db.get_unlocked_level("Explorer"), 2)
+        prog3 = self.db.get_level_progress("Explorer")
+        self.assertEqual(prog3[2]["status"], "UNLOCKED")
+        self.assertEqual(prog3[3]["status"], "LOCKED")
+
 
 class TestGeminiTacticalAI(unittest.TestCase):
     """Test suite for Gemini Tactical AI and fallback mechanisms."""

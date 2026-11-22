@@ -73,6 +73,9 @@ class DatabaseManager:
                         player_name TEXT NOT NULL,
                         steps INTEGER NOT NULL,
                         result TEXT NOT NULL,
+                        level_num INTEGER DEFAULT 1,
+                        grid_size INTEGER DEFAULT 7,
+                        difficulty TEXT DEFAULT 'TACTICAL',
                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                     """
@@ -88,18 +91,44 @@ class DatabaseManager:
                         victories INTEGER DEFAULT 0,
                         defeats INTEGER DEFAULT 0,
                         best_steps INTEGER DEFAULT NULL,
+                        unlocked_level INTEGER DEFAULT 1,
                         email TEXT,
                         password_hash TEXT
                     );
                     """
                 )
-                # Safely ensure email and password_hash columns exist on legacy tables
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS level_progress (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        operative_name TEXT NOT NULL,
+                        level_num INTEGER NOT NULL,
+                        status TEXT DEFAULT 'LOCKED',
+                        best_steps INTEGER DEFAULT NULL,
+                        stars INTEGER DEFAULT 0,
+                        completed_at DATETIME DEFAULT NULL,
+                        UNIQUE(operative_name, level_num)
+                    );
+                    """
+                )
+                # Safely ensure email, password_hash, and unlocked_level columns exist on legacy tables
                 cursor.execute("PRAGMA table_info(operatives);")
                 existing_cols = [col["name"] for col in cursor.fetchall()]
                 if "email" not in existing_cols:
                     cursor.execute("ALTER TABLE operatives ADD COLUMN email TEXT;")
                 if "password_hash" not in existing_cols:
                     cursor.execute("ALTER TABLE operatives ADD COLUMN password_hash TEXT;")
+                if "unlocked_level" not in existing_cols:
+                    cursor.execute("ALTER TABLE operatives ADD COLUMN unlocked_level INTEGER DEFAULT 1;")
+
+                cursor.execute("PRAGMA table_info(game_history);")
+                gh_cols = [col["name"] for col in cursor.fetchall()]
+                if "level_num" not in gh_cols:
+                    cursor.execute("ALTER TABLE game_history ADD COLUMN level_num INTEGER DEFAULT 1;")
+                if "grid_size" not in gh_cols:
+                    cursor.execute("ALTER TABLE game_history ADD COLUMN grid_size INTEGER DEFAULT 7;")
+                if "difficulty" not in gh_cols:
+                    cursor.execute("ALTER TABLE game_history ADD COLUMN difficulty TEXT DEFAULT 'TACTICAL';")
 
                 # Game settings table for audio, hints, and animations
                 cursor.execute(
@@ -179,13 +208,22 @@ class DatabaseManager:
                 # Insert new operative
                 cursor.execute(
                     """
-                    INSERT INTO operatives (username, email, password_hash, last_login)
-                    VALUES (?, ?, ?, datetime('now'));
+                    INSERT INTO operatives (username, email, password_hash, unlocked_level, last_login)
+                    VALUES (?, ?, ?, 1, datetime('now'));
                     """,
                     (clean_user, clean_email, pw_hash)
                 )
                 conn.commit()
                 new_id = cursor.lastrowid
+                # Initialize level 1 in level_progress
+                cursor.execute(
+                    """
+                    INSERT OR IGNORE INTO level_progress (operative_name, level_num, status)
+                    VALUES (?, 1, 'UNLOCKED');
+                    """,
+                    (clean_user,)
+                )
+                conn.commit()
                 cursor.execute("SELECT * FROM operatives WHERE id = ?;", (new_id,))
                 row = cursor.fetchone()
                 return True, "ACCOUNT CREATED SUCCESSFULLY", dict(row)
@@ -279,19 +317,35 @@ class DatabaseManager:
                         "UPDATE operatives SET last_login = datetime('now') WHERE id = ?;",
                         (row["id"],)
                     )
+                    # Ensure level 1 is recorded in level_progress
+                    cursor.execute(
+                        """
+                        INSERT OR IGNORE INTO level_progress (operative_name, level_num, status)
+                        VALUES (?, 1, 'UNLOCKED');
+                        """,
+                        (clean_user,)
+                    )
                     conn.commit()
                     cursor.execute("SELECT * FROM operatives WHERE id = ?;", (row["id"],))
                     return dict(cursor.fetchone())
                 else:
                     cursor.execute(
                         """
-                        INSERT INTO operatives (username, last_login)
-                        VALUES (?, datetime('now'));
+                        INSERT INTO operatives (username, unlocked_level, last_login)
+                        VALUES (?, 1, datetime('now'));
                         """,
                         (clean_user,)
                     )
                     conn.commit()
                     new_id = cursor.lastrowid
+                    cursor.execute(
+                        """
+                        INSERT OR IGNORE INTO level_progress (operative_name, level_num, status)
+                        VALUES (?, 1, 'UNLOCKED');
+                        """,
+                        (clean_user,)
+                    )
+                    conn.commit()
                     cursor.execute("SELECT * FROM operatives WHERE id = ?;", (new_id,))
                     return dict(cursor.fetchone())
             finally:
@@ -349,14 +403,26 @@ class DatabaseManager:
             finally:
                 conn.close()
 
-    def save_match_result(self, player_name: str, steps: int, result: str) -> int:
+    def save_match_result(
+        self,
+        player_name: str,
+        steps: int,
+        result: str,
+        level_num: int = 1,
+        grid_size: int = 7,
+        difficulty: str = "TACTICAL",
+    ) -> int:
         """
-        Persist a completed match result to the database and update operative profile stats.
+        Persist a completed match result to the database, update operative profile stats,
+        and record per-level campaign progress (1-10).
 
         Args:
             player_name: The name or callsign of the operative.
             steps: Total number of steps executed during the mission.
             result: Outcome of the mission ('VICTORY' or 'DEFEAT').
+            level_num: Chamber level number (1 to 10). Defaults to 1.
+            grid_size: Grid size played (e.g. 5, 7, 9, 11). Defaults to 7.
+            difficulty: Difficulty mode ('RECRUIT', 'TACTICAL', 'NIGHTMARE').
 
         Returns:
             The primary key row ID of the inserted game_history record.
@@ -364,23 +430,27 @@ class DatabaseManager:
         cleaned_name = player_name.strip() if player_name and player_name.strip() else "OPERATIVE-01"
         is_victory = (result.upper() == "VICTORY")
         steps_val = int(steps)
+        lvl_val = max(1, min(10, int(level_num)))
+        grid_val = int(grid_size)
+        diff_val = str(difficulty).upper()
+
         with self._lock:
             conn = self._get_connection()
             try:
                 cursor = conn.cursor()
-                # 1. Insert into historical game log
+                # 1. Insert into historical game log with level, grid_size, and difficulty
                 cursor.execute(
                     """
-                    INSERT INTO game_history (player_name, steps, result, timestamp)
-                    VALUES (?, ?, ?, datetime('now'));
+                    INSERT INTO game_history (player_name, steps, result, level_num, grid_size, difficulty, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?, datetime('now'));
                     """,
-                    (cleaned_name, steps_val, result.upper()),
+                    (cleaned_name, steps_val, result.upper(), lvl_val, grid_val, diff_val),
                 )
                 last_id = cursor.lastrowid
 
-                # 2. Upsert / update operative profile statistics
+                # 2. Upsert / update operative profile statistics & unlocked_level
                 cursor.execute(
-                    "SELECT id, total_missions, victories, defeats, best_steps FROM operatives WHERE username = ? COLLATE NOCASE;",
+                    "SELECT id, total_missions, victories, defeats, best_steps, unlocked_level FROM operatives WHERE username = ? COLLATE NOCASE;",
                     (cleaned_name,)
                 )
                 op = cursor.fetchone()
@@ -390,30 +460,160 @@ class DatabaseManager:
                     new_defeats = (op["defeats"] or 0) + (0 if is_victory else 1)
                     curr_best = op["best_steps"]
                     new_best = steps_val if is_victory and (curr_best is None or steps_val < curr_best) else curr_best
+                    curr_unlocked = op["unlocked_level"] or 1
+                    new_unlocked = max(curr_unlocked, min(10, lvl_val + 1)) if is_victory else curr_unlocked
+
                     cursor.execute(
                         """
                         UPDATE operatives
-                        SET total_missions = ?, victories = ?, defeats = ?, best_steps = ?, last_login = datetime('now')
+                        SET total_missions = ?, victories = ?, defeats = ?, best_steps = ?, unlocked_level = ?, last_login = datetime('now')
                         WHERE id = ?;
                         """,
-                        (new_missions, new_victories, new_defeats, new_best, op["id"])
+                        (new_missions, new_victories, new_defeats, new_best, new_unlocked, op["id"])
                     )
                 else:
                     new_victories = 1 if is_victory else 0
                     new_defeats = 0 if is_victory else 1
                     new_best = steps_val if is_victory else None
+                    new_unlocked = min(10, lvl_val + 1) if is_victory else 1
                     cursor.execute(
                         """
-                        INSERT INTO operatives (username, total_missions, victories, defeats, best_steps, last_login)
-                        VALUES (?, 1, ?, ?, ?, datetime('now'));
+                        INSERT INTO operatives (username, total_missions, victories, defeats, best_steps, unlocked_level, last_login)
+                        VALUES (?, 1, ?, ?, ?, ?, datetime('now'));
                         """,
-                        (cleaned_name, new_victories, new_defeats, new_best)
+                        (cleaned_name, new_victories, new_defeats, new_best, new_unlocked)
                     )
+
+                # 3. Update level_progress table
+                cursor.execute(
+                    """
+                    INSERT OR IGNORE INTO level_progress (operative_name, level_num, status)
+                    VALUES (?, 1, 'UNLOCKED');
+                    """,
+                    (cleaned_name,)
+                )
+
+                if is_victory:
+                    # Calculate performance stars: 3 stars <= 14 steps, 2 stars <= 24 steps, 1 star otherwise
+                    stars = 3 if steps_val <= 14 else (2 if steps_val <= 24 else 1)
+
+                    cursor.execute(
+                        """
+                        SELECT best_steps, stars FROM level_progress
+                        WHERE operative_name = ? COLLATE NOCASE AND level_num = ?;
+                        """,
+                        (cleaned_name, lvl_val)
+                    )
+                    lp = cursor.fetchone()
+                    if lp:
+                        prev_best = lp["best_steps"]
+                        lvl_best = steps_val if prev_best is None or steps_val < prev_best else prev_best
+                        lvl_stars = max(lp["stars"] or 0, stars)
+                        cursor.execute(
+                            """
+                            UPDATE level_progress
+                            SET status = 'COMPLETED', best_steps = ?, stars = ?, completed_at = datetime('now')
+                            WHERE operative_name = ? COLLATE NOCASE AND level_num = ?;
+                            """,
+                            (lvl_best, lvl_stars, cleaned_name, lvl_val)
+                        )
+                    else:
+                        cursor.execute(
+                            """
+                            INSERT INTO level_progress (operative_name, level_num, status, best_steps, stars, completed_at)
+                            VALUES (?, ?, 'COMPLETED', ?, ?, datetime('now'));
+                            """,
+                            (cleaned_name, lvl_val, steps_val, stars)
+                        )
+
+                    # Unlock next level if < 10
+                    if lvl_val < 10:
+                        cursor.execute(
+                            """
+                            INSERT INTO level_progress (operative_name, level_num, status)
+                            VALUES (?, ?, 'UNLOCKED')
+                            ON CONFLICT(operative_name, level_num) DO UPDATE SET
+                                status = CASE WHEN status = 'LOCKED' THEN 'UNLOCKED' ELSE status END;
+                            """,
+                            (cleaned_name, lvl_val + 1)
+                        )
 
                 conn.commit()
                 return last_id
             finally:
                 conn.close()
+
+    def get_level_progress(self, username: str) -> Dict[int, Dict[str, Any]]:
+        """
+        Retrieve per-chamber completion status, stars, and best step counts for levels 1-10.
+
+        Args:
+            username: Operative callsign.
+
+        Returns:
+            Dictionary mapping level_num (1..10) to progress info dict.
+        """
+        clean_user = username.strip() if username and username.strip() else "OPERATIVE-01"
+        progress = {}
+        for lvl in range(1, 11):
+            progress[lvl] = {
+                "level_num": lvl,
+                "status": "UNLOCKED" if lvl == 1 else "LOCKED",
+                "best_steps": None,
+                "stars": 0,
+                "completed_at": None,
+            }
+
+        with self._lock:
+            conn = self._get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT unlocked_level FROM operatives WHERE username = ? COLLATE NOCASE;",
+                    (clean_user,)
+                )
+                op_row = cursor.fetchone()
+                unlocked_max = op_row["unlocked_level"] if op_row and op_row["unlocked_level"] else 1
+
+                for lvl in range(1, unlocked_max + 1):
+                    progress[lvl]["status"] = "UNLOCKED"
+
+                cursor.execute(
+                    """
+                    SELECT level_num, status, best_steps, stars, completed_at
+                    FROM level_progress
+                    WHERE operative_name = ? COLLATE NOCASE;
+                    """,
+                    (clean_user,)
+                )
+                for row in cursor.fetchall():
+                    lvl = row["level_num"]
+                    if 1 <= lvl <= 10:
+                        progress[lvl]["status"] = row["status"]
+                        progress[lvl]["best_steps"] = row["best_steps"]
+                        progress[lvl]["stars"] = row["stars"]
+                        progress[lvl]["completed_at"] = row["completed_at"]
+
+                return progress
+            finally:
+                conn.close()
+
+    def get_unlocked_level(self, username: str) -> int:
+        """
+        Retrieve highest chamber level unlocked by an operative (1..10).
+
+        Args:
+            username: Operative callsign.
+
+        Returns:
+            Max unlocked chamber level as integer between 1 and 10.
+        """
+        op = self.get_operative(username)
+        if op and op.get("unlocked_level"):
+            return max(1, min(10, int(op["unlocked_level"])))
+        if op and op.get("victories"):
+            return max(1, min(10, 1 + int(op["victories"])))
+        return 1
 
     def get_best_victory_steps(self, player_name: Optional[str] = None) -> Optional[int]:
         """
