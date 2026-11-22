@@ -153,7 +153,13 @@ class HistoryScreenRenderer:
         surface.blit(txt_s, rc.move(0, 1))
         surface.blit(txt, rc)
 
-    def draw_records_table(self, surface: pygame.Surface, rect: pygame.Rect, records: List[Dict[str, Any]]) -> None:
+    def draw_records_table(
+        self,
+        surface: pygame.Surface,
+        rect: pygame.Rect,
+        records: List[Dict[str, Any]],
+        player_name: Optional[str] = None
+    ) -> None:
         """Render inner wooden frame with light parchment cavity, corner brackets, header, and 5 data rows."""
         # 1. Outer Dark Wood Frame
         pygame.draw.rect(surface, (34, 16, 6), rect.move(0, 4), border_radius=10)
@@ -179,6 +185,15 @@ class HistoryScreenRenderer:
         pygame.draw.rect(surface, (244, 224, 186), inner_rect, border_radius=4)
         pygame.draw.rect(surface, (168, 128, 82), inner_rect, width=2, border_radius=4)
 
+        # If no records in database for this player, show clean informative empty state
+        if not records:
+            empty_title = self.font_header.render("NO MISSION RECORDS YET", True, (68, 38, 16))
+            p_label = player_name or "Operative"
+            empty_sub = self.font_plaque.render(f"Deploy as '{p_label}' to log your match history!", True, (120, 84, 52))
+            surface.blit(empty_title, empty_title.get_rect(center=(inner_rect.centerx, inner_rect.centery - 12)))
+            surface.blit(empty_sub, empty_sub.get_rect(center=(inner_rect.centerx, inner_rect.centery + 16)))
+            return
+
         # 3. Header Row (Height: 46px)
         header_h = 46
         header_rect = pygame.Rect(inner_rect.x, inner_rect.y, inner_rect.width, header_h)
@@ -201,11 +216,11 @@ class HistoryScreenRenderer:
         t_result = self.font_header.render("RESULT", True, (35, 16, 5))
         surface.blit(t_result, t_result.get_rect(center=(col3_cx, header_rect.centery)))
 
-        # 4. Data Rows (5 rows)
+        # 4. Data Rows (up to 5 rows)
         rows_total_h = inner_rect.height - header_h
         row_h = rows_total_h / 5.0
 
-        for i in range(5):
+        for i in range(min(5, len(records))):
             row_y = inner_rect.y + header_h + int(i * row_h)
             row_cy = row_y + int(row_h // 2)
 
@@ -213,19 +228,16 @@ class HistoryScreenRenderer:
             if i > 0:
                 pygame.draw.line(surface, (216, 188, 146), (inner_rect.left + 8, row_y), (inner_rect.right - 8, row_y), 1)
 
-            rec = records[i] if i < len(records) else None
-            if not rec:
-                continue
-
+            rec = records[i]
             rank_num = i + 1
-            player_name = str(rec.get("player_name", "OPERATIVE"))
+            rec_player = str(rec.get("player_name", "OPERATIVE"))
             steps_val = rec.get("steps", 0)
             steps_str = f"{steps_val:02d}" if isinstance(steps_val, int) else str(steps_val)
             result_str = str(rec.get("result", "VICTORY")).upper()
             is_victory = (result_str == "VICTORY")
 
-            # Col 1: Rank + Player Name (e.g., "1. Bravo42")
-            col1_str = f"{rank_num}. {player_name}"
+            # Col 1: Rank + Player Name (e.g., "1. Shanu")
+            col1_str = f"{rank_num}. {rec_player}"
             col1_surf = self.font_row.render(col1_str, True, (35, 16, 5))
             surface.blit(col1_surf, (col1_x, row_cy - col1_surf.get_height() // 2))
 
@@ -242,9 +254,10 @@ class HistoryScreenRenderer:
         self,
         surface: pygame.Surface,
         win_rate: int,
-        best_steps: int,
+        best_steps: Optional[int],
         records: List[Dict[str, Any]],
         btn_back: UIButton,
+        player_name: Optional[str] = None,
     ) -> None:
         """Render complete Dungeon Records screen matching media_1795247905616_e748fa1b.jpg."""
         # 1. Dungeon stone background
@@ -292,18 +305,22 @@ class HistoryScreenRenderer:
         draw_adventure_title(surface, "DUNGEON", 68, self.font_title, cx)
         draw_adventure_title(surface, "RECORDS", 126, self.font_title, cx)
 
-        # 5. Stats Plaque: "WIN RATE: 75% | BEST: 12 STEPS"
-        plaque_w, plaque_h = 360, 36
+        # 5. Stats Plaque: "WIN RATE: 75% | BEST: 12 STEPS" (Loaded from DB)
+        plaque_w, plaque_h = 390, 36
         plaque_rect = pygame.Rect(cx - plaque_w // 2, 206, plaque_w, plaque_h)
-        best_str = f"{best_steps} STEPS" if best_steps else "--"
-        plaque_text = f"WIN RATE: {win_rate}%  |  BEST: {best_str}"
+        best_str = f"{best_steps} STEPS" if (best_steps is not None and best_steps > 0) else "--"
+        win_str = f"{win_rate}%" if records else "--%"
+        if player_name and player_name != "GLOBAL":
+            plaque_text = f"{player_name.upper()}  |  WIN: {win_str}  |  BEST: {best_str}"
+        else:
+            plaque_text = f"WIN RATE: {win_str}  |  BEST: {best_str}"
         self.draw_stats_plaque(surface, plaque_rect, plaque_text)
 
         # 6. Inner Carved Wood Frame / Records Table Board
         table_w = 444
         table_h = 360
         table_rect = pygame.Rect(cx - table_w // 2, 260, table_w, table_h)
-        self.draw_records_table(surface, table_rect, records)
+        self.draw_records_table(surface, table_rect, records, player_name=player_name)
 
         # 7. Action Button: [ BACK TO MENU ]
         btn_back.rect = pygame.Rect(cx - 135, 642, 270, 48)

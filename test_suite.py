@@ -151,6 +151,35 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertEqual(prog3[2]["status"], "UNLOCKED")
         self.assertEqual(prog3[3]["status"], "LOCKED")
 
+    def test_player_specific_database_stats_and_history(self) -> None:
+        """Verify that best score and history strictly filter to the specific active player from SQLite."""
+        # 1. Player 'Shanu' with 2 missions: 1 victory (10 steps) and 1 defeat
+        self.db.save_match_result("Shanu", 10, "VICTORY", level_num=1, grid_size=5, difficulty="RECRUIT")
+        self.db.save_match_result("Shanu", 14, "DEFEAT", level_num=2, grid_size=7, difficulty="RECRUIT")
+
+        # 2. Player 'Aria' with 1 victory (8 steps)
+        self.db.save_match_result("Aria", 8, "VICTORY", level_num=1, grid_size=7, difficulty="TACTICAL")
+
+        # 3. Verify Shanu's personal best is 10, NOT Aria's 8
+        shanu_best = self.db.get_best_victory_steps("Shanu")
+        self.assertEqual(shanu_best, 10)
+        aria_best = self.db.get_best_victory_steps("Aria")
+        self.assertEqual(aria_best, 8)
+
+        # 4. Verify Shanu's summary has win rate 50% (1/2) and 2 records, all for 'Shanu'
+        shanu_summary = self.db.get_dungeon_records_summary(player_name="Shanu")
+        self.assertEqual(shanu_summary["win_rate"], 50)
+        self.assertEqual(shanu_summary["best_steps"], 10)
+        self.assertEqual(len(shanu_summary["records"]), 2)
+        for rec in shanu_summary["records"]:
+            self.assertEqual(rec["player_name"], "Shanu")
+
+        # 5. Brand new player 'GhostOperative' has no records
+        ghost_summary = self.db.get_dungeon_records_summary(player_name="GhostOperative")
+        self.assertEqual(ghost_summary["win_rate"], 0)
+        self.assertIsNone(ghost_summary["best_steps"])
+        self.assertEqual(len(ghost_summary["records"]), 0)
+
 
 class TestGeminiTacticalAI(unittest.TestCase):
     """Test suite for Gemini Tactical AI and fallback mechanisms."""

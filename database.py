@@ -682,67 +682,116 @@ class DatabaseManager:
             finally:
                 conn.close()
 
-    def get_dungeon_records_summary(self) -> Dict[str, Any]:
+    def get_dungeon_records_summary(self, player_name: Optional[str] = None) -> Dict[str, Any]:
         """
         Fetch summary statistics and recent mission logs for the Dungeon Records screen.
-        Matches the layout and data fields of media_1795247905616_e748fa1b.jpg.
+        If player_name is provided, computes win rate, best victory steps, and recent missions
+        specifically for that operative from the SQLite database.
+
+        Args:
+            player_name: Optional player callsign to filter records by.
 
         Returns:
             Dictionary containing:
                 - win_rate: Integer percentage (e.g. 75).
-                - best_steps: Lowest victory step count (e.g. 12).
-                - records: List of 5 recent match dictionaries with player_name, steps, result.
+                - best_steps: Lowest victory step count (or None if no victory yet).
+                - records: List of up to 5 recent match dictionaries with player_name, steps, result.
+                - player_name: Callsign queried.
+                - total_missions: Total count of runs.
         """
+        cleaned_user = player_name.strip() if player_name and player_name.strip() else None
+
         with self._lock:
             conn = self._get_connection()
             try:
                 cursor = conn.cursor()
-                # 1. Compute Win Rate
-                cursor.execute(
-                    """
-                    SELECT COUNT(*) AS total,
-                           SUM(CASE WHEN result = 'VICTORY' THEN 1 ELSE 0 END) AS wins
-                    FROM game_history;
-                    """
-                )
-                row_stats = cursor.fetchone()
-                total = row_stats["total"] if row_stats and row_stats["total"] else 0
-                wins = row_stats["wins"] if row_stats and row_stats["wins"] else 0
-                win_rate = int((wins / total) * 100) if total > 0 else 75
+                if cleaned_user:
+                    # 1. Compute Win Rate for specific operative
+                    cursor.execute(
+                        """
+                        SELECT COUNT(*) AS total,
+                               SUM(CASE WHEN result = 'VICTORY' THEN 1 ELSE 0 END) AS wins
+                        FROM game_history
+                        WHERE player_name = ? COLLATE NOCASE;
+                        """,
+                        (cleaned_user,)
+                    )
+                    row_stats = cursor.fetchone()
+                    total = row_stats["total"] if row_stats and row_stats["total"] else 0
+                    wins = row_stats["wins"] if row_stats and row_stats["wins"] else 0
+                    win_rate = int((wins / total) * 100) if total > 0 else 0
 
-                # 2. Compute Best Victory Steps
-                cursor.execute("SELECT MIN(steps) AS best FROM game_history WHERE result = 'VICTORY';")
-                row_best = cursor.fetchone()
-                best = row_best["best"] if row_best and row_best["best"] is not None else 12
+                    # 2. Compute Best Victory Steps for specific operative
+                    cursor.execute(
+                        """
+                        SELECT MIN(steps) AS best
+                        FROM game_history
+                        WHERE result = 'VICTORY' AND player_name = ? COLLATE NOCASE;
+                        """,
+                        (cleaned_user,)
+                    )
+                    row_best = cursor.fetchone()
+                    best = row_best["best"] if row_best and row_best["best"] is not None else None
 
-                # 3. Fetch up to 5 recent matches
-                cursor.execute(
-                    """
-                    SELECT player_name, steps, result, timestamp
-                    FROM game_history
-                    ORDER BY id DESC
-                    LIMIT 5;
-                    """
-                )
-                rows = cursor.fetchall()
-                records = [dict(r) for r in rows]
+                    # 3. Fetch up to 5 recent matches for specific operative
+                    cursor.execute(
+                        """
+                        SELECT player_name, steps, result, timestamp, level_num, grid_size, difficulty
+                        FROM game_history
+                        WHERE player_name = ? COLLATE NOCASE
+                        ORDER BY id DESC
+                        LIMIT 5;
+                        """,
+                        (cleaned_user,)
+                    )
+                    rows = cursor.fetchall()
+                    records = [dict(r) for r in rows]
 
-                # Sample fallback records matching reference mockup if database has fewer than 5
-                mockup_defaults = [
-                    {"player_name": "Bravo42", "steps": 12, "result": "VICTORY"},
-                    {"player_name": "Bravo42", "steps": 14, "result": "VICTORY"},
-                    {"player_name": "Aria_99", "steps": 15, "result": "VICTORY"},
-                    {"player_name": "Bravo42", "steps": 9,  "result": "DEFEAT"},
-                    {"player_name": "Kazi_07", "steps": 18, "result": "VICTORY"},
-                ]
-                if len(records) < 5:
-                    records = records + mockup_defaults[len(records):]
+                    return {
+                        "win_rate": win_rate,
+                        "best_steps": best,
+                        "records": records,
+                        "player_name": cleaned_user,
+                        "total_missions": total,
+                    }
+                else:
+                    # Global records across all operatives
+                    cursor.execute(
+                        """
+                        SELECT COUNT(*) AS total,
+                               SUM(CASE WHEN result = 'VICTORY' THEN 1 ELSE 0 END) AS wins
+                        FROM game_history;
+                        """
+                    )
+                    row_stats = cursor.fetchone()
+                    total = row_stats["total"] if row_stats and row_stats["total"] else 0
+                    wins = row_stats["wins"] if row_stats and row_stats["wins"] else 0
+                    win_rate = int((wins / total) * 100) if total > 0 else 0
 
-                return {
-                    "win_rate": win_rate,
-                    "best_steps": best,
-                    "records": records[:5]
-                }
+                    # Global best steps
+                    cursor.execute("SELECT MIN(steps) AS best FROM game_history WHERE result = 'VICTORY';")
+                    row_best = cursor.fetchone()
+                    best = row_best["best"] if row_best and row_best["best"] is not None else None
+
+                    # Up to 5 recent matches
+                    cursor.execute(
+                        """
+                        SELECT player_name, steps, result, timestamp, level_num, grid_size, difficulty
+                        FROM game_history
+                        ORDER BY id DESC
+                        LIMIT 5;
+                        """
+                    )
+                    rows = cursor.fetchall()
+                    records = [dict(r) for r in rows]
+
+                    return {
+                        "win_rate": win_rate,
+                        "best_steps": best,
+                        "records": records,
+                        "player_name": "GLOBAL",
+                        "total_missions": total,
+                    }
             finally:
                 conn.close()
 

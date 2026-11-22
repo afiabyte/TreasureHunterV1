@@ -119,7 +119,7 @@ class GameEngine:
         # Game Over Status Tracking
         self.is_victory: bool = False
         self.is_new_best_record: bool = False
-        self.best_victory_steps: Optional[int] = self.db.get_best_victory_steps()
+        self.best_victory_steps: Optional[int] = self.db.get_best_victory_steps(self.current_user)
 
         # Visual Grid Geometry Cache (origin_x, origin_y, cell_size)
         self.origin_x: float = 0.0
@@ -157,8 +157,9 @@ class GameEngine:
         self.env.sync_pixel_targets(self.origin_x, self.origin_y, self.cell_size)
         self.env.snap_visuals_to_targets()
 
-        # Query all-time best score from SQLite for HUD display
-        self.best_victory_steps = self.db.get_best_victory_steps()
+        # Query active operative profile and best score from SQLite for HUD display
+        self.user_stats = self.db.get_operative(self.player_name)
+        self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
 
         # Reset AI caches and timers
         self.cached_recommended_path = []
@@ -566,6 +567,13 @@ class GameEngine:
 
         # 3. Text input field for player callsign
         self.ui.input_player_name.handle_event(event)
+        # Dynamically sync active operative's DB stats (best steps, level) as player types
+        current_input = self.ui.input_player_name.text.strip()
+        if current_input and current_input != self.player_name:
+            self.player_name = current_input
+            self.current_user = current_input
+            self.user_stats = self.db.get_operative(current_input)
+            self.best_victory_steps = self.db.get_best_victory_steps(current_input)
 
         # 4. Grid size selector buttons (5x5, 7x7 default, 9x9, 11x11)
         for btn in self.ui.grid_buttons:
@@ -913,7 +921,7 @@ class GameEngine:
 
         # Return to Home Menu
         if self.ui.btn_pause_menu.handle_event(event):
-            self.best_victory_steps = self.db.get_best_victory_steps()
+            self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
             self.state = STATE_HOME
             self.sound.play_music("menu")
             return
@@ -927,7 +935,7 @@ class GameEngine:
                     self.start_mission(self.selected_grid_size, self.selected_level, self.player_name)
                     return
                 elif event.key == pygame.K_ESCAPE:
-                    self.best_victory_steps = self.db.get_best_victory_steps()
+                    self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
                     self.state = STATE_HOME
                     self.sound.play_music("menu")
                     return
@@ -950,7 +958,7 @@ class GameEngine:
 
             # Return to Home Menu
             if self.ui.btn_victory_menu.handle_event(event):
-                self.best_victory_steps = self.db.get_best_victory_steps()
+                self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
                 self.state = STATE_HOME
                 self.sound.play_music("menu")
                 return
@@ -962,7 +970,7 @@ class GameEngine:
 
             # Return to Home Menu (Click or [ESC])
             if self.ui.btn_defeat_menu.handle_event(event) or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                self.best_victory_steps = self.db.get_best_victory_steps()
+                self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
                 self.state = STATE_HOME
                 self.sound.play_music("menu")
                 return
@@ -1091,12 +1099,14 @@ class GameEngine:
             )
 
         elif self.state == STATE_HISTORY:
-            summary = self.db.get_dungeon_records_summary()
+            active_player = self.player_name or self.current_user
+            summary = self.db.get_dungeon_records_summary(player_name=active_player)
             self.ui.draw_history_screen(
                 self.screen,
                 win_rate=summary["win_rate"],
                 best_steps=summary["best_steps"],
                 records=summary["records"],
+                player_name=active_player,
             )
 
         elif self.state == STATE_HOW_TO_PLAY:

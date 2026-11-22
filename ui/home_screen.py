@@ -214,10 +214,14 @@ class HomeScreenRenderer:
         draw_adventure_title(surface, "TREASURE", 70, font_title_top, cx)
         draw_adventure_title(surface, "HUNTER", 118, font_title_bot, cx)
 
-        # 4. Trophies & Stats Badges (Side-by-side)
-        best_text = f"BEST: {best_victory_steps} STEPS" if best_victory_steps is not None else "BEST: 14 STEPS"
-        victories = user_stats.get("victories", 0) if user_stats else 11
-        user_level = max(1, min(10, 1 + victories))
+        # 4. Trophies & Stats Badges (Side-by-side) - Dynamically loaded from active player's database record
+        best_text = f"BEST: {best_victory_steps} STEPS" if (best_victory_steps is not None and best_victory_steps > 0) else "BEST: --"
+        if user_stats and user_stats.get("unlocked_level"):
+            user_level = max(1, min(10, int(user_stats["unlocked_level"])))
+        elif user_stats and "victories" in user_stats:
+            user_level = max(1, min(10, 1 + int(user_stats["victories"])))
+        else:
+            user_level = 1
         level_text = f"LEVEL: {user_level} / 10"
 
         if is_tall:

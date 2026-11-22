@@ -520,8 +520,9 @@ class UIManager:
         self,
         surface: pygame.Surface,
         win_rate: int = 75,
-        best_steps: int = 12,
+        best_steps: Optional[int] = 12,
         records: Optional[List[Dict[str, Any]]] = None,
+        player_name: Optional[str] = None,
     ) -> None:
         """Render the exact retro-pixel RPG Dungeon Records screen."""
         self.history_renderer.draw_history_screen(
@@ -530,6 +531,7 @@ class UIManager:
             best_steps=best_steps,
             records=records or [],
             btn_back=self.btn_history_back,
+            player_name=player_name,
         )
 
     def draw_grid_environment(
