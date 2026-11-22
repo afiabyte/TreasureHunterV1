@@ -273,8 +273,10 @@ class UIManager:
         )
         self.btn_logout = UIButton(pygame.Rect(cx - 190, 622, 180, 38), "SWITCH USER", self.font_small,
                                    accent_color=COLOR_TEXT_ACCENT_AMBER)
-        self.btn_pause = UIButton(pygame.Rect(self.screen_width - 130, 16, 110, 32), "|| PAUSE", self.font_badge,
+        self.btn_pause = UIButton(pygame.Rect(self.screen_width - 230, 12, 102, 32), "|| PAUSE", self.font_badge,
                                   accent_color=COLOR_TEXT_ACCENT_AMBER)
+        self.btn_in_game_exit = UIButton(pygame.Rect(self.screen_width - 118, 12, 102, 32), "EXIT", self.font_badge,
+                                         style="red_pill")
         self.btn_back_to_menu = UIButton(pygame.Rect(self.screen_width // 2 - 110, 680, 220, 42),
                                          "<< RETURN", self.font_header)
 

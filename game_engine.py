@@ -811,6 +811,26 @@ class GameEngine:
         if not self.env:
             return
 
+        # 0. Check Exit Confirmation Modal if open during gameplay
+        if getattr(self.ui, "show_exit_modal", False):
+            if self.ui.btn_exit_confirm.handle_event(event) or (event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_y)):
+                self.ui.show_exit_modal = False
+                self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
+                self.state = STATE_HOME
+                self.sound.play_music("menu")
+                return
+            if self.ui.btn_exit_cancel.handle_event(event) or (event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_n)):
+                self.ui.show_exit_modal = False
+                self.sound.play_step()
+                return
+            return
+
+        # Check Click on In-Game Top-Right EXIT Button
+        if hasattr(self.ui, "btn_in_game_exit") and self.ui.btn_in_game_exit.handle_event(event):
+            self.ui.show_exit_modal = True
+            self.sound.play_step()
+            return
+
         # Check Click on Top-Right Pause Button
         if self.ui.btn_pause.handle_event(event):
             self.state = STATE_PAUSED
@@ -898,6 +918,26 @@ class GameEngine:
 
     def _handle_paused_events(self, event: pygame.event.Event) -> None:
         """Handle inputs while the game is in Tactical Pause state."""
+        # 0. Check Exit Confirmation Modal if open during pause
+        if getattr(self.ui, "show_exit_modal", False):
+            if self.ui.btn_exit_confirm.handle_event(event) or (event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_y)):
+                self.ui.show_exit_modal = False
+                self.best_victory_steps = self.db.get_best_victory_steps(self.player_name)
+                self.state = STATE_HOME
+                self.sound.play_music("menu")
+                return
+            if self.ui.btn_exit_cancel.handle_event(event) or (event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_n)):
+                self.ui.show_exit_modal = False
+                self.sound.play_step()
+                return
+            return
+
+        # In-game EXIT button in paused state
+        if hasattr(self.ui, "btn_in_game_exit") and self.ui.btn_in_game_exit.handle_event(event):
+            self.ui.show_exit_modal = True
+            self.sound.play_step()
+            return
+
         # Top-right button or Resume button resumes gameplay
         if self.ui.btn_pause.handle_event(event) or self.ui.btn_pause_resume.handle_event(event):
             self.state = STATE_PLAYING
@@ -1151,8 +1191,10 @@ class GameEngine:
                 commander_order=self.cached_commander_order,
             )
 
-            # 3. Draw Quick Pause Button (visible during active mission & pause)
+            # 3. Draw Quick Pause and In-Game Exit Buttons (visible during active mission & pause)
             self.ui.btn_pause.draw(self.screen)
+            if hasattr(self.ui, "btn_in_game_exit"):
+                self.ui.btn_in_game_exit.draw(self.screen)
 
             # 4. Draw Standby Banner if in reconnaissance countdown
             if self.state == STATE_PLAYING and self.standby_timer > 0:
@@ -1196,6 +1238,10 @@ class GameEngine:
                     has_key=self.env.has_key,
                     defeat_cause="CAPTURED BY HUNTER",
                 )
+
+        # Global Exit Confirmation Modal overlay (if triggered from in-game or paused)
+        if getattr(self.ui, "show_exit_modal", False) and self.state != STATE_HOME:
+            self.ui.draw_exit_modal(self.screen)
 
         pygame.display.flip()
 

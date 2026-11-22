@@ -789,6 +789,73 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         engine._handle_home_events(confirm_click)
         self.assertFalse(engine.is_running)
 
+    def test_in_game_exit_button_and_modal_flow(self) -> None:
+        """Verify in-game EXIT button in 11x11, modal popup, cancellation, and returning to home."""
+        test_db = "test_dungeon_records.db"
+        engine = GameEngine(db_path=test_db)
+        engine.start_mission(grid_size=11, level=1, player_name="TestOp")
+        self.assertEqual(engine.state, STATE_PLAYING)
+        self.assertFalse(engine.ui.show_exit_modal)
+        self.assertTrue(hasattr(engine.ui, "btn_in_game_exit"))
+
+        # Verify button geometry is at top right
+        self.assertGreaterEqual(engine.ui.btn_in_game_exit.rect.right, engine.screen_width - 125)
+        self.assertLessEqual(engine.ui.btn_in_game_exit.rect.top, 25)
+
+        # Click in-game EXIT button
+        exit_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_in_game_exit.rect.center)
+        engine._handle_playing_events(exit_click)
+        self.assertTrue(engine.ui.show_exit_modal)
+
+        # Call render to compute modal button layout
+        engine.render()
+
+        # Cancel exit modal via Cancel button
+        cancel_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_exit_cancel.rect.center)
+        engine._handle_playing_events(cancel_click)
+        self.assertFalse(engine.ui.show_exit_modal)
+        self.assertEqual(engine.state, STATE_PLAYING)
+
+        # Reopen exit modal via in-game EXIT button and confirm quit
+        engine._handle_playing_events(exit_click)
+        self.assertTrue(engine.ui.show_exit_modal)
+        engine.render()
+
+        confirm_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_exit_confirm.rect.center)
+        engine._handle_playing_events(confirm_click)
+        self.assertFalse(engine.ui.show_exit_modal)
+        self.assertEqual(engine.state, STATE_HOME)
+
+    def test_grid_geometry_margins_all_sizes(self) -> None:
+        """Verify that 5x5, 7x7, 9x9, and 11x11 grids fit cleanly above the HUD console."""
+        test_db = "test_dungeon_records.db"
+        engine = GameEngine(db_path=test_db)
+        hud_top = engine.screen_height - engine.ui.hud_height  # 780 - 155 = 625
+
+        for g_size in [5, 7, 9, 11]:
+            ox, oy, cs = engine.ui.compute_grid_geometry(g_size)
+            grid_bottom = oy + g_size * cs
+            # Must leave at least 10px margin above the HUD
+            self.assertLess(grid_bottom, hud_top - 10, f"Grid {g_size}x{g_size} bottom {grid_bottom} overlaps HUD top {hud_top}")
+            # Must start below the top header buttons
+            self.assertGreaterEqual(oy, 50.0, f"Grid {g_size}x{g_size} top {oy} is too high")
+
+    def test_exit_gateway_rendering_11x11_and_7x7(self) -> None:
+        """Verify exit gateway rendering works for both locked and unlocked states on 11x11 and 7x7."""
+        test_db = "test_dungeon_records.db"
+        engine = GameEngine(db_path=test_db)
+        for g_size in [11, 7]:
+            engine.start_mission(grid_size=g_size, level=1, player_name="TestOp")
+            engine.standby_timer = 0.0
+
+            # Render locked
+            engine.env.has_key = False
+            engine.render()
+
+            # Render unlocked
+            engine.env.has_key = True
+            engine.render()
+
 
 if __name__ == "__main__":
     unittest.main()
