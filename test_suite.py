@@ -23,7 +23,7 @@ import pygame
 from database import DatabaseManager
 from ai_tactical import GeminiTacticalAI, TacticalDecision
 from environment import GridEnvironment, Hunter
-from game_engine import GameEngine, STATE_HOME, STATE_HOW_TO_PLAY, STATE_LEVEL_SELECT, STATE_PLAYING, STATE_GAME_OVER
+from game_engine import GameEngine, STATE_HOME, STATE_HOW_TO_PLAY, STATE_LEVEL_SELECT, STATE_PLAYING, STATE_GAME_OVER, STATE_PAUSED
 
 
 class TestDatabaseManager(unittest.TestCase):
@@ -789,41 +789,21 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         engine._handle_home_events(confirm_click)
         self.assertFalse(engine.is_running)
 
-    def test_in_game_exit_button_and_modal_flow(self) -> None:
-        """Verify in-game EXIT button in 11x11, modal popup, cancellation, and returning to home."""
+    def test_pause_exit_modal_flow(self) -> None:
+        """Verify pause menu Quit to Menu flow returns cleanly to STATE_HOME."""
         test_db = "test_dungeon_records.db"
         engine = GameEngine(db_path=test_db)
         engine.start_mission(grid_size=11, level=1, player_name="TestOp")
         self.assertEqual(engine.state, STATE_PLAYING)
-        self.assertFalse(engine.ui.show_exit_modal)
-        self.assertTrue(hasattr(engine.ui, "btn_in_game_exit"))
 
-        # Verify button geometry is at top right
-        self.assertGreaterEqual(engine.ui.btn_in_game_exit.rect.right, engine.screen_width - 125)
-        self.assertLessEqual(engine.ui.btn_in_game_exit.rect.top, 25)
+        # Pause game
+        pause_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_pause.rect.center)
+        engine._handle_playing_events(pause_click)
+        self.assertEqual(engine.state, STATE_PAUSED)
 
-        # Click in-game EXIT button
-        exit_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_in_game_exit.rect.center)
-        engine._handle_playing_events(exit_click)
-        self.assertTrue(engine.ui.show_exit_modal)
-
-        # Call render to compute modal button layout
-        engine.render()
-
-        # Cancel exit modal via Cancel button
-        cancel_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_exit_cancel.rect.center)
-        engine._handle_playing_events(cancel_click)
-        self.assertFalse(engine.ui.show_exit_modal)
-        self.assertEqual(engine.state, STATE_PLAYING)
-
-        # Reopen exit modal via in-game EXIT button and confirm quit
-        engine._handle_playing_events(exit_click)
-        self.assertTrue(engine.ui.show_exit_modal)
-        engine.render()
-
-        confirm_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_exit_confirm.rect.center)
-        engine._handle_playing_events(confirm_click)
-        self.assertFalse(engine.ui.show_exit_modal)
+        # Click Quit to Menu returns to STATE_HOME
+        quit_click = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=engine.ui.btn_pause_menu.rect.center)
+        engine._handle_paused_events(quit_click)
         self.assertEqual(engine.state, STATE_HOME)
 
     def test_grid_geometry_margins_all_sizes(self) -> None:

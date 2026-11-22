@@ -825,12 +825,6 @@ class GameEngine:
                 return
             return
 
-        # Check Click on In-Game Top-Right EXIT Button
-        if hasattr(self.ui, "btn_in_game_exit") and self.ui.btn_in_game_exit.handle_event(event):
-            self.ui.show_exit_modal = True
-            self.sound.play_step()
-            return
-
         # Check Click on Top-Right Pause Button
         if self.ui.btn_pause.handle_event(event):
             self.state = STATE_PAUSED
@@ -930,12 +924,6 @@ class GameEngine:
                 self.ui.show_exit_modal = False
                 self.sound.play_step()
                 return
-            return
-
-        # In-game EXIT button in paused state
-        if hasattr(self.ui, "btn_in_game_exit") and self.ui.btn_in_game_exit.handle_event(event):
-            self.ui.show_exit_modal = True
-            self.sound.play_step()
             return
 
         # Top-right button or Resume button resumes gameplay
@@ -1191,10 +1179,8 @@ class GameEngine:
                 commander_order=self.cached_commander_order,
             )
 
-            # 3. Draw Quick Pause and In-Game Exit Buttons (visible during active mission & pause)
+            # 3. Draw Quick Pause Button (visible during active mission & pause)
             self.ui.btn_pause.draw(self.screen)
-            if hasattr(self.ui, "btn_in_game_exit"):
-                self.ui.btn_in_game_exit.draw(self.screen)
 
             # 4. Draw Standby Banner if in reconnaissance countdown
             if self.state == STATE_PLAYING and self.standby_timer > 0:

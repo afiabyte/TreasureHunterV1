@@ -265,97 +265,53 @@ class GameViewRenderer:
                     surface.blit(w_lbl_s, w_rc.move(ox, oy))
                 surface.blit(w_lbl, w_rc)
 
-        # 6. EXIT GATEWAY: Carved Stone Archway & Extraction Portal
+        # 6. EXIT GATEWAY: Carved Stone Archway matching reference media_1795391199225_787dcc85.png 1:1
         ex_x = origin_x + exit_pos[1] * cell_size
         ex_y = origin_y + exit_pos[0] * cell_size
         cell_exit_rect = pygame.Rect(ex_x + 3, ex_y + 3, cell_size - 6, cell_size - 6)
 
-        # Base Extraction Threshold Rug / Stone Slab matching dungeon palette
-        threshold_rect = cell_exit_rect.inflate(-4, -4)
-        if has_key:
-            # Pulsating emerald extraction portal floor
-            pygame.draw.rect(surface, (18, 55, 32), threshold_rect, border_radius=3)
-            pygame.draw.rect(surface, (45, 185, 95), threshold_rect, width=2, border_radius=3)
-        else:
-            # Locked dark iron/ruby rune stone threshold
-            pygame.draw.rect(surface, (45, 24, 22), threshold_rect, border_radius=3)
-            pygame.draw.rect(surface, (110, 48, 42), threshold_rect, width=2, border_radius=3)
-
-        # Top stone lintel inside the cell
-        lintel_h = max(18, int(cell_size * 0.28))
+        # Lintel stone height (approx 40% of the cell)
+        lintel_h = max(20, int(cell_size * 0.40))
         lintel_rect = pygame.Rect(cell_exit_rect.left, cell_exit_rect.top, cell_exit_rect.width, lintel_h)
         gate_rect = pygame.Rect(cell_exit_rect.left, cell_exit_rect.top + lintel_h, cell_exit_rect.width, cell_exit_rect.height - lintel_h)
 
-        # Lintel stone block with moss
-        pygame.draw.rect(surface, (155, 136, 102), lintel_rect, border_top_left_radius=3, border_top_right_radius=3)
-        pygame.draw.rect(surface, (120, 102, 74), lintel_rect.inflate(-4, -4), border_top_left_radius=2, border_top_right_radius=2)
-        pygame.draw.rect(surface, (42, 30, 18), lintel_rect, width=2, border_top_left_radius=3, border_top_right_radius=3)
+        # Stone archway outer boundary with rounded top corners
+        pygame.draw.rect(surface, (120, 102, 74), lintel_rect, border_top_left_radius=4, border_top_right_radius=4)
+        pygame.draw.rect(surface, (148, 130, 98), lintel_rect.inflate(-4, -4), border_top_left_radius=3, border_top_right_radius=3)
+        pygame.draw.rect(surface, (42, 30, 18), lintel_rect, width=2, border_top_left_radius=4, border_top_right_radius=4)
 
-        # "EXIT" text dynamically scaled to fit lintel perfectly
-        font_exit_sz = max(11, min(20, int(lintel_h * 0.72)))
+        # "EXIT" carved text matching reference: cream/yellow bold Impact font with dark outline
+        font_exit_sz = max(11, min(22, int(lintel_h * 0.65)))
         font_exit_dynamic = pygame.font.SysFont("impact", font_exit_sz)
-        exit_col = (120, 255, 160) if has_key else (255, 235, 160)
+        exit_col = (251, 231, 158)
         exit_txt = font_exit_dynamic.render("EXIT", True, exit_col)
-        exit_txt_s = font_exit_dynamic.render("EXIT", True, (14, 10, 8))
+        exit_txt_s = font_exit_dynamic.render("EXIT", True, (24, 16, 10))
         e_rc = exit_txt.get_rect(center=lintel_rect.center)
-        for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1)]:
+        for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-2, 0), (2, 0), (0, -2), (0, 2)]:
             surface.blit(exit_txt_s, e_rc.move(ox, oy))
         surface.blit(exit_txt, e_rc)
 
-        # Dark dungeon pit behind gate
+        # Dark dungeon chamber pit behind gate
         pygame.draw.rect(surface, (14, 12, 16), gate_rect)
         pygame.draw.rect(surface, (42, 30, 18), gate_rect, width=2)
 
+        # 5 Vertical iron portcullis bars matching reference
+        num_bars = 5
+        bar_gap = gate_rect.width / (num_bars + 1)
+        bar_h = gate_rect.height if not has_key else max(4, int(gate_rect.height * 0.25))
+
+        for i in range(1, num_bars + 1):
+            bx = int(gate_rect.left + i * bar_gap)
+            pygame.draw.line(surface, (24, 25, 28), (bx, gate_rect.top), (bx, gate_rect.top + bar_h), 4)
+            pygame.draw.line(surface, (68, 72, 82), (bx, gate_rect.top), (bx, gate_rect.top + bar_h), 3)
+            pygame.draw.line(surface, (130, 138, 150), (bx - 1, gate_rect.top), (bx - 1, gate_rect.top + bar_h), 1)
+
+        # When key collected: gate is open with subtle warm escape radiance
         if has_key:
-            # PORTAL UNLOCKED: Open gateway with radiant emerald extraction vortex
-            p_glow = 1.0 + 0.18 * math.sin(anim_time * 5.5)
-            portal_cx = int(gate_rect.centerx)
-            portal_cy = int(gate_rect.centery)
-
-            # Translucent green portal vortex aura
-            aura_dim = int(cell_size * 1.5)
-            portal_surf = pygame.Surface((aura_dim, aura_dim), pygame.SRCALPHA)
-            p_rad1 = int(cell_size * 0.36 * p_glow)
-            p_rad2 = int(cell_size * 0.22 * p_glow)
-            p_rad3 = int(cell_size * 0.12 * p_glow)
-            pygame.draw.circle(portal_surf, (35, 235, 110, 55), (aura_dim // 2, aura_dim // 2), p_rad1)
-            pygame.draw.circle(portal_surf, (70, 255, 150, 95), (aura_dim // 2, aura_dim // 2), p_rad2)
-            pygame.draw.circle(portal_surf, (220, 255, 235, 140), (aura_dim // 2, aura_dim // 2), p_rad3)
-            surface.blit(portal_surf, portal_surf.get_rect(center=(portal_cx, portal_cy)))
-
-            # Swirling extraction rings
-            pygame.draw.circle(surface, (40, 240, 120), (portal_cx, portal_cy), max(4, int(cell_size * 0.18)), 2)
-            pygame.draw.circle(surface, (180, 255, 210), (portal_cx, portal_cy), max(2, int(cell_size * 0.08)))
-
-            # 4 diamond beacon sparkles around the open exit
-            for i in range(4):
-                sp_ang = anim_time * 3.0 + i * (math.pi / 2.0)
-                sp_dist = cell_size * 0.24
-                sp_x = int(portal_cx + math.cos(sp_ang) * sp_dist)
-                sp_y = int(portal_cy + math.sin(sp_ang) * sp_dist)
-                pygame.draw.line(surface, (200, 255, 220), (sp_x - 3, sp_y), (sp_x + 3, sp_y), 1)
-                pygame.draw.line(surface, (200, 255, 220), (sp_x, sp_y - 3), (sp_x, sp_y + 3), 1)
-        else:
-            # PORTAL LOCKED: Portcullis iron bars and locked heavy padlock
-            num_bars = 5
-            bar_gap = gate_rect.width / (num_bars + 1)
-            for i in range(1, num_bars + 1):
-                bx = int(gate_rect.left + i * bar_gap)
-                pygame.draw.line(surface, (25, 26, 30), (bx, gate_rect.top), (bx, gate_rect.bottom), 4)
-                pygame.draw.line(surface, (58, 62, 70), (bx, gate_rect.top), (bx, gate_rect.bottom), 3)
-                pygame.draw.line(surface, (130, 138, 150), (bx - 1, gate_rect.top), (bx - 1, gate_rect.bottom), 1)
-
-            # 2 Horizontal crossbars
-            for frac in (0.35, 0.70):
-                cy_bar = int(gate_rect.top + gate_rect.height * frac)
-                pygame.draw.line(surface, (25, 26, 30), (gate_rect.left, cy_bar), (gate_rect.right, cy_bar), 4)
-                pygame.draw.line(surface, (68, 72, 82), (gate_rect.left, cy_bar), (gate_rect.right, cy_bar), 3)
-                pygame.draw.line(surface, (130, 138, 150), (gate_rect.left, cy_bar - 1), (gate_rect.right, cy_bar - 1), 1)
-
-            # Heavy Padlock
-            lock_cx = int(gate_rect.centerx)
-            lock_cy = int(gate_rect.centery + 4)
-            draw_padlock(surface, lock_cx, lock_cy)
+            p_glow = 1.0 + 0.15 * math.sin(anim_time * 5.0)
+            glow_surf = pygame.Surface((gate_rect.width, gate_rect.height), pygame.SRCALPHA)
+            pygame.draw.circle(glow_surf, (255, 225, 100, int(65 * p_glow)), (gate_rect.width // 2, gate_rect.height // 2), int(gate_rect.width * 0.4))
+            surface.blit(glow_surf, gate_rect.topleft)
 
         # 7. GOLDEN DUNGEON KEY ("K") matching crop_key.png
         if not has_key:
