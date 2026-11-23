@@ -40,14 +40,14 @@ class GameViewRenderer:
     def compute_grid_geometry(
         self,
         grid_size: int,
-        hud_height: int = 220
+        hud_height: int = 130
     ) -> Tuple[float, float, float]:
         """
         Dynamically scale cell pixel sizes so the chosen N x N grid fits cleanly
-        centered above the bottom HUD console with generous margins.
+        centered above the bottom HUD console with generous margins (zero overlap).
         """
-        top_margin = 52
-        bottom_limit = self.screen_height - hud_height - 18
+        top_margin = 50
+        bottom_limit = self.screen_height - hud_height - 28
         max_h = bottom_limit - top_margin
         max_w = self.screen_width - 40
 

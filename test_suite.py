@@ -810,7 +810,7 @@ class TestArchitectureAndZeroDeadCode(unittest.TestCase):
         """Verify that 5x5, 7x7, 9x9, and 11x11 grids fit cleanly above the HUD console."""
         test_db = "test_dungeon_records.db"
         engine = GameEngine(db_path=test_db)
-        hud_top = engine.screen_height - engine.ui.hud_height  # 780 - 155 = 625
+        hud_top = engine.screen_height - engine.ui.hud_height - 8  # 780 - 130 - 8 = 642
 
         for g_size in [5, 7, 9, 11]:
             ox, oy, cs = engine.ui.compute_grid_geometry(g_size)

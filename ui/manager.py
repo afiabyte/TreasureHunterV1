@@ -118,8 +118,8 @@ class UIManager:
         self.anim_time = 0.0
 
         # HUD console dimensions
-        self.hud_height = 155
-        self.hud_rect = pygame.Rect(0, self.screen_height - self.hud_height, self.screen_width, self.hud_height)
+        self.hud_height = 130
+        self.hud_rect = pygame.Rect(0, self.screen_height - self.hud_height - 8, self.screen_width, self.hud_height + 8)
 
         # Home Screen widgets
         self.input_player_name = TextInputBox(pygame.Rect(380, 200, 260, 36), self.font_body)

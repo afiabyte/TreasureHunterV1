@@ -22,16 +22,16 @@ import pygame
 class HUDConsoleRenderer:
     """Renders the retro-pixel RPG adventure bottom HUD telemetry dashboard."""
 
-    def __init__(self, screen_width: int = 960, screen_height: int = 780, hud_height: int = 210) -> None:
+    def __init__(self, screen_width: int = 960, screen_height: int = 780, hud_height: int = 130) -> None:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.hud_height = hud_height
 
         # Cached typography matching mockup aesthetics
-        self.font_title = pygame.font.SysFont("impact", 24)
-        self.font_telemetry = pygame.font.SysFont("trebuchetms,tahoma,arial", 19, bold=True)
-        self.font_scroll = pygame.font.SysFont("trebuchetms,tahoma,arial", 20, bold=True)
-        self.font_small = pygame.font.SysFont("trebuchetms,tahoma,arial", 14, bold=True)
+        self.font_title = pygame.font.SysFont("impact", 22)
+        self.font_telemetry = pygame.font.SysFont("trebuchetms,tahoma,arial", 17, bold=True)
+        self.font_scroll = pygame.font.SysFont("trebuchetms,tahoma,arial", 15, bold=True)
+        self.font_small = pygame.font.SysFont("trebuchetms,tahoma,arial", 13, bold=True)
 
     def draw_corner_bracket(self, surface: pygame.Surface, x: int, y: int, is_left: bool, is_top: bool) -> None:
         """Draw 3D golden L-shaped corner bracket with rivet matching crop_hud.png."""
@@ -162,8 +162,8 @@ class HUDConsoleRenderer:
         cx = sheet_rect.centerx
 
         if order_line2:
-            y1 = sheet_rect.centery - 16
-            y2 = sheet_rect.centery + 16
+            y1 = sheet_rect.centery - 10
+            y2 = sheet_rect.centery + 11
         else:
             y1 = sheet_rect.centery
             y2 = None
@@ -204,9 +204,9 @@ class HUDConsoleRenderer:
         """Render the complete retro-pixel RPG HUD console matching media_1795251761856_5273e794.jpg."""
         # Console Dimensions: centered at the bottom matching crop_hud.png
         hud_w = min(730, self.screen_width - 34)
-        hud_h = max(215, min(self.hud_height, 250))
+        hud_h = self.hud_height
         hud_x = (self.screen_width - hud_w) // 2
-        hud_y = self.screen_height - hud_h - 16
+        hud_y = self.screen_height - hud_h - 8
         console_rect = pygame.Rect(hud_x, hud_y, hud_w, hud_h)
 
         # 1. Dark Carved Wood Chassis with rich mahogany/walnut tones
@@ -241,7 +241,7 @@ class HUDConsoleRenderer:
         stat_line1 = f"{level_str} | STEPS: {steps:02d} | KEY: {key_str}"
         t1 = self.font_title.render(stat_line1, True, (255, 238, 135))
         t1_sh = self.font_title.render(stat_line1, True, (16, 6, 2))
-        r1 = t1.get_rect(center=(cx, console_rect.top + 34))
+        r1 = t1.get_rect(center=(cx, console_rect.top + 18))
         for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (0, 2)]:
             surface.blit(t1_sh, r1.move(ox, oy))
         surface.blit(t1, r1)
@@ -251,15 +251,15 @@ class HUDConsoleRenderer:
         stat_line2 = f"AI: {latency_val} | BEST: {best_str}"
         t2 = self.font_telemetry.render(stat_line2, True, (255, 238, 135))
         t2_sh = self.font_telemetry.render(stat_line2, True, (16, 6, 2))
-        r2 = t2.get_rect(center=(cx, console_rect.top + 68))
+        r2 = t2.get_rect(center=(cx, console_rect.top + 38))
         for ox, oy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (0, 2)]:
             surface.blit(t2_sh, r2.move(ox, oy))
         surface.blit(t2, r2)
 
         # 4. Lower Unrolled Ancient Parchment Scroll
         scroll_w = console_rect.width - 48
-        scroll_h = max(96, hud_h - 114)
-        scroll_rect = pygame.Rect(console_rect.left + 24, console_rect.top + 98, scroll_w, scroll_h)
+        scroll_h = max(58, hud_h - 66)
+        scroll_rect = pygame.Rect(console_rect.left + 24, console_rect.top + 52, scroll_w, scroll_h)
 
         # Parse commander order into two balanced lines
         raw_order = commander_order.strip() if commander_order else "Hunter flanking left! Slip behind east blind spot now!"
