@@ -112,6 +112,7 @@ class GeminiTacticalAI:
                             if line.startswith("GEMINI_API_KEY="):
                                 key = line.split("=", 1)[1].strip().strip('"').strip("'")
                                 if key:
+                                    os.environ["GEMINI_API_KEY"] = key
                                     return key
                 except Exception:
                     pass
@@ -153,6 +154,8 @@ class GeminiTacticalAI:
         """
         with self._lock:
             self.api_key = key.strip()
+            if self.api_key:
+                os.environ["GEMINI_API_KEY"] = self.api_key
             self._init_client()
             return self.is_gemini_active
 

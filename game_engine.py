@@ -91,7 +91,7 @@ class GameEngine:
         self.settings_ai_hints: bool = self.settings.get("ai_commander_hints", "true").lower() == "true"
         self.settings_move_animation: str = self.settings.get("move_animation", "SMOOTH")
         self.settings_status: str = ""
-        self.is_api_connected: bool = bool(os.environ.get("GEMINI_API_KEY"))
+        self.is_api_connected: bool = bool(getattr(self.ai, "api_key", None) or os.environ.get("GEMINI_API_KEY"))
 
         # Synchronize UI widgets with persistent settings
         self.ui.toggle_sfx.is_on = self.settings_sfx
@@ -1117,7 +1117,7 @@ class GameEngine:
             self.ui.draw_settings_screen(
                 self.screen,
                 is_smooth_selected=(getattr(self, "settings_move_animation", "SMOOTH") == "SMOOTH"),
-                is_api_connected=getattr(self, "is_api_connected", True),
+                is_api_connected=bool(getattr(self.ai, "api_key", None) or getattr(self, "is_api_connected", False)),
                 status_message=getattr(self, "settings_status", ""),
             )
 
