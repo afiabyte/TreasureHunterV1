@@ -77,13 +77,13 @@ class GeminiTacticalAI:
         self.latency_ms: int = 0
         self.ai_status: str = "INITIALIZING"
         self.is_gemini_active: bool = False
-        self.model_name: str = "gemini-3.8-flash"
+        self.model_name: str = "gemini-3.6-flash"
         self.candidate_models: List[str] = [
+            "gemini-3.6-flash",
+            "gemini-3.5-flash",
+            "gemini-flash-latest",
+            "gemini-3.7-flash",
             "gemini-3.8-flash",
-            "gemini-2.0-flash",
-            "gemini-1.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-2.5-flash",
         ]
 
         # Latest cached decision
@@ -287,6 +287,7 @@ Tactical Directive:
                     is_recoverable = any(k in err_str for k in [
                         "404", "not_found", "not found",
                         "503", "unavailable", "high demand", "overloaded",
+                        "504", "deadline", "timed out",
                         "429", "resource_exhausted", "quota", "rate limit",
                         "500", "internal", "service unavailable"
                     ])
