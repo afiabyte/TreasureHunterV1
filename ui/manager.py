@@ -136,7 +136,7 @@ class UIManager:
             pygame.Rect(bx, card_y + 44, bw, bh), self.font_input, placeholder="Enter username...",
             style="wood_recessed", text_align="center", allow_lower=True, allow_symbols=True, max_length=24
         )
-        self.input_login_username.text = "afiabyte"
+        self.input_login_username.text = ""
         self.input_login_username.is_active = True
         self.input_login_password = TextInputBox(
             pygame.Rect(bx, card_y + 136, bw, bh), self.font_input, placeholder="••••••••",
@@ -219,7 +219,7 @@ class UIManager:
             style="wood_recessed",
             text_align="center"
         )
-        self.input_player_name.text = "afiabyte"
+        self.input_player_name.text = ""
 
         self.grid_buttons: List[UIButton] = []
         sizes = [5, 7, 9, 11]

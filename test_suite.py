@@ -64,27 +64,27 @@ class TestDatabaseManager(unittest.TestCase):
 
     def test_operative_login_and_stats(self) -> None:
         """Verify operative registration, login timestamp, and stats accumulation."""
-        op = self.db.login_or_register_operative("afiabyte")
-        self.assertEqual(op["username"], "afiabyte")
+        op = self.db.login_or_register_operative("TestOp")
+        self.assertEqual(op["username"], "TestOp")
         self.assertEqual(op["total_missions"], 0)
 
         # Record victory
-        self.db.save_match_result("afiabyte", 25, "VICTORY")
-        op_updated = self.db.get_operative("afiabyte")
+        self.db.save_match_result("TestOp", 25, "VICTORY")
+        op_updated = self.db.get_operative("TestOp")
         self.assertEqual(op_updated["total_missions"], 1)
         self.assertEqual(op_updated["victories"], 1)
         self.assertEqual(op_updated["best_steps"], 25)
 
         # Record another better victory
-        self.db.save_match_result("afiabyte", 19, "VICTORY")
-        op_updated2 = self.db.get_operative("afiabyte")
+        self.db.save_match_result("TestOp", 19, "VICTORY")
+        op_updated2 = self.db.get_operative("TestOp")
         self.assertEqual(op_updated2["total_missions"], 2)
         self.assertEqual(op_updated2["victories"], 2)
         self.assertEqual(op_updated2["best_steps"], 19)
 
         # Recent operatives check
         recent = self.db.get_recent_operatives(5)
-        self.assertTrue(any(r["username"] == "afiabyte" for r in recent))
+        self.assertTrue(any(r["username"] == "TestOp" for r in recent))
 
     def test_account_registration_and_authentication(self) -> None:
         """Verify new operative registration with email and password hashing."""
@@ -319,13 +319,14 @@ class TestGameEngineIntegration(unittest.TestCase):
         engine.render()
 
         # Simulate login submission
+        engine.ui.input_login_username.text = "TestOp"
         event_login = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
         engine._handle_login_events(event_login)
         self.assertEqual(engine.state, STATE_HOME)
-        self.assertEqual(engine.current_user, "afiabyte")
+        self.assertEqual(engine.current_user, "TestOp")
 
         # Start mission
-        engine.start_mission(grid_size=7, level=2, player_name="afiabyte")
+        engine.start_mission(grid_size=7, level=2, player_name="TestOp")
         self.assertEqual(engine.state, STATE_PLAYING)
         self.assertIsNotNone(engine.env)
 
@@ -350,7 +351,7 @@ class TestGameEngineIntegration(unittest.TestCase):
     def test_level_select_screen_transition_and_selection(self) -> None:
         """Verify navigation to 1-10 Select Level screen, chamber picking, and mission start."""
         engine = GameEngine(db_path=self.test_db_path)
-        engine.user_stats = {"username": "afiabyte", "victories": 4, "total_missions": 6, "best_steps": 14}
+        engine.user_stats = {"username": "TestOp", "victories": 4, "total_missions": 6, "best_steps": 14}
         engine.state = STATE_HOME
 
         # 1. Click "LEVELS (1-10)" button on Main Menu

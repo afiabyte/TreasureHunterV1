@@ -72,7 +72,7 @@ class GameEngine:
         self.auth_mode: str = "create_account"
         self.auth_status: str = ""
         self.is_auth_error: bool = False
-        self.current_user: str = "afiabyte"
+        self.current_user: str = ""
         self.user_stats: Optional[Dict[str, Any]] = None
         self.login_status: str = "AWAITING CREDENTIALS"
         self.recent_operatives: List[Dict[str, Any]] = []
@@ -108,7 +108,7 @@ class GameEngine:
         # Configurable Game Parameters (set from Home screen)
         self.selected_grid_size: int = 7
         self.selected_level: int = 2
-        self.player_name: str = "afiabyte"
+        self.player_name: str = "OPERATIVE-01"
 
         # Active Environment Simulation
         self.env: Optional[GridEnvironment] = None
@@ -341,17 +341,10 @@ class GameEngine:
             p1 = self.ui.input_reg_password.text
             p2 = self.ui.input_reg_confirm_password.text
 
-            # If all inputs are blank and enter was pressed (e.g. headless unit tests)
+            # If all inputs are blank and enter was pressed
             if not u and not e and not p1 and not p2:
-                target_name = self.ui.input_login_username.text.strip() if hasattr(self.ui, "input_login_username") and self.ui.input_login_username.text.strip() else "afiabyte"
-                op = self.db.login_or_register_operative(target_name)
-                self.current_user = op["username"]
-                self.player_name = self.current_user
-                self.ui.input_player_name.text = self.current_user
-                self.user_stats = op
-                self.best_victory_steps = self.db.get_best_victory_steps(self.current_user)
-                self.sound.play_key()
-                self.state = STATE_HOME
+                self.auth_status = "PLEASE ENTER REGISTRATION DETAILS"
+                self.is_auth_error = True
                 return
 
             # Validation
@@ -452,7 +445,9 @@ class GameEngine:
 
         if do_login:
             if not target_name:
-                target_name = "afiabyte"
+                self.login_status = "PLEASE ENTER A USERNAME"
+                self.is_auth_error = True
+                return
             if target_pass:
                 ok, msg, op = self.db.authenticate_user(target_name, target_pass)
                 if not ok:
