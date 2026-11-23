@@ -14,6 +14,7 @@ Manages:
 import os
 import sys
 import time
+import asyncio
 from typing import Optional, Dict, Any, List, Tuple
 import pygame
 
@@ -1243,3 +1244,18 @@ class GameEngine:
 
         pygame.quit()
         sys.exit()
+
+    async def run_async(self) -> None:
+        """Execute the primary 60 FPS game loop asynchronously (for Web / Pygbag)."""
+        while self.is_running:
+            dt = self.clock.tick(60) / 1000.0
+            dt = min(dt, 0.05)
+
+            self.handle_events()
+            self.update(dt)
+            self.render()
+
+            # Yield execution back to browser JavaScript event loop
+            await asyncio.sleep(0)
+
+        pygame.quit()

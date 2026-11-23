@@ -7,6 +7,10 @@ __pycache__/
 .env
 *.env
 
+# Local build artifacts
+build/
+dist/
+
 # Local environment wrapper scripts
 powershell.cmd
 git.cmd

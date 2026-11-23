@@ -3,14 +3,16 @@ Main: Entry point for the Treasure Hunter Tactical Evasion game.
 
 Launches the GameEngine with full Pygame 60 FPS loop, SQLite persistence,
 and Google Gemini 3.8 Flash neural guidance.
+Compatible with desktop execution and WebAssembly / Pygbag browser hosting.
 """
 
 import sys
 import argparse
+import asyncio
 from game_engine import GameEngine
 
 
-def main() -> None:
+async def main() -> None:
     """Parse command-line arguments and start the game engine."""
     parser = argparse.ArgumentParser(description="Treasure Hunter: Tactical Evasion Game")
     parser.add_argument("--grid-size", type=int, choices=[5, 7, 9, 11], default=7,
@@ -33,9 +35,9 @@ def main() -> None:
     engine.selected_level = args.level
     engine.player_name = args.player_name
 
-    # Start main game loop
-    engine.run()
+    # Start main game loop (async yields control to browser event loop in WASM)
+    await engine.run_async()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
