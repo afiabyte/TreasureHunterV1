@@ -24,36 +24,30 @@ async def main() -> None:
     parser.add_argument("--api-key", type=str, default=None,
                         help="Optional Google Gemini API key (or set GEMINI_API_KEY env var)")
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+        grid_size = args.grid_size
+        level = args.level
+        player_name = args.player_name
+        api_key = args.api_key
+    except Exception:
+        grid_size = 7
+        level = 2
+        player_name = "OPERATIVE-01"
+        api_key = None
 
     engine = GameEngine()
-    if args.api_key:
-        engine.ai.set_api_key(args.api_key)
+    if api_key:
+        engine.ai.set_api_key(api_key)
 
     # Set initial parameters
-    engine.selected_grid_size = args.grid_size
-    engine.selected_level = args.level
-    engine.player_name = args.player_name
+    engine.selected_grid_size = grid_size
+    engine.selected_level = level
+    engine.player_name = player_name
 
     # Start main game loop (async yields control to browser event loop in WASM)
     await engine.run_async()
 
 
-def start_game() -> None:
-    """Launch the main game loop safely across desktop and browser environments."""
-    try:
-        loop = asyncio.get_running_loop()
-        asyncio.ensure_future(main())
-    except RuntimeError:
-        asyncio.run(main())
-
-
 if __name__ == "__main__":
-    start_game()
-else:
-    # If executed by Pygbag shell.source
-    try:
-        loop = asyncio.get_running_loop()
-        asyncio.ensure_future(main())
-    except RuntimeError:
-        pass
+    asyncio.run(main())
