@@ -9,7 +9,13 @@ handles failure without interrupting gameplay.
 """
 
 import math
-import numpy as np
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    np = None
+    NUMPY_AVAILABLE = False
+
 import pygame
 from typing import Optional
 
@@ -28,6 +34,10 @@ class SoundManager:
         self.sfx_volume: float = 0.70
         self.current_track: Optional[str] = None
         self.music_channel: Optional[pygame.mixer.Channel] = None
+
+        if not NUMPY_AVAILABLE:
+            self.enabled = False
+            return
 
         try:
             if not pygame.mixer.get_init():

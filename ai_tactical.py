@@ -20,7 +20,20 @@ import json
 import logging
 import threading
 from typing import List, Tuple, Dict, Any, Optional
-from pydantic import BaseModel, Field
+# Pydantic schema imports
+try:
+    from pydantic import BaseModel, Field
+    PYDANTIC_AVAILABLE = True
+except ImportError:
+    PYDANTIC_AVAILABLE = False
+    class BaseModel:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+        def model_dump(self):
+            return self.__dict__
+    def Field(*args, **kwargs):
+        return None
 
 # google-genai SDK imports
 try:

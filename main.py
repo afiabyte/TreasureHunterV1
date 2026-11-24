@@ -39,5 +39,21 @@ async def main() -> None:
     await engine.run_async()
 
 
+def start_game() -> None:
+    """Launch the main game loop safely across desktop and browser environments."""
+    try:
+        loop = asyncio.get_running_loop()
+        asyncio.ensure_future(main())
+    except RuntimeError:
+        asyncio.run(main())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    start_game()
+else:
+    # If executed by Pygbag shell.source
+    try:
+        loop = asyncio.get_running_loop()
+        asyncio.ensure_future(main())
+    except RuntimeError:
+        pass
