@@ -18,6 +18,26 @@ import asyncio
 from typing import Optional, Dict, Any, List, Tuple
 import pygame
 
+# Universal cross-platform font patch for WebAssembly, mobile browsers, and headless runners
+_orig_sysfont = pygame.font.SysFont
+
+def _safe_sysfont(name: str, size: int, bold: bool = False, italic: bool = False) -> pygame.font.Font:
+    try:
+        f = _orig_sysfont(name, size, bold=bold, italic=italic)
+        if f is not None:
+            return f
+    except Exception:
+        pass
+    try:
+        f = pygame.font.Font(None, size)
+        f.set_bold(bold)
+        f.set_italic(italic)
+        return f
+    except Exception:
+        return pygame.font.Font(None, size)
+
+pygame.font.SysFont = _safe_sysfont
+
 from database import DatabaseManager
 from ai_tactical import GeminiTacticalAI
 from environment import GridEnvironment
@@ -1251,9 +1271,13 @@ class GameEngine:
             dt = self.clock.tick(60) / 1000.0
             dt = min(dt, 0.05)
 
-            self.handle_events()
-            self.update(dt)
-            self.render()
+            try:
+                self.handle_events()
+                self.update(dt)
+                self.render()
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
 
             # Yield execution back to browser JavaScript event loop
             await asyncio.sleep(0)
