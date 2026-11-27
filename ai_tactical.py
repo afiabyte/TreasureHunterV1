@@ -147,7 +147,7 @@ class GeminiTacticalAI:
 
         try:
             # Instantiate google-genai client
-            self.client = genai.Client(api_key=self.api_key)
+            self.client = genai.Client(api_key=self.api_key) #google gemini object create,sdk diye client create kra hoy
             self.ai_status = f"ONLINE [{self.model_name}]"
             self.is_gemini_active = True
         except Exception as e:

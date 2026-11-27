@@ -649,13 +649,30 @@ class DatabaseManager:
         for lvl in range(1, 11):
             progress[lvl] = {
                 "level_num": lvl,
-                "status": "UNLOCKED" if lvl <= 3 else "LOCKED",
-                "best_steps": 12 if lvl == 1 else None,
-                "stars": 3 if lvl == 1 else 0,
+                "status": "UNLOCKED" if lvl == 1 else "LOCKED",
+                "best_steps": None,
+                "stars": 0,
                 "completed_at": None,
             }
 
         if not SQLITE_AVAILABLE:
+            unlocked_max = 1
+            with self._lock:
+                for op_k, op_v in _mem_operatives.items():
+                    if op_k.lower() == clean_user.lower():
+                        unlocked_max = op_v.get("unlocked_level", 1)
+                        break
+            for lvl in range(1, unlocked_max + 1):
+                progress[lvl]["status"] = "UNLOCKED"
+            with self._lock:
+                for row in _mem_level_progress:
+                    if row.get("operative_name", "").lower() == clean_user.lower():
+                        lvl = row.get("level_num", 0)
+                        if 1 <= lvl <= 10:
+                            progress[lvl]["status"] = row.get("status", "UNLOCKED")
+                            progress[lvl]["best_steps"] = row.get("best_steps")
+                            progress[lvl]["stars"] = row.get("stars", 0)
+                            progress[lvl]["completed_at"] = row.get("completed_at")
             return progress
 
         with self._lock:
