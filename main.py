@@ -55,5 +55,5 @@ async def main() -> None:
     await engine.run_async()
 
 
-if __name__ == "__main__" or sys.platform == "emscripten":
+if __name__ == "__main__":
     asyncio.run(main())
